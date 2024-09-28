@@ -49,6 +49,7 @@ import { useQuery, useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { phoneBrands, tabletBrands, laptopBrands, computerBrands, models } from "@/types/deviceTypes";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 interface SelectDeviceProps {
   requestId: Id<"repairRequests">;
@@ -314,15 +315,22 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
                   <CardHeader className="flex flex-row items-start bg-muted/50">
                     <div className="grid gap-0.5">
                       <CardTitle className="group flex items-center gap-2 text-lg">
-                        Request ID: {repairRequest?._id.slice(0, 8)}...
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
-                        >
-                          <Copy className="h-3 w-3" />
-                          <span className="sr-only">Copy Order ID</span>
-                        </Button>
+                        Request ID: {repairRequest?._id.slice(0, 8)}***
+                        <CopyToClipboard text={requestId}>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                          >
+                            <Copy
+                              className="h-3 w-3"
+                              onClick={() =>
+                                toast({ title: "Request ID copied to clipboard!" })
+                              }
+                            />
+                            <span className="sr-only">Copy Request ID</span>
+                          </Button>
+                        </CopyToClipboard>
                       </CardTitle>
                       <CardDescription>
                         Date:{" "}

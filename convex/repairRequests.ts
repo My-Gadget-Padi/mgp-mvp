@@ -113,12 +113,17 @@ export const updateRepairRequest = mutation({
 export const deleteRepairRequest = mutation({
   args: {
     requestId: v.id("repairRequests"),
+    fileStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
 
     if (!request) {
       throw new ConvexError("Request not found");
+    }
+
+    if (args.fileStorageId) {
+      await ctx.storage.delete(args.fileStorageId);
     }
 
     return await ctx.db.delete(args.requestId);

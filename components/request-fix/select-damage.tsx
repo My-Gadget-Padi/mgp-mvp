@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Separator } from "../ui/separator";
 import Image from "next/image";
 import Link from "next/link";
@@ -49,6 +49,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery, useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 interface SelectDeviceProps {
   requestId: Id<"repairRequests">;
@@ -74,13 +75,6 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
 
   const cancelRequest = useMutation(api.repairRequests.deleteRepairRequest);
 
-  useEffect(() => {
-    const savedDamages = JSON.parse(
-      localStorage.getItem("selectedDamages") || "[]"
-    );
-    setSelectedDamages(savedDamages);
-  }, []);
-
   const handlePriorityChange = (value: string) => {
     setPriority(value);
   };
@@ -92,7 +86,6 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
 
     const updatedDamages = [...selectedDamages, value];
     setSelectedDamages(updatedDamages);
-    localStorage.setItem("selectedDamages", JSON.stringify(updatedDamages));
 
     const damageSelect = document.getElementById("damage");
     if (damageSelect) {
@@ -123,7 +116,7 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
         priority,
         damages: selectedDamages,
         fileUrl: fileUrl || "",
-        fileStorageId: fileStorageId!,
+        fileStorageId: fileStorageId !== null ? fileStorageId : undefined,
       });
 
       setPriority("");
@@ -148,6 +141,7 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
     try {
       await cancelRequest({
         requestId,
+        fileStorageId: fileStorageId !== null ? fileStorageId : undefined,
       });
 
       toast({ title: "Repair request cancelled successfully!" });
@@ -364,15 +358,22 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
                   <CardHeader className="flex flex-row items-start bg-muted/50">
                     <div className="grid gap-0.5">
                       <CardTitle className="group flex items-center gap-2 text-lg">
-                        Request ID: {repairRequest?._id.slice(0, 8)}...
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
-                        >
-                          <Copy className="h-3 w-3" />
-                          <span className="sr-only">Copy Order ID</span>
-                        </Button>
+                        Request ID: {repairRequest?._id.slice(0, 8)}***
+                        <CopyToClipboard text={requestId}>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                          >
+                            <Copy
+                              className="h-3 w-3"
+                              onClick={() =>
+                                toast({ title: "Request ID copied to clipboard!" })
+                              }
+                            />
+                            <span className="sr-only">Copy Request ID</span>
+                          </Button>
+                        </CopyToClipboard>
                       </CardTitle>
                       <CardDescription>
                         Date:{" "}
