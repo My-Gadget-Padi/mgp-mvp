@@ -1,20 +1,20 @@
 "use client";
 
-import SelectDelivery from "@/components/request-fix/select-delivery";
+import ReviewRequest from "@/components/request-fix/review-request";
 import { Id } from "@/convex/_generated/dataModel";
 
-const DeliveryPage = ({
+const ReviewPage = ({
   params: { requestId },
 }: {
   params: { requestId: Id<"repairRequests"> };
 }) => {
   return (
     <div className="h-screen flex-col md:flex">
-      <SelectDelivery
+      <ReviewRequest
         requestId={requestId}
       />
     </div>
   );
 };
 
-export default DeliveryPage;
+export default ReviewPage;

@@ -10,7 +10,7 @@ export interface EmptyStateProps {
 }
 
 export interface UploadDeviceImageOrVideoProps {
-  setVideo: Dispatch<SetStateAction<string>>;
-  setVideoStorageId: Dispatch<SetStateAction<Id<"_storage"> | null>>;
-  video: string;
-}
+  setFile: Dispatch<SetStateAction<string>>;
+  setFileStorageId: Dispatch<SetStateAction<Id<"_storage"> | null>>;
+  file: string;
+};

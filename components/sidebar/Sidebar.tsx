@@ -49,7 +49,7 @@ export function Sidebar() {
   };
 
   const openWhatsApp = () => {
-    window.open("https://wa.me/+2348088980832", "_blank");
+    window.open("https://wa.me/+2347076641696", "_blank");
   };
 
   const sideBarLinks: SidebarProps["links"] = [

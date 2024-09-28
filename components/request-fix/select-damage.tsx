@@ -1,39 +1,22 @@
 "use client";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
 import { Separator } from "../ui/separator";
-import { Input } from "../ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  BellRing,
-  MessagesSquare,
-  Fullscreen,
-  ShieldCheck,
-  Wrench,
+  Package,
+  Copy,
+  Bike,
+  Truck,
   ArrowDown,
   ArrowRight,
   ArrowUp,
-  CircleX,
-  CircleCheck,
-  Timer,
-  Archive,
-  TruckIcon,
-  PackageOpen,
   CalendarClock,
-  UserCheck,
-  Smartphone,
-  Laptop,
-  Tablet,
-  TabletSmartphone,
-  Computer,
   CheckCheck,
+  Loader,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import {
   Card,
   CardContent,
@@ -42,73 +25,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  CreditCard,
-  MoreVertical,
-  Bike,
-  Truck,
-} from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "@/components/ui/pagination";
-import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "../ui/scroll-area";
-import {
-  Activity,
-  ArrowUpRight,
-  CircleUser,
-  DollarSign,
-  Menu,
-  Users,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserNav } from "../user-nav";
-import {
-  Home,
-  LineChart,
-  Package,
-  Package2,
-  PanelLeft,
-  PlusCircle,
-  Search,
-  Settings,
-  ShoppingCart,
-  Upload,
-  Users2,
-} from "lucide-react";
-
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -118,17 +43,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import UploadDeviceImageOrVideo from "../uploadDevice/UploadDeviceImageOrVideo";
+import { format } from "date-fns";
+import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { useQuery, useMutation } from "convex/react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
 
-export const description =
-  "A product edit page. The product edit page has a form to edit the product details, stock, product category, product status, and product images. The product edit page has a sidebar navigation and a main content area. The main content area has a form to edit the product details, stock, product category, product status, and product images. The sidebar navigation has links to product details, stock, product category, product status, and product images.";
+interface SelectDeviceProps {
+  requestId: Id<"repairRequests">;
+}
 
-export function SelectDamage() {
-  const [videoStorageId, setVideoStorageId] = useState<Id<"_storage"> | null>(
+const SelectDamage = ({ requestId }: SelectDeviceProps) => {
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [priority, setPriority] = useState("");
+  const [fileStorageId, setFileStorageId] = useState<Id<"_storage"> | null>(
     null
   );
-  const [videoUrl, setVideoUrl] = useState("");
+  const [fileUrl, setFileUrl] = useState("");
   const [selectedDamages, setSelectedDamages] = useState<string[]>([]);
+
+  const repairRequest = useQuery(api.repairRequests.getRepairRequestById, {
+    requestId,
+  });
+
+  const updateRequest = useMutation(api.repairRequests.updateRepairRequest);
+
+  const cancelRequest = useMutation(api.repairRequests.deleteRepairRequest);
 
   useEffect(() => {
     const savedDamages = JSON.parse(
@@ -136,6 +80,10 @@ export function SelectDamage() {
     );
     setSelectedDamages(savedDamages);
   }, []);
+
+  const handlePriorityChange = (value: string) => {
+    setPriority(value);
+  };
 
   const handleSelectChange = (value: string) => {
     if (selectedDamages.includes(value)) {
@@ -152,6 +100,67 @@ export function SelectDamage() {
     }
   };
 
+  const handleUpdate = async () => {
+    if (!priority) {
+      toast({
+        title: "Please select a repair priority",
+      });
+      return;
+    }
+
+    if (!selectedDamages) {
+      toast({
+        title: "Please select one or multiple damages",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await updateRequest({
+        requestId,
+        priority,
+        damages: selectedDamages,
+        fileUrl: fileUrl || "",
+        fileStorageId: fileStorageId!,
+      });
+
+      setPriority("");
+      setSelectedDamages([]);
+
+      toast({
+        title: "Device damages has been recorded!",
+      });
+      router.push(`/dashboard/request-fix/delivery/${requestId}`);
+    } catch (error) {
+      console.error("Repair request updated", error);
+      toast({
+        title: "Repair request is unsuccessful",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = async (requestId: Id<"repairRequests">) => {
+    try {
+      await cancelRequest({
+        requestId,
+      });
+
+      toast({ title: "Repair request cancelled successfully!" });
+      router.push("/dashboard/request-fix");
+    } catch (error) {
+      toast({ title: "Failed to cancel repair request!" });
+    }
+  };
+
+  const trackRepair = async (requestId: Id<"repairRequests">) => {
+    router.push(`/dashboard/repairs/${requestId}`);
+  };
+
   return (
     <ScrollArea className="h-screen">
       <div className="flex w-full flex-col sm:w-[714px] md:w-[1300px]">
@@ -159,7 +168,10 @@ export function SelectDamage() {
           <div>
             <div className="flex pl-4 pr-4 pt-3">
               <div>
-                <h1 className="text-xl font-bold">Fix your Phone</h1>
+                <h1 className="text-xl font-bold">
+                  Fix your{" "}
+                  <span className="capitalize">{repairRequest?.device}</span>
+                </h1>
               </div>
               <div className="flex ml-auto space-x-4">
                 <UserNav />
@@ -168,22 +180,29 @@ export function SelectDamage() {
           </div>
         </div>
       </div>
-
       <div className="flex min-h-screen w-full flex-col">
         <div className="flex flex-col sm:gap-4 sm:py-4">
           <header className="sticky top-0 z-30 flex items-center gap-4 border-b bg-background sm:static sm:h-auto sm:border-0 sm:bg-transparent px-4">
             <Breadcrumb className="">
               <BreadcrumbList>
+                <BreadcrumbItem
+                  onClick={() =>
+                    handleCancel(repairRequest?._id as Id<"repairRequests">)
+                  }
+                >
+                  Request a Fix
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link href="/dashboard/request-fix">Request a Fix</Link>
-                  </BreadcrumbLink>
+                  <Link href={`/dashboard/request-fix/${requestId}`}>
+                    Select Device
+                  </Link>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbPage>
-                    <Link href={`/dashboard/request-fix/123`}>
-                      Select Device Damage
+                    <Link href={`/dashboard/request-fix/damage/${requestId}`}>
+                      Enter Damage Details
                     </Link>
                   </BreadcrumbPage>
                 </BreadcrumbItem>
@@ -204,13 +223,24 @@ export function SelectDamage() {
                     <CardContent>
                       <div className="grid gap-3">
                         <div className="grid gap-2">
+                          <Label htmlFor="upload">Device Image/Video (optional)</Label>
+                          <UploadDeviceImageOrVideo
+                            setFile={setFileUrl}
+                            setFileStorageId={setFileStorageId}
+                            file={fileUrl}
+                          />
+                        </div>
+                        <div className="grid gap-2 mt-4">
                           <Label htmlFor="priority">
                             Repair Priority{" "}
                             <span className="text-muted-foreground text-xs">
                               (how urgently do you need your device fixed?)
                             </span>
                           </Label>
-                          <Select>
+                          <Select
+                            onValueChange={handlePriorityChange}
+                            value={priority}
+                          >
                             <SelectTrigger id="priority">
                               <SelectValue placeholder="Select repair priority" />
                             </SelectTrigger>
@@ -221,18 +251,8 @@ export function SelectDamage() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="upload">Device Image/Video</Label>
-                          <UploadDeviceImageOrVideo
-                            setVideo={setVideoUrl}
-                            setVideoStorageId={setVideoStorageId}
-                            video={videoUrl}
-                          />
-                        </div>
-
-                        <div className="grid gap-2">
+                        <div className="grid gap-2 mt-2">
                           <Label htmlFor="damages">Damages</Label>
-
                           <Select
                             onValueChange={(value) => {
                               handleSelectChange(value);
@@ -242,6 +262,7 @@ export function SelectDamage() {
                                 (damageSelect as HTMLInputElement).value = "";
                               }
                             }}
+                            disabled={priority === ""}
                           >
                             <SelectTrigger
                               id="damage"
@@ -319,7 +340,17 @@ export function SelectDamage() {
                     </CardContent>
                     <CardFooter>
                       <div className="ml-auto flex items-center justify-center gap-2">
-                        <Button size="sm">Next step</Button>
+                        <Button
+                          size="sm"
+                          onClick={handleUpdate}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? (
+                            <Loader size={20} className="animate-spin ml-2" />
+                          ) : (
+                            "Next step"
+                          )}
+                        </Button>
                       </div>
                     </CardFooter>
                   </Card>
@@ -333,7 +364,7 @@ export function SelectDamage() {
                   <CardHeader className="flex flex-row items-start bg-muted/50">
                     <div className="grid gap-0.5">
                       <CardTitle className="group flex items-center gap-2 text-lg">
-                        Request ID: Oe31b70H
+                        Request ID: {repairRequest?._id.slice(0, 8)}...
                         <Button
                           size="icon"
                           variant="outline"
@@ -343,10 +374,27 @@ export function SelectDamage() {
                           <span className="sr-only">Copy Order ID</span>
                         </Button>
                       </CardTitle>
-                      <CardDescription>Date: November 23, 2023</CardDescription>
+                      <CardDescription>
+                        Date:{" "}
+                        {repairRequest?._creationTime
+                          ? format(
+                              new Date(repairRequest._creationTime),
+                              "MMMM dd, yyyy"
+                            )
+                          : "N/A"}
+                      </CardDescription>
                     </div>
                     <div className="ml-auto flex items-center gap-1">
-                      <Button size="sm" variant="outline" className="h-8 gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 gap-1"
+                        onClick={() =>
+                          trackRepair(
+                            repairRequest?._id as Id<"repairRequests">
+                          )
+                        }
+                      >
                         <Truck className="h-3.5 w-3.5" />
                         <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
                           Track Repair
@@ -360,27 +408,28 @@ export function SelectDamage() {
                       <ul className="grid gap-3">
                         <li className="flex items-center justify-between">
                           <span className="text-muted-foreground">Device</span>
-                          <span>IPhone 15 Pro Max</span>
+                          <span>{repairRequest?.model}</span>
                         </li>
                         <li className="flex items-center justify-between">
                           <span className="text-muted-foreground">
                             Damage(s)
                           </span>
                           <div className="ml-auto">
-                            <ul>
-                              <li className="mt-1 text-muted-foreground text-sm capitalize">
-                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
-                                Broken Screen
-                              </li>
-                              <li className="mt-1 text-muted-foreground text-sm capitalize">
-                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
-                                Water Damage
-                              </li>
-                              <li className="mt-1 text-muted-foreground text-sm capitalize">
-                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
-                                Not Charging
-                              </li>
-                            </ul>
+                            {repairRequest?.damages && (
+                              <ul>
+                                {repairRequest.damages.map(
+                                  (damageItem: string, index: number) => (
+                                    <li
+                                      key={index}
+                                      className="mt-1 text-muted-foreground text-sm capitalize"
+                                    >
+                                      <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                      {damageItem}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            )}
                           </div>
                         </li>
                       </ul>
@@ -390,17 +439,32 @@ export function SelectDamage() {
                           <span className="text-muted-foreground">
                             Priority
                           </span>
-                          <span className="inline-flex">
-                            <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                            High
-                          </span>
+                          {repairRequest?.priority === "high" ? (
+                            <span className="inline-flex">
+                              <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              High
+                            </span>
+                          ) : repairRequest?.priority === "medium" ? (
+                            <span className="inline-flex">
+                              <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              Medium
+                            </span>
+                          ) : repairRequest?.priority === "low" ? (
+                            <span className="inline-flex">
+                              <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              Low
+                            </span>
+                          ) : null}
                         </li>
                         <li className="flex items-center justify-between">
                           <span className="text-muted-foreground">Status</span>
-                          <span className="inline-flex">
-                            <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                            Scheduled
-                          </span>
+
+                          {repairRequest?.status === "scheduled" ? (
+                            <span className="inline-flex">
+                              <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              Scheduled
+                            </span>
+                          ) : null}
                         </li>
                       </ul>
                     </div>
@@ -408,28 +472,47 @@ export function SelectDamage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="grid auto-rows-max gap-3">
                         <div className="font-semibold">Delivery Method</div>
-                        <div className="text-muted-foreground inline-flex">
-                          <Bike className="mb-3 h-5 w-4 mr-1.5" />
-                          Pick Up
-                        </div>
+                        {repairRequest?.deliveryType === "pick-up" ? (
+                          <div className="text-muted-foreground inline-flex">
+                            <Bike className="mb-3 h-5 w-4 mr-1.5" />
+                            Pick Up
+                          </div>
+                        ) : repairRequest?.deliveryType === "drop-off" ? (
+                          <div className="text-muted-foreground inline-flex">
+                            <Package className="mb-3 h-5 w-4 mr-1.5" />
+                            Drop Off
+                          </div>
+                        ) : null}
                       </div>
                       <div className="grid gap-3 ml-auto">
                         <div className="font-semibold">Address</div>
-                        <address className="grid gap-0.5 not-italic text-muted-foreground">
-                          <span>Liam Johnson</span>
-                          <span>1234 Main St.</span>
-                          <span>Anytown, CA 12345</span>
-                        </address>
+                        {repairRequest?.address ? (
+                          <address className="grid gap-0.5 not-italic text-muted-foreground capitalize">
+                            <span>{repairRequest?.address}</span>
+                          </address>
+                        ) : repairRequest?.dropOffLocation ? (
+                          <address className="grid gap-0.5 not-italic text-muted-foreground capitalize">
+                            <span>
+                              {repairRequest?.dropOffLocation}
+                            </span>
+                          </address>
+                        ) : null}
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="flex flex-row items-center border-t bg-muted/50 px-6 py-3">
+                  <CardFooter className="flex flex-row items-center border-t px-6 py-3">
                     <Image
-                      alt="Product image"
-                      className="aspect-square rounded-md object-cover"
+                      className="rounded-md object-cover"
                       height="100"
-                      src="/images/iphone14.jpg"
-                      width="100"
+                      width="200"
+                      src={
+                        (repairRequest?.fileUrl as string) ||
+                        "/images/device-placeholder.jpg"
+                      }
+                      alt={
+                        (repairRequest?.brandName as string) ||
+                        "Device placeholder"
+                      }
                     />
                   </CardFooter>
                 </Card>
@@ -441,3 +524,5 @@ export function SelectDamage() {
     </ScrollArea>
   );
 };
+
+export default SelectDamage;

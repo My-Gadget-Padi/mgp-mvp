@@ -1,8 +1,6 @@
 "use client";
 import * as React from "react";
-import { useState } from "react";
 import { Separator } from "../ui/separator";
-import { Input } from "../ui/input";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -15,7 +13,6 @@ import {
   Package,
   Copy,
   Truck,
-  Loader,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,15 +32,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { format } from "date-fns";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -55,89 +43,42 @@ interface SelectDeviceProps {
   requestId: Id<"repairRequests">;
 }
 
-const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
+const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
   const router = useRouter();
   const { toast } = useToast();
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [address, setAddress] = useState("");
-  const [address2, setAddress2] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [zipCode, setZipCode] = useState("");
-  const [country] = useState("Nigeria");
-  const [pickUpAddress, setPickUpAddress] = useState("");
-  const [dropOffLocation, setDropOffLocation] = useState("");
-  const [deliveryMethod, setDeliveryMethod] = useState("pick-up");
 
   const repairRequest = useQuery(api.repairRequests.getRepairRequestById, {
     requestId,
   });
 
-  const updateRequest = useMutation(api.repairRequests.updateRepairRequest);
-
   const cancelRequest = useMutation(api.repairRequests.deleteRepairRequest);
 
-  const handleAddressChange = () => {
-    const formattedAddress = `${address} ${
-      address2 ? `${address2}, ` : ""
-    }${city}, ${state}, ${zipCode}, ${country}`;
-    setPickUpAddress(formattedAddress);
-  };
+  const handleLaunchWhatsApp = async () => {
+    const details = encodeURIComponent(
+      `
+      Device:
+      ${repairRequest?.model}
 
-  const handleDropOffChange = (value: string) => {
-    setDropOffLocation(value);
-  };
+      Damage(s):
+      ${repairRequest?.damages?.length 
+        ? repairRequest.damages.map(damage => `- ${damage}`).join('\n') 
+        : 'No damages specified'}
 
-  const handleUpdate = async () => {
-    if (!deliveryMethod) {
-      toast({
-        title: "Please select a delivery method",
-      });
-      return;
-    }
+      Priority:
+      ${repairRequest?.priority}
 
-    if (deliveryMethod === "pick-up" && !pickUpAddress.trim()) {
-      toast({
-        title: "Please enter your address to schedule a device pick up",
-      });
-      return;
-    }
+      Delivery Method:
+      ${repairRequest?.deliveryType} - [${repairRequest?.address || repairRequest?.dropOffLocation || ""}]
 
-    if (deliveryMethod === "drop-off" && !dropOffLocation.trim()) {
-      toast({
-        title: "Please select a drop off location closest to you",
-      });
-      return;
-    }
+      View repair request details: ${`https://mygadgetpadi.com/repair-request/${requestId}`}
+      `
+    );
 
-    setIsLoading(true);
+    const currentHour = new Date().getHours();
 
-    try {
-      await updateRequest({
-        requestId,
-        deliveryType: deliveryMethod,
-        address: pickUpAddress || "",
-        dropOffLocation: dropOffLocation || "",
-        status: "scheduled",
-      });
+    const phoneNumber = currentHour % 2 === 0 ? "+2347076641696" : "+2347072665255";
 
-      setPickUpAddress("");
-      setDropOffLocation("");
-
-      toast({
-        title: "Device delivery method has been selected!",
-      });
-      router.push(`/dashboard/request-fix/review/${requestId}`);
-    } catch (error) {
-      console.error("Repair request updated", error);
-      toast({
-        title: "Repair request is unsuccessful",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    window.open(`https://wa.me/${phoneNumber}?text=${details}`, "_blank");
   };
 
   const handleCancel = async (requestId: Id<"repairRequests">) => {
@@ -156,6 +97,7 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
   const trackRepair = async (requestId: Id<"repairRequests">) => {
     router.push(`/dashboard/repairs/${requestId}`);
   };
+
   return (
     <ScrollArea className="h-screen">
       <div className="flex w-full flex-col sm:w-[714px] md:w-[1300px]">
@@ -201,9 +143,15 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    <Link href={`/dashboard/request-fix/delivery/${requestId}`}>
+                  <Link href={`/dashboard/request-fix/delivery/${requestId}`}>
                       Enter Delivery Details
+                    </Link>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>
+                    <Link href={`/dashboard/request-fix/review/${requestId}`}>
+                      Review Request
                     </Link>
                   </BreadcrumbPage>
                 </BreadcrumbItem>
@@ -211,185 +159,10 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
             </Breadcrumb>
           </header>
           <main className="grid gap-4 p-4 sm:py-0">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="col-span-1 md:col-span-2 gap-4 lg:gap-8">
-                <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>How do we receive it?</CardTitle>
-                      <CardDescription>
-                        Select how you would like us to receive your device.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-6">
-                      <RadioGroup
-                        defaultValue="pick-up"
-                        onValueChange={setDeliveryMethod}
-                        className="grid grid-cols-2 gap-4"
-                      >
-                        <div>
-                          <RadioGroupItem
-                            value="pick-up"
-                            id="pick-up"
-                            className="peer sr-only"
-                          />
-                          <Label
-                            htmlFor="pick-up"
-                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                          >
-                            <Bike className="mb-3 h-6 w-6" />
-                            Request pick up
-                          </Label>
-                        </div>
-                        <div>
-                          <RadioGroupItem
-                            value="drop-off"
-                            id="drop-off"
-                            className="peer sr-only"
-                          />
-                          <Label
-                            htmlFor="drop-off"
-                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                          >
-                            <Package className="mb-3 h-6 w-6" />
-                            Bring it to us
-                          </Label>
-                        </div>
-                      </RadioGroup>
-                      {deliveryMethod === "pick-up" ? (
-                        <>
-                          <div className="grid gap-6">
-                            <div className="grid gap-2">
-                              <Label htmlFor="address">Address</Label>
-                              <Input
-                                id="address"
-                                placeholder="Address"
-                                value={address}
-                                onChange={(e) => {
-                                  setAddress(e.target.value);
-                                  handleAddressChange();
-                                }}
-                              />
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="address-2">
-                                Address 2 / Apt. Number
-                              </Label>
-                              <Input
-                                id="address-2"
-                                placeholder="Apt #"
-                                value={address2}
-                                onChange={(e) => {
-                                  setAddress2(e.target.value);
-                                  handleAddressChange();
-                                }}
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="grid gap-2">
-                                <Label htmlFor="city">City</Label>
-                                <Input
-                                  id="city"
-                                  placeholder="City"
-                                  value={city}
-                                  onChange={(e) => {
-                                    setCity(e.target.value);
-                                    handleAddressChange();
-                                  }}
-                                />
-                              </div>
-                              <div className="grid gap-2">
-                                <Label htmlFor="state">State / Region</Label>
-                                <Input
-                                  id="state"
-                                  placeholder="State"
-                                  value={state}
-                                  onChange={(e) => {
-                                    setState(e.target.value);
-                                    handleAddressChange();
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="grid gap-2">
-                                <Label htmlFor="zipCode">
-                                  ZipCode/Postal Code
-                                </Label>
-                                <Input
-                                  id="zipCode"
-                                  placeholder="ZipCode"
-                                  value={zipCode}
-                                  onChange={(e) => {
-                                    setZipCode(e.target.value);
-                                    handleAddressChange();
-                                  }}
-                                />
-                              </div>
-                              <div className="grid gap-2">
-                                <Label htmlFor="country">Country</Label>
-                                <Input
-                                  id="country"
-                                  placeholder="Nigeria"
-                                  disabled
-                                  value={country}
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <p>Formatted Address: {pickUpAddress}</p>
-                            </div>
-                          </div>
-                          <Button
-                            className="w-full"
-                            onClick={handleUpdate}
-                            disabled={isLoading}
-                          >
-                            {isLoading ? (
-                              <Loader size={20} className="animate-spin ml-2" />
-                            ) : (
-                              "Complete"
-                            )}
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <div>
-                            <Label htmlFor="dropOffLocations">
-                              MyGadgetPadi Drop-off Points
-                            </Label>
-                            <Select
-                              onValueChange={handleDropOffChange}
-                              value={dropOffLocation}
-                            >
-                              <SelectTrigger id="dropOffLocation">
-                                <SelectValue placeholder="Select location" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="lagos">Lagos</SelectItem>
-                                <SelectItem value="port-harcourt">
-                                  Port-Harcourt
-                                </SelectItem>
-                                <SelectItem value="akure">Akure</SelectItem>
-                                <SelectItem value="ibadan">Ibadan</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <Button
-                            className="w-full"
-                            onClick={handleUpdate}
-                            disabled={isLoading}
-                          >
-                            {isLoading ? (
-                              <Loader size={20} className="animate-spin ml-2" />
-                            ) : (
-                              "Complete"
-                            )}
-                          </Button>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-center gap-4">
+                <div className="items-center gap-2 ml-auto flex">
+                  <Button onClick={handleLaunchWhatsApp}>Yes, request fix</Button>
                 </div>
               </div>
               <div className="col-span-1">
@@ -561,4 +334,4 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
   );
 };
 
-export default SelectDelivery;
+export default ReviewRequest;

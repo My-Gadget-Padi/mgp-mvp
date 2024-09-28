@@ -12,7 +12,8 @@ export const createRepairRequest = mutation({
     fileUrl: v.optional(v.string()),
     fileStorageId: v.optional(v.id("_storage")),
     address: v.optional(v.string()),
-    damage: v.optional(v.string()),
+    dropOffLocation: v.optional(v.string()),
+    damages: v.optional(v.array(v.string())),
     deviceSerialNumber: v.optional(v.string()),
     comments: v.optional(v.string()),
     priority: v.optional(v.string()), //high, medium, low
@@ -34,7 +35,8 @@ export const createRepairRequest = mutation({
       fileUrl: args.fileUrl,
       fileStorageId: args.fileStorageId,
       address: args.address,
-      damage: args.damage,
+      dropOffLocation: args.dropOffLocation,
+      damages: args.damages,
       deviceSerialNumber: args.deviceSerialNumber,
       comments: args.comments,
       priority: args.priority,
@@ -61,11 +63,12 @@ export const updateRepairRequest = mutation({
     fileUrl: v.optional(v.string()),
     fileStorageId: v.optional(v.id("_storage")),
     address: v.optional(v.string()),
-    damage: v.optional(v.string()),
+    dropOffLocation: v.optional(v.string()),
+    damages: v.optional(v.array(v.string())),
     deviceSerialNumber: v.optional(v.string()),
     comments: v.optional(v.string()),
     priority: v.optional(v.string()), //high, medium, low
-    deliveryType: v.optional(v.string()), //pickup, drop-off
+    deliveryType: v.optional(v.string()), //pickup, drop-off, mail-in (not yet configured)
     deliveryTypeDate: v.optional(v.string()),
     deliveryTypeTime: v.optional(v.string()),
     warranty: v.optional(v.boolean()), //true or false
@@ -89,7 +92,8 @@ export const updateRepairRequest = mutation({
       ...(args.fileUrl!== undefined && { fileUrl: args.fileUrl }),
       ...(args.fileStorageId!== undefined && { fileStorageId: args.fileStorageId }),
       ...(args.address !== undefined && { address: args.address }),
-      ...(args.damage !== undefined && { damage: args.damage }),
+      ...(args.dropOffLocation !== undefined && { dropOffLocation: args.dropOffLocation }),
+      ...(args.damages !== undefined && { damages: args.damages }),
       ...(args.deviceSerialNumber !== undefined && { deviceSerialNumber: args.deviceSerialNumber }),
       ...(args.comments !== undefined && { comments: args.comments }),
       ...(args.priority !== undefined && { priority: args.priority }),

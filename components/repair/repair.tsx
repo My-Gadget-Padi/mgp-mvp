@@ -96,7 +96,6 @@ import {
   Menu,
   Users,
 } from "lucide-react";
-import ThemeSwitch from "@/components/theme-switch";
 import { UserNav } from "@/components/user-nav";
 
 export function Repair() {

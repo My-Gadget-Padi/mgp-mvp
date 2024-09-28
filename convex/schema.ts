@@ -32,11 +32,12 @@ export default defineSchema({
     fileUrl: v.optional(v.string()),
     fileStorageId: v.optional(v.id("_storage")),
     address: v.optional(v.string()),
-    damage: v.optional(v.string()),
+    dropOffLocation: v.optional(v.string()),
+    damages: v.optional(v.array(v.string())),
     deviceSerialNumber: v.optional(v.string()),
     comments: v.optional(v.string()),
     priority: v.optional(v.string()), //high, medium, low
-    deliveryType: v.optional(v.string()), //pickup, drop-off
+    deliveryType: v.optional(v.string()), //pickup, drop-off, mail-in (not yet configured)
     deliveryTypeDate: v.optional(v.string()),
     deliveryTypeTime: v.optional(v.string()),
     warranty: v.optional(v.boolean()), //true or false
