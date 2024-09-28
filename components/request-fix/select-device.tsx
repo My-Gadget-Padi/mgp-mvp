@@ -48,7 +48,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery, useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
-import { brandTypes, models } from "@/types/deviceTypes";
+import { phoneBrands, tabletBrands, laptopBrands, computerBrands, models } from "@/types/deviceTypes";
 
 interface SelectDeviceProps {
   requestId: Id<"repairRequests">;
@@ -70,8 +70,23 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
 
   const cancelRequest = useMutation(api.repairRequests.deleteRepairRequest);
 
+  const getBrandsForDevice = (device: string | undefined) => {
+    switch (device) {
+      case "phone":
+        return phoneBrands;
+      case "tablet":
+        return tabletBrands;
+      case "laptop":
+        return laptopBrands;
+      case "computer":
+        return computerBrands;
+      default:
+        return [];
+    }
+  };
+
   const handleBrandChange = (id: string) => {
-    const brand = brandTypes.find((brand) => brand.id === id);
+    const brand = getBrandsForDevice(repairRequest?.device).find((brand) => brand.id === id);
     if (brand) {
       setDeviceBrand(brand.label);
       setAvailableModels(models[id] || []);
@@ -205,7 +220,7 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
                 <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
                   <Card x-chunk="dashboard-07-chunk-0">
                     <CardHeader>
-                      <CardTitle>What kind of {`phone`} is it?</CardTitle>
+                      <CardTitle>What kind of {repairRequest?.device} is it?</CardTitle>
                       <CardDescription>
                         You’re in great hands — we do 50+ repairs every month.
                       </CardDescription>
@@ -223,7 +238,7 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
                               <SelectValue placeholder="Select device brand" />
                             </SelectTrigger>
                             <SelectContent>
-                              {brandTypes.map((brand) => (
+                              {getBrandsForDevice(repairRequest?.device).map((brand) => (
                                 <SelectItem
                                   key={brand.id}
                                   value={brand.id}

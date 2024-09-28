@@ -202,7 +202,7 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
                 <BreadcrumbItem>
                   <BreadcrumbPage>
                     <Link href={`/dashboard/request-fix/damage/${requestId}`}>
-                      Enter Damage Details
+                      Damage Details
                     </Link>
                   </BreadcrumbPage>
                 </BreadcrumbItem>

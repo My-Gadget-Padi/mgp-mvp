@@ -196,14 +196,14 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <Link href={`/dashboard/request-fix/damage/${requestId}`}>
-                    Enter Damage Details
+                    Damage Details
                   </Link>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbPage>
                     <Link href={`/dashboard/request-fix/delivery/${requestId}`}>
-                      Enter Delivery Details
+                      Delivery Details
                     </Link>
                   </BreadcrumbPage>
                 </BreadcrumbItem>

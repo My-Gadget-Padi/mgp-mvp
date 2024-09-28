@@ -70,7 +70,8 @@ const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
       Delivery Method:
       ${repairRequest?.deliveryType} - [${repairRequest?.address || repairRequest?.dropOffLocation || ""}]
 
-      View repair request details: ${`https://mygadgetpadi.com/repair-request/${requestId}`}
+      View damage image/video:
+      ${repairRequest?.fileUrl}
       `
     );
 
@@ -138,13 +139,13 @@ const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <Link href={`/dashboard/request-fix/damage/${requestId}`}>
-                    Enter Damage Details
+                    Damage Details
                   </Link>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <Link href={`/dashboard/request-fix/delivery/${requestId}`}>
-                      Enter Delivery Details
+                      Delivery Details
                     </Link>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />

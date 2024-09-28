@@ -13,6 +13,7 @@ export type DeviceBrands = {
   [key: string]: DeviceModel[];
 };
 
+// Mobile Phones
 const iphoneModels: DeviceModel[] = [
   { id: "iphone16promax", label: "iPhone 16 Pro Max" },
   { id: "iphone16pro", label: "iPhone 16 Pro" },
@@ -118,12 +119,87 @@ const lgModels: DeviceModel[] = [
 
 const others: DeviceModel[] = [{ id: "other", label: "Other Device" }];
 
-export const brandTypes: DeviceBrand[] = [
+// Tablets
+const ipadModels: DeviceModel[] = [
+  { id: "ipadpro12", label: "iPad Pro 12.9" },
+  { id: "ipadpro11", label: "iPad Pro 11" },
+  { id: "ipadair", label: "iPad Air" },
+  { id: "ipadmini", label: "iPad Mini" },
+  { id: "ipad", label: "iPad" },
+];
+
+const samsungTabletModels: DeviceModel[] = [
+  { id: "galaxyTabS8", label: "Galaxy Tab S8" },
+  { id: "galaxyTabS7", label: "Galaxy Tab S7" },
+  { id: "galaxyTabS6", label: "Galaxy Tab S6" },
+  { id: "galaxyTabA8", label: "Galaxy Tab A8" },
+];
+
+// Laptops
+const macbookModels: DeviceModel[] = [
+  { id: "macbookpro16", label: "MacBook Pro 16-inch" },
+  { id: "macbookpro14", label: "MacBook Pro 14-inch" },
+  { id: "macbookairM2", label: "MacBook Air M2" },
+  { id: "macbookairM1", label: "MacBook Air M1" },
+];
+
+const dellLaptopModels: DeviceModel[] = [
+  { id: "dellXPS13", label: "Dell XPS 13" },
+  { id: "dellXPS15", label: "Dell XPS 15" },
+  { id: "dellInspiron14", label: "Dell Inspiron 14" },
+  { id: "dellLatitude", label: "Dell Latitude" },
+];
+
+const hpLaptopModels: DeviceModel[] = [
+  { id: "hpSpectreX360", label: "HP Spectre x360" },
+  { id: "hpEnvy", label: "HP Envy" },
+  { id: "hpPavilion", label: "HP Pavilion" },
+  { id: "hpOmen", label: "HP Omen" },
+];
+
+// Computers (Desktops)
+const imacModels: DeviceModel[] = [
+  { id: "imac24", label: "iMac 24-inch" },
+  { id: "imac27", label: "iMac 27-inch" },
+  { id: "imacPro", label: "iMac Pro" },
+];
+
+const dellDesktopModels: DeviceModel[] = [
+  { id: "dellOptiplex", label: "Dell Optiplex" },
+  { id: "dellXPS", label: "Dell XPS Desktop" },
+];
+
+const hpDesktopModels: DeviceModel[] = [
+  { id: "hpPavilionDesktop", label: "HP Pavilion Desktop" },
+  { id: "hpOmenDesktop", label: "HP Omen Desktop" },
+];
+
+export const phoneBrands: DeviceBrand[] = [
   { id: "iphone", label: "iPhone", models: iphoneModels },
   { id: "samsung", label: "Samsung", models: samsungModels },
   { id: "google", label: "Google", models: googleModels },
   { id: "lg", label: "LG", models: lgModels },
-  { id: "other", label: "Other Device", models: [] },
+  { id: "other", label: "Other Device", models: others },
+];
+
+export const tabletBrands: DeviceBrand[] = [
+  { id: "samsungTablet", label: "Samsung Tablet", models: samsungTabletModels },
+  { id: "ipad", label: "iPad", models: ipadModels },
+  { id: "other", label: "Other Device", models: others },
+];
+
+export const laptopBrands: DeviceBrand[] = [
+  { id: "macbook", label: "MacBook", models: macbookModels },
+  { id: "dellLaptop", label: "Dell", models: dellLaptopModels },
+  { id: "hpLaptop", label: "HP", models: hpLaptopModels },
+  { id: "other", label: "Other Device", models: others },
+];
+
+export const computerBrands: DeviceBrand[] = [
+  { id: "imac", label: "Apple Desktop", models: imacModels },
+  { id: "dellDesktop", label: "Dell Desktop", models: dellDesktopModels },
+  { id: "hpDesktop", label: "HP Desktop", models: hpLaptopModels },
+  { id: "other", label: "Other Device", models: others },
 ];
 
 export const models: DeviceBrands = {
@@ -131,5 +207,17 @@ export const models: DeviceBrands = {
   samsung: samsungModels,
   google: googleModels,
   lg: lgModels,
+
+  ipad: ipadModels,
+  samsungTablet: samsungTabletModels,
+
+  macbook: macbookModels,
+  dellLaptop: dellLaptopModels,
+  hpLaptop: hpLaptopModels,
+
+  imac: imacModels,
+  dellDesktop: dellDesktopModels,
+  hpDesktop: hpDesktopModels,
+
   other: others,
 };
