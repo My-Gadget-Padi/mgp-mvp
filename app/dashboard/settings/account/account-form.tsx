@@ -1,218 +1,233 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { CalendarIcon, CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
-import { format } from "date-fns"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { toast } from "@/components/ui/use-toast"
-
-const languages = [
-  { label: "English", value: "en" },
-  { label: "French", value: "fr" },
-  { label: "German", value: "de" },
-  { label: "Spanish", value: "es" },
-  { label: "Portuguese", value: "pt" },
-  { label: "Russian", value: "ru" },
-  { label: "Japanese", value: "ja" },
-  { label: "Korean", value: "ko" },
-  { label: "Chinese", value: "zh" },
-] as const
-
-const accountFormSchema = z.object({
-  name: z
-    .string()
-    .min(2, {
-      message: "Name must be at least 2 characters.",
-    })
-    .max(30, {
-      message: "Name must not be longer than 30 characters.",
-    }),
-  dob: z.date({
-    required_error: "A date of birth is required.",
-  }),
-  language: z.string({
-    required_error: "Please select a language.",
-  }),
-})
-
-type AccountFormValues = z.infer<typeof accountFormSchema>
-
-// This can come from your database or API.
-const defaultValues: Partial<AccountFormValues> = {
-  // name: "Your name",
-  // dob: new Date("2023-01-23"),
-}
+import { useState, useEffect } from "react";
+import { Loader } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useQuery, useMutation } from "convex/react";
+import { useUser } from "@clerk/nextjs";
 
 export function AccountForm() {
-  const form = useForm<AccountFormValues>({
-    resolver: zodResolver(accountFormSchema),
-    defaultValues,
-  })
+  const { user } = useUser();
+  const userId = user?.id;
+  const userProfile = useQuery(api.users.getUserByClerkId, {
+    clerkId: userId || "",
+  });
 
-  function onSubmit(data: AccountFormValues) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    })
-  }
+  const profileId = userProfile?._id;
+  const updateAccount = useMutation(api.users.updateUser);
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [address, setAddress] = useState("");
+  const [address2, setAddress2] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [zipCode, setZipCode] = useState("");
+  const [country, setCountry] = useState("Nigeria");
+  const [homeAddress, setHomeAddress] = useState(userProfile?.address);
+
+  const [emailAddress, setEmailAddress] = useState(userProfile?.email);
+  const [phone, setPhone] = useState(userProfile?.phoneNumber);
+
+  const splitAddress = (fullAddress: string) => {
+    const parts = fullAddress.split(", ");
+    if (parts.length >= 4) {
+      const addressParts = parts[0].trim().split(" ");
+      const aptIndex = addressParts.findIndex((part) =>
+        part.toLowerCase().includes("apt")
+      );
+
+      if (aptIndex !== -1) {
+        setAddress(addressParts.slice(0, aptIndex).join(" ") || "");
+        setAddress2(addressParts.slice(aptIndex).join(" ") || "");
+      } else {
+        setAddress(parts[0] || "");
+        setAddress2("");
+      }
+
+      setCity(parts[1] || "");
+      setState(parts[2] || "");
+
+      const zipAndCountry = parts[3]?.split(" ");
+      setZipCode(zipAndCountry[1] || "");
+      setCountry(zipAndCountry[0] || "Nigeria");
+    } else {
+      console.warn("Invalid address format");
+    }
+  };
+
+  useEffect(() => {
+    if (userProfile) {
+      setEmailAddress(userProfile.email || "");
+      setPhone(userProfile.phoneNumber);
+      if (userProfile.address) {
+        splitAddress(userProfile.address);
+      }
+    }
+  }, [userProfile]);
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmailAddress(e.target.value);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(Number(e.target.value));
+  };
+
+  const handleAddressChange = () => {
+    const formattedAddress = `${address} ${address2}, ${city}, ${state}, ${country} ${zipCode}`.trim();
+    setHomeAddress(formattedAddress);
+  };
+
+  const handleUpdate = async () => {
+    if (!homeAddress && !emailAddress && !phone) {
+      toast({
+        title:
+          "Please enter either of the following (Address, Email, or Phone) to update",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await updateAccount({
+        userId: profileId as Id<"users">,
+        email: emailAddress,
+        phoneNumber: phone,
+        address: homeAddress,
+      });
+
+      setHomeAddress(userProfile?.address);
+      setEmailAddress(userProfile?.email);
+      setPhone(userProfile?.phoneNumber);
+
+      toast({
+        title: "Account information has been updated",
+      });
+    } catch (error) {
+      console.error("Account update failed", error);
+      toast({
+        title: "Update unsuccessful",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Your name" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is the name that will be displayed on your profile and in
-                emails.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+    <div className="w-full">
+      <div>
+        <Label htmlFor="email">Email Address</Label>
+        <Input
+          id="email"
+          className="w-full p-2 mt-1 border rounded-md"
+          placeholder="Enter your email address"
+          value={emailAddress}
+          onChange={handleEmailChange}
         />
-        <FormField
-          control={form.control}
-          name="dob"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Date of birth</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[240px] pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormDescription>
-                Your date of birth is used to calculate your age.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      <div className="mb-5 mt-3">
+        <Label htmlFor="phone">Phone Number</Label>
+        <Input
+          id="phone"
+          className="w-full p-2 mt-1 border rounded-md"
+          placeholder="+2341234567890"
+          value={phone}
+          onChange={handlePhoneChange}
         />
-        <FormField
-          control={form.control}
-          name="language"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Language</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-[200px] justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value
-                        ? languages.find(
-                            (language) => language.value === field.value
-                          )?.label
-                        : "Select language"}
-                      <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
-                  <Command>
-                    <CommandInput placeholder="Search language..." />
-                    <CommandEmpty>No language found.</CommandEmpty>
-                    <CommandGroup>
-                      {languages.map((language) => (
-                        <CommandItem
-                          value={language.label}
-                          key={language.value}
-                          onSelect={() => {
-                            form.setValue("language", language.value)
-                          }}
-                        >
-                          <CheckIcon
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              language.value === field.value
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {language.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormDescription>
-                This is the language that will be used in the dashboard.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Update account</Button>
-      </form>
-    </Form>
-  )
+      </div>
+      <div className="grid gap-6">
+        <div className="grid gap-2">
+          <Label htmlFor="address">Address</Label>
+          <Input
+            id="address"
+            placeholder="Address"
+            value={address}
+            onChange={(e) => {
+              setAddress(e.target.value);
+              handleAddressChange();
+            }}
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="address-2">Address 2 / Apt. Number</Label>
+          <Input
+            id="address-2"
+            placeholder="Apt #"
+            value={address2}
+            onChange={(e) => {
+              setAddress2(e.target.value);
+              handleAddressChange();
+            }}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              placeholder="City"
+              value={city}
+              onChange={(e) => {
+                setCity(e.target.value);
+                handleAddressChange();
+              }}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="state">State / Region</Label>
+            <Input
+              id="state"
+              placeholder="State"
+              value={state}
+              onChange={(e) => {
+                setState(e.target.value);
+                handleAddressChange();
+              }}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="zipCode">ZipCode</Label>
+            <Input
+              id="zipCode"
+              placeholder="ZipCode"
+              value={zipCode}
+              onChange={(e) => {
+                setZipCode(e.target.value);
+                handleAddressChange();
+              }}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="country">Country</Label>
+            <Input
+              id="country"
+              placeholder="Nigeria"
+              disabled
+              value={country}
+            />
+          </div>
+        </div>
+      </div>
+      <Button
+        className="mt-4"
+        onClick={handleUpdate}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <Loader size={20} className="animate-spin ml-2" />
+        ) : (
+          "Update account"
+        )}
+      </Button>
+    </div>
+  );
 };

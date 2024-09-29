@@ -72,7 +72,12 @@ export const createUser = internalMutation({
     phoneNumber: v.optional(v.number()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
-    notificationType: v.optional(v.string()), // email or SMS
+    notificationMethod: v.optional(v.string()), // email, sms, both
+    notificationType: v.optional(v.string()), // all, repairs only, none
+    communication_updates: v.optional(v.boolean()), // true or false : default = true
+    marketing_updates: v.optional(v.boolean()), // true or false
+    social_updates: v.optional(v.boolean()), // true or false
+    security_updates: v.optional(v.boolean()), // true or false : default = true
     notifications: v.optional(v.id("notifications")),
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
@@ -93,7 +98,12 @@ export const createUser = internalMutation({
         phoneNumber: args.phoneNumber || 0,
         imageUrl: args.imageUrl,
         imageStorageId: args.imageStorageId,
-        notificationType: args.notificationType || "email",
+        notificationType: args.notificationType,
+        notificationMethod: "email",
+        communication_updates: true,
+        marketing_updates: false,
+        social_updates: false,
+        security_updates: true,
         notifications: args.notifications,
         stripeId: args.stripeId || "",
         paystackId: args.paystackId || "",
@@ -123,7 +133,12 @@ export const updateUser = mutation({
     phoneNumber: v.optional(v.number()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
-    notificationType: v.optional(v.string()), // email or SMS
+    notificationMethod: v.optional(v.string()), // email, sms, both
+    notificationType: v.optional(v.string()), // all, repairs only, none
+    communication_updates: v.optional(v.boolean()), // true or false : default = true
+    marketing_updates: v.optional(v.boolean()), // true or false
+    social_updates: v.optional(v.boolean()), // true or false
+    security_updates: v.optional(v.boolean()), // true or false : default = true
     notifications: v.optional(v.id("notifications")),
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
@@ -143,7 +158,12 @@ export const updateUser = mutation({
     const updateFields = {
       ...(args.imageUrl !== undefined && { imageUrl: args.imageUrl }),
       ...(args.imageStorageId !== undefined && { imageStorageId: args.imageStorageId }),
+      ...(args.notificationMethod !== undefined && { notificationMethod: args.notificationMethod }),
       ...(args.notificationType !== undefined && { notificationType: args.notificationType }),
+      ...(args.communication_updates !== undefined && { communication_updates: args.communication_updates }),
+      ...(args.marketing_updates !== undefined && { marketing_updates: args.marketing_updates }),
+      ...(args.social_updates !== undefined && { social_updates: args.social_updates }),
+      ...(args.security_updates !== undefined && { security_updates: args.security_updates }),
       ...(args.notifications !== undefined && { notifications: args.notifications }),
       ...(args.email !== undefined && { email: args.email }),
       ...(args.phoneNumber !== undefined && { phoneNumber: args.phoneNumber }),

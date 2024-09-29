@@ -27,6 +27,10 @@ import {
 import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Link from "next/link";
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
+import { useClerk } from '@clerk/nextjs';
+import { useUser } from "@clerk/nextjs";
 
 interface SidebarProps {
   links: {
@@ -42,11 +46,20 @@ interface SidebarProps {
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const { signOut } = useClerk();
+  const { user } = useUser();
+  const userId = user?.id;
+  const userProfile = useQuery(api.users.getUserByClerkId, {
+    clerkId: userId || "",
+  });
 
-  const handleLogout = () => {
-    console.log("Logging out...");
-    // Add your logout logic here, e.g., clear tokens, redirect, etc.
-  };
+  const profileId = userProfile?._id;
+
+  const notifications = useQuery(api.notifications.getNotificationByUserId, {
+    userId: profileId,
+  });
+
+  const unreadNotifications = notifications?.filter(notification => !notification.read);
 
   const openWhatsApp = () => {
     window.open("https://wa.me/+2347076641696", "_blank");
@@ -68,10 +81,16 @@ export function Sidebar() {
     },
     {
       title: "Notifications",
-      label: "",
+      label: `${unreadNotifications?.length ? unreadNotifications?.length : "0"}`,
       icon: BellRing as LucideIcon,
       variant: "ghost",
       url: "/dashboard/notifications",
+      subLinks: [
+        {
+          title: "Message",
+          url: "/dashboard/notifications/:notificationId",
+        },
+      ],
     },
     {
       title: "Repairs",
@@ -79,6 +98,12 @@ export function Sidebar() {
       icon: Wrench as LucideIcon,
       variant: "ghost",
       url: "/dashboard/repairs",
+      subLinks: [
+        {
+          title: "Repair",
+          url: "/dashboard/repairs/:requestId",
+        },
+      ],
     },
     {
       title: "Protections",
@@ -110,20 +135,8 @@ export function Sidebar() {
           url: "/dashboard/settings/account",
         },
         {
-          title: "Appearance",
-          url: "/dashboard/settings/appearance",
-        },
-        {
           title: "Notifications",
           url: "/dashboard/settings/notifications",
-        },
-        {
-          title: "Display",
-          url: "/dashboard/settings/display",
-        },
-        {
-          title: "Billing",
-          url: "/dashboard/settings/billing",
         },
       ],
     },
@@ -133,7 +146,7 @@ export function Sidebar() {
       icon: LogOut as LucideIcon,
       variant: "ghost",
       url: "",
-      onClick: () => handleLogout(),
+      onClick: () => signOut({ redirectUrl: '/auth/sign-in' }),
     },
   ];
 

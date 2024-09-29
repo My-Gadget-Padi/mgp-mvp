@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const metadata: Metadata = {
   title: "Settings",
-  description: "Manage your account settings and preferences on MyGadgetPadi",
+  description: "Manage your profile, account and notification settings on MyGadgetPadi",
 };
 
 const sidebarNavItems = [
@@ -18,20 +18,8 @@ const sidebarNavItems = [
     href: "/dashboard/settings/account",
   },
   {
-    title: "Appearance",
-    href: "/dashboard/settings/appearance",
-  },
-  {
     title: "Notifications",
     href: "/dashboard/settings/notifications",
-  },
-  {
-    title: "Display",
-    href: "/dashboard/settings/display",
-  },
-  {
-    title: "Billing",
-    href: "/dashboard/settings/billing",
   },
 ];
 
@@ -48,7 +36,7 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
             <div className="space-y-0.5">
               <h1 className="text-xl font-bold">Settings</h1>
               <p className="text-muted-foreground">
-                Manage your account settings and set e-mail preferences.
+                Manage your profile, account and notifications on MyGadgetPadi
               </p>
             </div>
             <Separator className="my-6" />

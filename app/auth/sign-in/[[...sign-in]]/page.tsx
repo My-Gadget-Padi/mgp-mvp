@@ -10,7 +10,7 @@ const Page = () => {
   return (
     <div className="flex-1 py-32 md:px-16 w-full">
       <div className="flex flex-col h-full gap-3">
-      <SignIn path="/sign-in" />
+      <SignIn path="/auth/sign-in" />
     </div>
     </div>
   )

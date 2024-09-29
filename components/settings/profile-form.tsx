@@ -1,190 +1,130 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useFieldArray, useForm } from "react-hook-form"
-import { z } from "zod"
-import { cn } from "@/lib/utils"
-import { Button } from "../ui/button"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form"
-import { Input } from "../ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select"
-import { Textarea } from "../ui/textarea"
-import { toast } from "../ui/use-toast"
-
-const profileFormSchema = z.object({
-  username: z
-    .string()
-    .min(2, {
-      message: "Username must be at least 2 characters.",
-    })
-    .max(30, {
-      message: "Username must not be longer than 30 characters.",
-    }),
-  email: z
-    .string({
-      required_error: "Please select an email to display.",
-    })
-    .email(),
-  bio: z.string().max(160).min(4),
-  urls: z
-    .array(
-      z.object({
-        value: z.string().url({ message: "Please enter a valid URL." }),
-      })
-    )
-    .optional(),
-})
-
-type ProfileFormValues = z.infer<typeof profileFormSchema>
-
-// This can come from your database or API.
-const defaultValues: Partial<ProfileFormValues> = {
-  bio: "I own a computer.",
-  urls: [
-    { value: "https://shadcn.com" },
-    { value: "http://twitter.com/shadcn" },
-  ],
-}
+import { useState, useEffect } from "react";
+import { Loader } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useQuery, useMutation } from "convex/react";
+import { useUser } from "@clerk/nextjs";
+import UploadProfileImage from "@/components/uploadComponent/UploadProfileImage";
 
 export function ProfileForm() {
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
-    defaultValues,
-    mode: "onChange",
-  })
+  const { user } = useUser();
+  const userId = user?.id;
+  const userProfile = useQuery(api.users.getUserByClerkId, {
+    clerkId: userId || "",
+  });
 
-  const { fields, append } = useFieldArray({
-    name: "urls",
-    control: form.control,
-  })
+  const profileId = userProfile?._id;
+  const updateAccount = useMutation(api.users.updateUser);
 
-  function onSubmit(data: ProfileFormValues) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    })
-  }
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [imageStorageId, setImageStorageId] = useState<Id<"_storage"> | null>(
+    null
+  );
+  const [imageUrl, setImageUrl] = useState(userProfile?.imageUrl as string);
+  const [firstName, setFirstName] = useState(userProfile?.firstName);
+  const [lastName, setLastName] = useState(userProfile?.lastName);
+
+  useEffect(() => {
+    if (userProfile) {
+      setFirstName(userProfile.firstName || "");
+      setLastName(userProfile.lastName || "");
+      setImageUrl(userProfile.imageUrl || "");
+    }
+  }, [userProfile]);
+
+  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFirstName(e.target.value);
+  };
+
+  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLastName(e.target.value);
+  };
+
+  const handleUpdate = async () => {
+    if (!firstName && !lastName && !imageUrl) {
+      toast({
+        title:
+          "Please enter either of the following (First name, Last name, or Profile picture) to update",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await updateAccount({
+        userId: profileId as Id<"users">,
+        firstName,
+        lastName,
+        imageUrl: imageUrl || "",
+        imageStorageId: imageStorageId !== null ? imageStorageId : undefined,
+      });
+
+      setFirstName(userProfile?.firstName);
+      setLastName(userProfile?.lastName);
+      setImageUrl(userProfile?.imageUrl as string);
+
+      toast({
+        title: "Profile information has been updated",
+      });
+    } catch (error) {
+      console.error("Profile update failed", error);
+      toast({
+        title: "Update unsuccessful",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="shadcn" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name. It can be your real name or a
-                pseudonym. You can only change this once every 30 days.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+    <div className="w-full">
+      <div>
+        <Label htmlFor="firstName">First Name</Label>
+        <Input
+          id="firstName"
+          className="w-full p-2 mt-1 border rounded-md"
+          placeholder="Enter your first name"
+          value={firstName}
+          onChange={handleFirstNameChange}
         />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a verified email to display" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="m@example.com">m@example.com</SelectItem>
-                  <SelectItem value="m@google.com">m@google.com</SelectItem>
-                  <SelectItem value="m@support.com">m@support.com</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                You can manage verified email addresses in your{" "}
-                <Link href="/examples/forms">email settings</Link>.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      <div className="mb-5 mt-3">
+        <Label htmlFor="lastName">Last Name</Label>
+        <Input
+          id="lastName"
+          className="w-full p-2 mt-1 border rounded-md"
+          placeholder="Enter your last name"
+          value={lastName}
+          onChange={handleLastNameChange}
         />
-        <FormField
-          control={form.control}
-          name="bio"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bio</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Tell us a little bit about yourself"
-                  className="resize-none"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                You can <span>@mention</span> other users and organizations to
-                link to them.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      <div>
+        <Label htmlFor="response">Profile Picture</Label>
+        <UploadProfileImage
+          setImage={setImageUrl}
+          setImageStorageId={setImageStorageId}
+          image={imageUrl}
         />
-        <div>
-          {fields.map((field, index) => (
-            <FormField
-              control={form.control}
-              key={field.id}
-              name={`urls.${index}.value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className={cn(index !== 0 && "sr-only")}>
-                    URLs
-                  </FormLabel>
-                  <FormDescription className={cn(index !== 0 && "sr-only")}>
-                    Add links to your website, blog, or social media profiles.
-                  </FormDescription>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            onClick={() => append({ value: "" })}
-          >
-            Add URL
-          </Button>
-        </div>
-        <Button type="submit">Update profile</Button>
-      </form>
-    </Form>
-  )
+      </div>
+      <Button
+        className="mt-4"
+        onClick={handleUpdate}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <Loader size={20} className="animate-spin ml-2" />
+        ) : (
+          "Update profile"
+        )}
+      </Button>
+    </div>
+  );
 };

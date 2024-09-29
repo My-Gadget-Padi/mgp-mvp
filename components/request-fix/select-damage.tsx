@@ -42,7 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import UploadDeviceImageOrVideo from "../uploadDevice/UploadDeviceImageOrVideo";
+import UploadDeviceImageOrVideo from "../uploadComponent/UploadDeviceImageOrVideo";
 import { format } from "date-fns";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -140,7 +140,7 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
       });
       router.push(`/dashboard/request-fix/delivery/${requestId}`);
     } catch (error) {
-      console.error("Repair request cannot be updated", error);
+      console.error("Repair request was not updated", error);
       toast({
         title: "Repair request is unsuccessful",
         variant: "destructive",

@@ -1,10 +1,10 @@
 "use client";
+
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Separator } from "../ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import Image from "next/image";
 import Link from "next/link";
 import {
   BellRing,
@@ -193,155 +193,181 @@ export function Dashboard() {
                   <h1 className="text-2xl font-semibold leading-none tracking-tight">
                     Ongoing Repair
                   </h1>
-                  <p className="text-sm text-muted-foreground">
-                    This device is currently being repaired
-                  </p>
-                </div>
-                <div className="lg:col-span-1 space-y-8">
-                  <Card className="rounded-xl overflow-hidden mt-4">
-                    <CardContent className="p-0 flex">
-                      {repairRequests &&
-                      repairRequests
+
+                  {repairRequests &&
+                    (() => {
+                      const ongoingRepair = repairRequests
                         .filter(
-                          (repairRequest) => repairRequest.status === "in-progress"
+                          (repairRequest) =>
+                            repairRequest.status === "in-progress"
                         )
                         .sort(
                           (a, b) =>
                             new Date(b._creationTime).getTime() -
                             new Date(a._creationTime).getTime()
                         )
-                        .slice(0, 1).length > 0 ? (
-                        repairRequests
-                          .filter(
-                            (repairRequest) =>
-                              repairRequest.status === "in-progress"
-                          )
-                          .sort(
-                            (a, b) =>
-                              new Date(b._creationTime).getTime() -
-                              new Date(a._creationTime).getTime()
-                          )
-                          .slice(0, 1)
-                          .map((repairRequest) => (
-                            <div
-                              key={repairRequest._id}
-                              className="flex w-full"
-                            >
+                        .slice(0, 1);
+
+                      return ongoingRepair.length > 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          This device is currently being repaired
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          No ongoing device repairs
+                        </p>
+                      );
+                    })()}
+                </div>
+
+                <div className="lg:col-span-1 space-y-8">
+                  <Card className="rounded-xl overflow-hidden mt-4">
+                    <CardContent className="p-0 flex">
+                      {repairRequests &&
+                      repairRequests
+                        .filter(
+                          (repairRequest) =>
+                            repairRequest.status === "in-progress"
+                        )
+                        .sort(
+                          (a, b) =>
+                            new Date(b._creationTime).getTime() -
+                            new Date(a._creationTime).getTime()
+                        )
+                        .slice(0, 1).length > 0
+                        ? repairRequests
+                            .filter(
+                              (repairRequest) =>
+                                repairRequest.status === "in-progress"
+                            )
+                            .sort(
+                              (a, b) =>
+                                new Date(b._creationTime).getTime() -
+                                new Date(a._creationTime).getTime()
+                            )
+                            .slice(0, 1)
+                            .map((repairRequest) => (
                               <div
-                                className={cn(
-                                  "relative w-full",
-                                  "shadow-[0px_1px_1px_0px_rgba(0,0,0,0.05),0px_1px_1px_0px_rgba(255,252,240,0.5)_inset,0px_0px_0px_1px_hsla(0,0%,100%,0.1)_inset,0px_0px_1px_0px_rgba(28,27,26,0.5)]",
-                                  "dark:shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_0_rgba(0,0,0,0.1),0_4px_4px_0_rgba(0,0,0,0.1),0_8px_8px_0_rgba(0,0,0,0.1)]",
-                                  "text-neutral-900 w-[220px]"
-                                )}
+                                key={repairRequest._id}
+                                className="flex w-full"
                               >
-                                {repairRequest?.contentType?.startsWith(
-                                  "image/"
-                                ) ? (
-                                  <img
-                                    src={
-                                      repairRequest?.fileUrl ||
-                                      "/images/device-placeholder.jpg"
-                                    }
-                                    alt={repairRequest?.model || "Device Image"}
-                                    width={200}
-                                    height={200}
-                                    className="object-cover absolute h-full w-full inset-0"
-                                  />
-                                ) : repairRequest?.contentType?.startsWith(
-                                    "video/"
+                                <div
+                                  className={cn(
+                                    "relative w-full",
+                                    "shadow-[0px_1px_1px_0px_rgba(0,0,0,0.05),0px_1px_1px_0px_rgba(255,252,240,0.5)_inset,0px_0px_0px_1px_hsla(0,0%,100%,0.1)_inset,0px_0px_1px_0px_rgba(28,27,26,0.5)]",
+                                    "dark:shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_0_rgba(0,0,0,0.1),0_4px_4px_0_rgba(0,0,0,0.1),0_8px_8px_0_rgba(0,0,0,0.1)]",
+                                    "text-neutral-900 w-[220px]"
+                                  )}
+                                >
+                                  {repairRequest?.contentType?.startsWith(
+                                    "image/"
                                   ) ? (
-                                  <img
-                                    src="/images/device-placeholder.jpg"
-                                    alt={repairRequest?.model || "Device Image"}
-                                    width={200}
-                                    height={200}
-                                    className="object-cover absolute h-full w-full inset-0"
-                                  />
-                                ) : (
-                                  <img
-                                    src="/images/device-placeholder.jpg"
-                                    alt={repairRequest?.model || "Device Image"}
-                                    width={200}
-                                    height={200}
-                                    className="object-cover absolute h-full w-full inset-0"
-                                  />
-                                )}
-                                <div className="absolute inset-0">
-                                  <div
-                                    className={cn(
-                                      "absolute inset-0",
-                                      "shadow-[0px_0px_0px_1px_rgba(0,0,0,.07),0px_0px_0px_3px_#fff,0px_0px_0px_4px_rgba(0,0,0,.08)]",
-                                      "dark:shadow-[0px_0px_0px_1px_rgba(0,0,0,.07),0px_0px_0px_3px_rgba(100,100,100,0.3),0px_0px_0px_4px_rgba(0,0,0,.08)]"
-                                    )}
-                                  />
-                                  <div
-                                    className={cn(
-                                      "absolute inset-0",
-                                      "dark:shadow-[0px_1px_1px_0px_rgba(0,0,0,0.15),0px_1px_1px_0px_rgba(0,0,0,0.15)_inset,0px_0px_0px_1px_rgba(0,0,0,0.15)_inset,0px_0px_1px_0px_rgba(0,0,0,0.15)]"
-                                    )}
-                                  />
+                                    <img
+                                      src={
+                                        repairRequest?.fileUrl ||
+                                        "/images/device-placeholder.jpg"
+                                      }
+                                      alt={
+                                        repairRequest?.model || "Device Image"
+                                      }
+                                      width={200}
+                                      height={200}
+                                      className="object-cover absolute h-full w-full inset-0"
+                                    />
+                                  ) : repairRequest?.contentType?.startsWith(
+                                      "video/"
+                                    ) ? (
+                                    <img
+                                      src="/images/device-placeholder.jpg"
+                                      alt={
+                                        repairRequest?.model || "Device Image"
+                                      }
+                                      width={200}
+                                      height={200}
+                                      className="object-cover absolute h-full w-full inset-0"
+                                    />
+                                  ) : (
+                                    <img
+                                      src="/images/device-placeholder.jpg"
+                                      alt={
+                                        repairRequest?.model || "Device Image"
+                                      }
+                                      width={200}
+                                      height={200}
+                                      className="object-cover absolute h-full w-full inset-0"
+                                    />
+                                  )}
+                                  <div className="absolute inset-0">
+                                    <div
+                                      className={cn(
+                                        "absolute inset-0",
+                                        "shadow-[0px_0px_0px_1px_rgba(0,0,0,.07),0px_0px_0px_3px_#fff,0px_0px_0px_4px_rgba(0,0,0,.08)]",
+                                        "dark:shadow-[0px_0px_0px_1px_rgba(0,0,0,.07),0px_0px_0px_3px_rgba(100,100,100,0.3),0px_0px_0px_4px_rgba(0,0,0,.08)]"
+                                      )}
+                                    />
+                                    <div
+                                      className={cn(
+                                        "absolute inset-0",
+                                        "dark:shadow-[0px_1px_1px_0px_rgba(0,0,0,0.15),0px_1px_1px_0px_rgba(0,0,0,0.15)_inset,0px_0px_0px_1px_rgba(0,0,0,0.15)_inset,0px_0px_1px_0px_rgba(0,0,0,0.15)]"
+                                      )}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="flex flex-col flex-1">
-                                <div className="w-full p-3">
-                                  <p className="text-sm">
-                                    Device:
-                                    <br />
-                                    <span className="font-semibold">
-                                      {repairRequest?.model}
-                                    </span>
-                                  </p>
-                                  <p className="mt-4 text-sm">
-                                    Damage:
-                                    <br />
-                                    <span className="font-semibold">
-                                      {repairRequest?.damages &&
-                                        repairRequest.damages.length > 0 && (
-                                          <ul>
-                                            <li className="mt-1 font-semibold text-sm capitalize">
-                                              <CheckCheck className="w-4 h-4 inline-flex mr-2" />
-                                              {repairRequest.damages[0]}
-                                            </li>
-                                            {repairRequest.damages.length >
-                                              1 && (
+                                <div className="flex flex-col flex-1">
+                                  <div className="w-full p-3">
+                                    <p className="text-sm">
+                                      Device:
+                                      <br />
+                                      <span className="font-semibold">
+                                        {repairRequest?.model}
+                                      </span>
+                                    </p>
+                                    <p className="mt-4 text-sm">
+                                      Damage:
+                                      <br />
+                                      <span className="font-semibold">
+                                        {repairRequest?.damages &&
+                                          repairRequest.damages.length > 0 && (
+                                            <ul>
                                               <li className="mt-1 font-semibold text-sm capitalize">
                                                 <CheckCheck className="w-4 h-4 inline-flex mr-2" />
-                                                ...
+                                                {repairRequest.damages[0]}
                                               </li>
-                                            )}
-                                          </ul>
-                                        )}
-                                      {repairRequest?.comments ? (
-                                        <p className="mt-1 font-semibold text-sm">
-                                          {repairRequest.comments}
-                                        </p>
-                                      ) : null}
-                                    </span>
-                                  </p>
-                                </div>
-                                <Separator orientation="horizontal" />
-                                <div
-                                  className="w-full flex items-center p-3 gap-2 cursor-pointer"
-                                  onClick={() =>
-                                    viewFullInfo(
-                                      repairRequest?._id as Id<"repairRequests">
-                                    )
-                                  }
-                                >
-                                  <Fullscreen />
-                                  <p className="text-sm">
-                                    View full information
-                                  </p>
+                                              {repairRequest.damages.length >
+                                                1 && (
+                                                <li className="mt-1 font-semibold text-sm capitalize">
+                                                  <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                  ...
+                                                </li>
+                                              )}
+                                            </ul>
+                                          )}
+                                        {repairRequest?.comments ? (
+                                          <p className="mt-1 font-semibold text-sm">
+                                            {repairRequest.comments}
+                                          </p>
+                                        ) : null}
+                                      </span>
+                                    </p>
+                                  </div>
+                                  <Separator orientation="horizontal" />
+                                  <div
+                                    className="w-full flex items-center p-3 gap-2 cursor-pointer"
+                                    onClick={() =>
+                                      viewFullInfo(
+                                        repairRequest?._id as Id<"repairRequests">
+                                      )
+                                    }
+                                  >
+                                    <Fullscreen />
+                                    <p className="text-sm">
+                                      View full information
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))
-                      ) : (
-                        <div className="ml-2 flex text-sm justify-center text-center py-4 text-muted-foreground">
-                          No ongoing device repairs
-                        </div>
-                      )}
+                            ))
+                        : null}
                     </CardContent>
                   </Card>
                 </div>
@@ -512,7 +538,6 @@ export function Dashboard() {
                         </TableBody>
                       </Table>
                     </TabsContent>
-
                     <TabsContent value="completed">
                       <Table>
                         <TableHeader>
