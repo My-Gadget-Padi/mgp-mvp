@@ -1,17 +1,46 @@
 "use client";
 
 import * as React from "react";
-import { Input } from "../ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { ScrollArea } from "../ui/scroll-area";
 import { UserNav } from "@/components/user-nav";
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
+import { useUser } from "@clerk/nextjs";
+import { toast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
+import { Checkbox } from "../ui/checkbox";
 
 export function Device() {
+  const router = useRouter();
+  const { user } = useUser();
+  const userId = user?.id;
+  const userProfile = useQuery(api.users.getUserByClerkId, {
+    clerkId: userId || "",
+  });
+
+  const receiveNotifications = () => {
+    toast({
+      title: "Action required",
+      description: "Toggle the button to receive marketing notifications",
+    });
+
+    router.push("/dashboard/settings/notifications");
+
+    setTimeout(() => {
+      const marketingToggle = document.getElementById("marketing-toggle");
+      if (marketingToggle) {
+        marketingToggle.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        marketingToggle.classList.add("ring-4", "ring-yellow-400", "bg-yellow-100", "animate-pulse");
+
+        setTimeout(() => {
+          marketingToggle.classList.remove("ring-4", "ring-yellow-400", "bg-yellow-100", "animate-pulse");
+        }, 10000);
+      }
+    }, 500);
+  };
+
   return (
     <ScrollArea className="h-screen">
       <div className="flex h-screen w-full flex-col sm:w-[714px] md:w-[1300px]">
@@ -42,29 +71,16 @@ export function Device() {
                   To receive a notification when we launch, please click the
                   button below.
                 </p>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button className="mt-4">Receive Notifications</Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80" side="top">
-                    <div className="grid gap-4">
-                      <div className="space-y-2">
-                        <h4 className="font-medium leading-none">My Devices</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Receive a notification to be able to onboard your devices to MyGadgetPadi
-                        </p>
-                      </div>
-                      <form className="grid gap-3">
-                        <Input
-                          id="emailAddress"
-                          placeholder="Enter your email address"
-                          className=""
-                        />
-                        <Button className="flex w-full">I want this</Button>
-                      </form>
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                {userProfile?.marketing_updates === true ? (
+                  <p className="text-sm text-muted-foreground mt-2 inline-flex">
+                    <Checkbox checked className="mr-2 h-5 w-5" />
+                    You have opted in to receive notifications.
+                  </p>
+                ) : (
+                  <Button onClick={receiveNotifications} className="mt-4">
+                    Receive Notifications
+                  </Button>
+                )}
               </div>
             </div>
           </main>

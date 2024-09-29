@@ -221,7 +221,7 @@ export function NotificationsForm() {
               control={form.control}
               name="marketing_updates"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4" id="marketing-toggle">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Marketing</FormLabel>
                     <FormDescription>
