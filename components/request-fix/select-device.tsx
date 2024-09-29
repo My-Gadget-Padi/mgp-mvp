@@ -10,7 +10,7 @@ import {
   ArrowUp,
   Package,
   Copy,
-  Truck,
+  Route,
   Bike,
   CheckCheck,
   CalendarClock,
@@ -48,7 +48,13 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery, useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
-import { phoneBrands, tabletBrands, laptopBrands, computerBrands, models } from "@/types/deviceTypes";
+import {
+  phoneBrands,
+  tabletBrands,
+  laptopBrands,
+  computerBrands,
+  models,
+} from "@/types/deviceTypes";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
 interface SelectDeviceProps {
@@ -87,7 +93,9 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
   };
 
   const handleBrandChange = (id: string) => {
-    const brand = getBrandsForDevice(repairRequest?.device).find((brand) => brand.id === id);
+    const brand = getBrandsForDevice(repairRequest?.device).find(
+      (brand) => brand.id === id
+    );
     if (brand) {
       setDeviceBrand(brand.label);
       setAvailableModels(models[id] || []);
@@ -221,7 +229,9 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
                 <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
                   <Card x-chunk="dashboard-07-chunk-0">
                     <CardHeader>
-                      <CardTitle>What kind of {repairRequest?.device} is it?</CardTitle>
+                      <CardTitle>
+                        What kind of {repairRequest?.device} is it?
+                      </CardTitle>
                       <CardDescription>
                         You’re in great hands — we do 50+ repairs every month.
                       </CardDescription>
@@ -239,15 +249,17 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
                               <SelectValue placeholder="Select device brand" />
                             </SelectTrigger>
                             <SelectContent>
-                              {getBrandsForDevice(repairRequest?.device).map((brand) => (
-                                <SelectItem
-                                  key={brand.id}
-                                  value={brand.id}
-                                  className="flex items-center"
-                                >
-                                  {brand.label}
-                                </SelectItem>
-                              ))}
+                              {getBrandsForDevice(repairRequest?.device).map(
+                                (brand) => (
+                                  <SelectItem
+                                    key={brand.id}
+                                    value={brand.id}
+                                    className="flex items-center"
+                                  >
+                                    {brand.label}
+                                  </SelectItem>
+                                )
+                              )}
                             </SelectContent>
                           </Select>
                         </div>
@@ -325,7 +337,9 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
                             <Copy
                               className="h-3 w-3"
                               onClick={() =>
-                                toast({ title: "Request ID copied to clipboard!" })
+                                toast({
+                                  title: "Request ID copied to clipboard!",
+                                })
                               }
                             />
                             <span className="sr-only">Copy Request ID</span>
@@ -353,7 +367,7 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
                           )
                         }
                       >
-                        <Truck className="h-3.5 w-3.5" />
+                        <Route className="h-3.5 w-3.5" />
                         <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
                           Track Repair
                         </span>
@@ -388,6 +402,11 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
                                 )}
                               </ul>
                             )}
+                            {repairRequest?.comments ? (
+                              <p className="mt-1 text-muted-foreground text-sm">
+                                {repairRequest.comments}
+                              </p>
+                            ) : null}
                           </div>
                         </li>
                       </ul>
@@ -450,28 +469,58 @@ const SelectDevice = ({ requestId }: SelectDeviceProps) => {
                           </address>
                         ) : repairRequest?.dropOffLocation ? (
                           <address className="grid gap-0.5 not-italic text-muted-foreground capitalize">
-                            <span>
-                              {repairRequest?.dropOffLocation}
-                            </span>
+                            <span>{repairRequest?.dropOffLocation}</span>
                           </address>
                         ) : null}
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter className="flex flex-row items-center border-t px-6 py-3">
-                    <Image
-                      className="rounded-md object-cover"
-                      height="100"
-                      width="200"
-                      src={
-                        (repairRequest?.fileUrl as string) ||
-                        "/images/device-placeholder.jpg"
-                      }
-                      alt={
-                        (repairRequest?.brandName as string) ||
-                        "Device placeholder"
-                      }
-                    />
+                    {repairRequest?.contentType?.startsWith("image/") ? (
+                      <Image
+                        className="rounded-md object-cover"
+                        height={100}
+                        width={250}
+                        src={
+                          repairRequest?.fileUrl ||
+                          "/images/device-placeholder.jpg"
+                        }
+                        alt={repairRequest?.brandName || "Device placeholder"}
+                        quality={100}
+                        unoptimized
+                      />
+                    ) : repairRequest?.contentType?.startsWith("video/") ? (
+                      <video
+                        controls
+                        loop
+                        className="rounded-md object-contain"
+                        preload="auto"
+                        playsInline
+                        poster="/images/device-placeholder.jpg"
+                        height={100}
+                        width={250}
+                      >
+                        <source
+                          src={repairRequest?.fileUrl}
+                          type={repairRequest?.contentType}
+                        />
+                        <source
+                          src={repairRequest?.fileUrl}
+                          type="video/webm"
+                        />
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                      <Image
+                        className="rounded-md object-cover"
+                        height={100}
+                        width={250}
+                        src="/images/device-placeholder.jpg"
+                        alt="Device placeholder"
+                        quality={100}
+                        unoptimized
+                      />
+                    )}
                   </CardFooter>
                 </Card>
               </div>

@@ -31,6 +31,7 @@ export default defineSchema({
     model: v.optional(v.string()),
     fileUrl: v.optional(v.string()),
     fileStorageId: v.optional(v.id("_storage")),
+    contentType: v.optional(v.string()),
     address: v.optional(v.string()),
     dropOffLocation: v.optional(v.string()),
     damages: v.optional(v.array(v.string())),

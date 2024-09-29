@@ -14,6 +14,7 @@ const UploadDeviceImageOrVideo = ({
   setFile,
   setFileStorageId,
   file,
+  setContentType
 }: UploadDeviceImageOrVideoProps) => {
   const [isFileLoading, setIsFileLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -66,6 +67,7 @@ const UploadDeviceImageOrVideo = ({
       const storageId = (uploaded[0].response as any).storageId;
 
       setFileStorageId(storageId);
+      setContentType(mimeType);
 
       const fileUrl = await getFileUrl({ storageId });
       setFile(fileUrl!);

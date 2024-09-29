@@ -1,32 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Separator } from "../ui/separator";
-import { Input } from "../ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import Image from "next/image";
-import Link from "next/link";
 import {
-  CalendarDays,
-  File,
-  Home,
-  LineChart,
-  ListFilter,
-  Mail,
-  MoreHorizontal,
-  Package,
-  Package2,
-  PanelLeft,
-  PlusCircle,
-  Search,
-  Settings,
-  ShoppingCart,
-  Users2,
-  BellRing,
-  MessagesSquare,
   Fullscreen,
-  ShieldCheck,
-  Wrench,
   ArrowDown,
   ArrowRight,
   ArrowUp,
@@ -39,27 +17,10 @@ import {
   CalendarClock,
   UserCheck,
   GalleryVerticalEnd,
+  CheckCheck,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -73,32 +34,38 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  CreditCard,
-  MoreVertical,
-  Truck,
-} from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "@/components/ui/pagination";
-import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "../ui/scroll-area";
-import {
-  Activity,
-  ArrowUpRight,
-  CircleUser,
-  DollarSign,
-  Menu,
-  Users,
-} from "lucide-react";
 import { UserNav } from "@/components/user-nav";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 
 export function Repair() {
+  const router = useRouter();
+  const { user } = useUser();
+  const userId = user?.id;
+  const userProfile = useQuery(api.users.getUserByClerkId, {
+    clerkId: userId || "",
+  });
+
+  const profileId = userProfile?._id;
+
+  const allRequests = useQuery(
+    api.repairRequests.getRepairRequestsByUserId,
+    {
+      userId: profileId,
+    }
+  );
+
+  const repairRequests = allRequests ? [...allRequests].reverse() : [];
+
+  const viewFullInfo = async (requestId: Id<"repairRequests">) => {
+    router.push(`/dashboard/repairs/${requestId}`);
+  };
+
   return (
     <ScrollArea className="h-screen">
       <div className="flex h-screen w-full flex-col sm:w-[714px] md:w-[1300px]">
@@ -108,7 +75,7 @@ export function Repair() {
               <div>
                 <h1 className="text-xl font-bold">Repairs</h1>
                 <p className="text-muted-foreground">
-                  View all repairs on your account.
+                  View all repairs on your account
                 </p>
               </div>
               <div className="flex ml-auto space-x-4">
@@ -116,9 +83,17 @@ export function Repair() {
               </div>
             </div>
           </div>
-          <main className="flex flex-1 flex-col gap-4 p-4 sm:px-4 md:gap-8">
-            <div className="grid gap-4 md:gap-8 gird-cols-1">
-              <Card className="" x-chunk="dashboard-01-chunk-4">
+          <main className="flex flex-1 flex-col p-4">
+            <div className="flex items-center">
+              <Link
+                href="/dashboard/request-fix"
+                className="items-center ml-auto flex"
+              >
+                <Button>Request a fix</Button>
+              </Link>
+            </div>
+            <div className="grid mt-2.5 gird-cols-1">
+              <Card>
                 <CardContent className="mt-4">
                   <Tabs defaultValue="all">
                     <TabsList className="ml-auto">
@@ -155,7 +130,10 @@ export function Repair() {
                         <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
                         Completed
                       </TabsTrigger>
-                      <TabsTrigger value="shipped" className="text-zinc-600 hidden md:inline-flex">
+                      <TabsTrigger
+                        value="shipped"
+                        className="text-zinc-600 hidden md:inline-flex"
+                      >
                         <TruckIcon className="h-5 w-4 mr-1.5 text-muted-foreground" />
                         Shipped
                       </TabsTrigger>
@@ -187,404 +165,258 @@ export function Repair() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 13</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Broken screen</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>High</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CircleX className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Cancelled</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Device repair has been cancelled</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 14</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Back cover</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>High</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Scheduled</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device has been successfully scheduled to
-                                      repair "Back cover" damage
+                          {repairRequests &&
+                            repairRequests.map((repairRequest) => (
+                              <TableRow key={repairRequest._id}>
+                                <TableCell className="hidden md:block">
+                                  {repairRequest?.contentType?.startsWith(
+                                    "image/"
+                                  ) ? (
+                                    <Image
+                                      className="aspect-square rounded-md object-cover"
+                                      height="64"
+                                      width="100"
+                                      src={
+                                        repairRequest?.fileUrl ||
+                                        "/images/device-placeholder.jpg"
+                                      }
+                                      alt={
+                                        repairRequest?.brandName ||
+                                        "Device placeholder"
+                                      }
+                                      quality={100}
+                                      unoptimized
+                                    />
+                                  ) : repairRequest?.contentType?.startsWith(
+                                      "video/"
+                                    ) ? (
+                                    <video
+                                      controls
+                                      loop
+                                      className="rounded-md object-contain"
+                                      preload="auto"
+                                      playsInline
+                                      poster="/images/device-placeholder.jpg"
+                                      height="64"
+                                      width="100"
+                                    >
+                                      <source
+                                        src={repairRequest?.fileUrl}
+                                        type={repairRequest?.contentType}
+                                      />
+                                      <source
+                                        src={repairRequest?.fileUrl}
+                                        type="video/webm"
+                                      />
+                                      Your browser does not support the video
+                                      tag.
+                                    </video>
+                                  ) : (
+                                    <Image
+                                      className="aspect-square rounded-md object-cover"
+                                      height="64"
+                                      width="100"
+                                      src="/images/device-placeholder.jpg"
+                                      alt="Device placeholder"
+                                      quality={100}
+                                      unoptimized
+                                    />
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-medium">
+                                    {repairRequest?.model}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-medium">
+                                    {repairRequest?.damages && (
+                                      <ul>
+                                        {repairRequest.damages.map(
+                                          (
+                                            damageItem: string,
+                                            index: number
+                                          ) => (
+                                            <li
+                                              key={index}
+                                              className="mt-1 text-muted-foreground text-sm capitalize"
+                                            >
+                                              <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                              {damageItem}
+                                            </li>
+                                          )
+                                        )}
+                                      </ul>
+                                    )}
+                                    {repairRequest?.comments ? (
+                                      <p className="mt-1 text-muted-foreground text-sm">
+                                        {repairRequest.comments}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="inline-flex">
+                                    {repairRequest?.priority === "high" ? (
+                                      <span className="inline-flex">
+                                        <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        High
+                                      </span>
+                                    ) : repairRequest?.priority === "medium" ? (
+                                      <span className="inline-flex">
+                                        <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        Medium
+                                      </span>
+                                    ) : repairRequest?.priority === "low" ? (
+                                      <span className="inline-flex">
+                                        <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        Low
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="inline-flex">
+                                    {repairRequest?.status === "scheduled" ? (
+                                      <span className="inline-flex">
+                                        <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        <Tooltip>
+                                          <TooltipTrigger>
+                                            <span>Scheduled</span>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>
+                                              Device has been successfully
+                                              scheduled for repairs
+                                            </p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </span>
+                                    ) : repairRequest?.status === "received" ? (
+                                      <span className="inline-flex">
+                                        <Archive className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        <Tooltip>
+                                          <TooltipTrigger>
+                                            <span>Received</span>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>
+                                              Device has been received by
+                                              MyGadgetPadi for repairs
+                                            </p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </span>
+                                    ) : repairRequest?.status === "assigned" ? (
+                                      <span className="inline-flex">
+                                        <UserCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        <Tooltip>
+                                          <TooltipTrigger>
+                                            <span>Assigned</span>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>
+                                              Device has been assigned to a
+                                              Technician
+                                            </p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </span>
+                                    ) : repairRequest?.status ===
+                                      "in-progress" ? (
+                                      <span className="inline-flex">
+                                        <Timer className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        <Tooltip>
+                                          <TooltipTrigger>
+                                            <span>In progress</span>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>Device repairs have started</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </span>
+                                    ) : repairRequest?.status ===
+                                      "completed" ? (
+                                      <span className="inline-flex">
+                                        <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        <Tooltip>
+                                          <TooltipTrigger>
+                                            <span>Completed</span>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>
+                                              Device repair has been completed
+                                              successfully
+                                            </p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </span>
+                                    ) : repairRequest?.status === "shipped" ? (
+                                      <span className="inline-flex">
+                                        <TruckIcon className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        <Tooltip>
+                                          <TooltipTrigger>
+                                            <span>Shipped</span>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>
+                                              Device has been shipped for
+                                              delivery
+                                            </p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </span>
+                                    ) : repairRequest?.status ===
+                                      "delivered" ? (
+                                      <span className="inline-flex">
+                                        <PackageOpen className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        <Tooltip>
+                                          <TooltipTrigger>
+                                            <span>Delivered</span>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>
+                                              Device has been delivered
+                                              successfully
+                                            </p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </span>
+                                    ) : repairRequest?.status ===
+                                      "cancelled" ? (
+                                      <span className="inline-flex">
+                                        <CircleX className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                        <Tooltip>
+                                          <TooltipTrigger>
+                                            <span>Cancelled</span>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>
+                                              Device repair has been cancelled
+                                            </p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div
+                                    onClick={() =>
+                                      viewFullInfo(
+                                        repairRequest?._id as Id<"repairRequests">
+                                      )
+                                    }
+                                    className="inline-flex"
+                                  >
+                                    <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                    <p className="text-sm">
+                                      View full information
                                     </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 12</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Battery life</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Low</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Archive className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Received</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device has been received by MyGadgetPadi
-                                      for repairs
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Samsung Ultra</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Won't charge</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Low</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <UserCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Assigned</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device has been assigned to a Technician
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 12</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Liquid damage</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>High</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Timer className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>In progress</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Device repairs have started</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 15</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Camera</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Medium</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Completed</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device repair has been completed
-                                      successfully
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 14</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Needs cleaning</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Medium</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Completed</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device repair has been completed
-                                      successfully
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">
-                                Iphone 12 Pro Max
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">WiFi issue</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Low</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <TruckIcon className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Shipped</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Device has been shipped for delivery</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">
-                                Iphone 16 Pro Max
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Water damage</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Low</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <PackageOpen className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Delivered</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device has been delivered successfully
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -601,51 +433,156 @@ export function Repair() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 14</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Back cover</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>High</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Scheduled</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device has been successfully scheduled to
-                                      repair "Back cover" damage
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          {repairRequests &&
+                            repairRequests.map((repairRequest) =>
+                              repairRequest.status === "scheduled" ? (
+                                <TableRow key={repairRequest._id}>
+                                  <TableCell className="hidden md:block">
+                                    {repairRequest?.contentType?.startsWith(
+                                      "image/"
+                                    ) ? (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src={
+                                          repairRequest?.fileUrl ||
+                                          "/images/device-placeholder.jpg"
+                                        }
+                                        alt={
+                                          repairRequest?.brandName ||
+                                          "Device placeholder"
+                                        }
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    ) : repairRequest?.contentType?.startsWith(
+                                        "video/"
+                                      ) ? (
+                                      <video
+                                        controls
+                                        loop
+                                        className="rounded-md object-contain"
+                                        preload="auto"
+                                        playsInline
+                                        poster="/images/device-placeholder.jpg"
+                                        height="64"
+                                        width="100"
+                                      >
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type={repairRequest?.contentType}
+                                        />
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type="video/webm"
+                                        />
+                                        Your browser does not support the video
+                                        tag.
+                                      </video>
+                                    ) : (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src="/images/device-placeholder.jpg"
+                                        alt="Device placeholder"
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.model}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.damages && (
+                                        <ul>
+                                          {repairRequest.damages.map(
+                                            (
+                                              damageItem: string,
+                                              index: number
+                                            ) => (
+                                              <li
+                                                key={index}
+                                                className="mt-1 text-muted-foreground text-sm capitalize"
+                                              >
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                {damageItem}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 text-muted-foreground text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.priority === "high" ? (
+                                        <span className="inline-flex">
+                                          <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          High
+                                        </span>
+                                      ) : repairRequest?.priority ===
+                                        "medium" ? (
+                                        <span className="inline-flex">
+                                          <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Medium
+                                        </span>
+                                      ) : repairRequest?.priority === "low" ? (
+                                        <span className="inline-flex">
+                                          <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Low
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.status === "scheduled" ? (
+                                        <span className="inline-flex">
+                                          <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <span>Scheduled</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>
+                                                Device has been successfully
+                                                scheduled for repairs
+                                              </p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div
+                                      onClick={() =>
+                                        viewFullInfo(
+                                          repairRequest?._id as Id<"repairRequests">
+                                        )
+                                      }
+                                      className="inline-flex"
+                                    >
+                                      <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                      <p className="text-sm">
+                                        View full information
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ) : null
+                            )}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -662,51 +599,156 @@ export function Repair() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 12</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Battery life</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Low</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Archive className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Received</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device has been received by MyGadgetPadi
-                                      for repairs
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          {repairRequests &&
+                            repairRequests.map((repairRequest) =>
+                              repairRequest.status === "received" ? (
+                                <TableRow key={repairRequest._id}>
+                                  <TableCell className="hidden md:block">
+                                    {repairRequest?.contentType?.startsWith(
+                                      "image/"
+                                    ) ? (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src={
+                                          repairRequest?.fileUrl ||
+                                          "/images/device-placeholder.jpg"
+                                        }
+                                        alt={
+                                          repairRequest?.brandName ||
+                                          "Device placeholder"
+                                        }
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    ) : repairRequest?.contentType?.startsWith(
+                                        "video/"
+                                      ) ? (
+                                      <video
+                                        controls
+                                        loop
+                                        className="rounded-md object-contain"
+                                        preload="auto"
+                                        playsInline
+                                        poster="/images/device-placeholder.jpg"
+                                        height="64"
+                                        width="100"
+                                      >
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type={repairRequest?.contentType}
+                                        />
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type="video/webm"
+                                        />
+                                        Your browser does not support the video
+                                        tag.
+                                      </video>
+                                    ) : (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src="/images/device-placeholder.jpg"
+                                        alt="Device placeholder"
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.model}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.damages && (
+                                        <ul>
+                                          {repairRequest.damages.map(
+                                            (
+                                              damageItem: string,
+                                              index: number
+                                            ) => (
+                                              <li
+                                                key={index}
+                                                className="mt-1 text-muted-foreground text-sm capitalize"
+                                              >
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                {damageItem}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 text-muted-foreground text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.priority === "high" ? (
+                                        <span className="inline-flex">
+                                          <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          High
+                                        </span>
+                                      ) : repairRequest?.priority ===
+                                        "medium" ? (
+                                        <span className="inline-flex">
+                                          <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Medium
+                                        </span>
+                                      ) : repairRequest?.priority === "low" ? (
+                                        <span className="inline-flex">
+                                          <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Low
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.status === "received" ? (
+                                        <span className="inline-flex">
+                                          <Archive className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <span>Received</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>
+                                                Device has been received by
+                                                MyGadgetPadi for repairs
+                                              </p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div
+                                      onClick={() =>
+                                        viewFullInfo(
+                                          repairRequest?._id as Id<"repairRequests">
+                                        )
+                                      }
+                                      className="inline-flex"
+                                    >
+                                      <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                      <p className="text-sm">
+                                        View full information
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ) : null
+                            )}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -723,50 +765,156 @@ export function Repair() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Samsung Ultra</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Won't charge</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Low</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <UserCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Assigned</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device has been assigned to a Technician
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          {repairRequests &&
+                            repairRequests.map((repairRequest) =>
+                              repairRequest.status === "assigned" ? (
+                                <TableRow key={repairRequest._id}>
+                                  <TableCell className="hidden md:block">
+                                    {repairRequest?.contentType?.startsWith(
+                                      "image/"
+                                    ) ? (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src={
+                                          repairRequest?.fileUrl ||
+                                          "/images/device-placeholder.jpg"
+                                        }
+                                        alt={
+                                          repairRequest?.brandName ||
+                                          "Device placeholder"
+                                        }
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    ) : repairRequest?.contentType?.startsWith(
+                                        "video/"
+                                      ) ? (
+                                      <video
+                                        controls
+                                        loop
+                                        className="rounded-md object-contain"
+                                        preload="auto"
+                                        playsInline
+                                        poster="/images/device-placeholder.jpg"
+                                        height="64"
+                                        width="100"
+                                      >
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type={repairRequest?.contentType}
+                                        />
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type="video/webm"
+                                        />
+                                        Your browser does not support the video
+                                        tag.
+                                      </video>
+                                    ) : (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src="/images/device-placeholder.jpg"
+                                        alt="Device placeholder"
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.model}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.damages && (
+                                        <ul>
+                                          {repairRequest.damages.map(
+                                            (
+                                              damageItem: string,
+                                              index: number
+                                            ) => (
+                                              <li
+                                                key={index}
+                                                className="mt-1 text-muted-foreground text-sm capitalize"
+                                              >
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                {damageItem}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 text-muted-foreground text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.priority === "high" ? (
+                                        <span className="inline-flex">
+                                          <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          High
+                                        </span>
+                                      ) : repairRequest?.priority ===
+                                        "medium" ? (
+                                        <span className="inline-flex">
+                                          <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Medium
+                                        </span>
+                                      ) : repairRequest?.priority === "low" ? (
+                                        <span className="inline-flex">
+                                          <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Low
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.status === "assigned" ? (
+                                        <span className="inline-flex">
+                                          <UserCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <span>Assigned</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>
+                                                Device has been assigned to a
+                                                Technician
+                                              </p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div
+                                      onClick={() =>
+                                        viewFullInfo(
+                                          repairRequest?._id as Id<"repairRequests">
+                                        )
+                                      }
+                                      className="inline-flex"
+                                    >
+                                      <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                      <p className="text-sm">
+                                        View full information
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ) : null
+                            )}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -783,48 +931,154 @@ export function Repair() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 12</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Liquid damage</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>High</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Timer className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>In progress</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Device repairs have started</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          {repairRequests &&
+                            repairRequests.map((repairRequest) =>
+                              repairRequest.status === "in-progress" ? (
+                                <TableRow key={repairRequest._id}>
+                                  <TableCell className="hidden md:block">
+                                    {repairRequest?.contentType?.startsWith(
+                                      "image/"
+                                    ) ? (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src={
+                                          repairRequest?.fileUrl ||
+                                          "/images/device-placeholder.jpg"
+                                        }
+                                        alt={
+                                          repairRequest?.brandName ||
+                                          "Device placeholder"
+                                        }
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    ) : repairRequest?.contentType?.startsWith(
+                                        "video/"
+                                      ) ? (
+                                      <video
+                                        controls
+                                        loop
+                                        className="rounded-md object-contain"
+                                        preload="auto"
+                                        playsInline
+                                        poster="/images/device-placeholder.jpg"
+                                        height="64"
+                                        width="100"
+                                      >
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type={repairRequest?.contentType}
+                                        />
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type="video/webm"
+                                        />
+                                        Your browser does not support the video
+                                        tag.
+                                      </video>
+                                    ) : (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src="/images/device-placeholder.jpg"
+                                        alt="Device placeholder"
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.model}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.damages && (
+                                        <ul>
+                                          {repairRequest.damages.map(
+                                            (
+                                              damageItem: string,
+                                              index: number
+                                            ) => (
+                                              <li
+                                                key={index}
+                                                className="mt-1 text-muted-foreground text-sm capitalize"
+                                              >
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                {damageItem}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 text-muted-foreground text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.priority === "high" ? (
+                                        <span className="inline-flex">
+                                          <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          High
+                                        </span>
+                                      ) : repairRequest?.priority ===
+                                        "medium" ? (
+                                        <span className="inline-flex">
+                                          <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Medium
+                                        </span>
+                                      ) : repairRequest?.priority === "low" ? (
+                                        <span className="inline-flex">
+                                          <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Low
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.status ===
+                                      "in-progress" ? (
+                                        <span className="inline-flex">
+                                          <Timer className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <span>In progress</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Device repairs have started</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div
+                                      onClick={() =>
+                                        viewFullInfo(
+                                          repairRequest?._id as Id<"repairRequests">
+                                        )
+                                      }
+                                      className="inline-flex"
+                                    >
+                                      <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                      <p className="text-sm">
+                                        View full information
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ) : null
+                            )}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -841,96 +1095,156 @@ export function Repair() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 15</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Camera</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Medium</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Completed</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device repair has been completed
-                                      successfully
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 14</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Needs cleaning</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Medium</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Completed</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device repair has been completed
-                                      successfully
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          {repairRequests &&
+                            repairRequests.map((repairRequest) =>
+                              repairRequest.status === "completed" ? (
+                                <TableRow key={repairRequest._id}>
+                                  <TableCell className="hidden md:block">
+                                    {repairRequest?.contentType?.startsWith(
+                                      "image/"
+                                    ) ? (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src={
+                                          repairRequest?.fileUrl ||
+                                          "/images/device-placeholder.jpg"
+                                        }
+                                        alt={
+                                          repairRequest?.brandName ||
+                                          "Device placeholder"
+                                        }
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    ) : repairRequest?.contentType?.startsWith(
+                                        "video/"
+                                      ) ? (
+                                      <video
+                                        controls
+                                        loop
+                                        className="rounded-md object-contain"
+                                        preload="auto"
+                                        playsInline
+                                        poster="/images/device-placeholder.jpg"
+                                        height="64"
+                                        width="100"
+                                      >
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type={repairRequest?.contentType}
+                                        />
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type="video/webm"
+                                        />
+                                        Your browser does not support the video
+                                        tag.
+                                      </video>
+                                    ) : (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src="/images/device-placeholder.jpg"
+                                        alt="Device placeholder"
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.model}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.damages && (
+                                        <ul>
+                                          {repairRequest.damages.map(
+                                            (
+                                              damageItem: string,
+                                              index: number
+                                            ) => (
+                                              <li
+                                                key={index}
+                                                className="mt-1 text-muted-foreground text-sm capitalize"
+                                              >
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                {damageItem}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 text-muted-foreground text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.priority === "high" ? (
+                                        <span className="inline-flex">
+                                          <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          High
+                                        </span>
+                                      ) : repairRequest?.priority ===
+                                        "medium" ? (
+                                        <span className="inline-flex">
+                                          <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Medium
+                                        </span>
+                                      ) : repairRequest?.priority === "low" ? (
+                                        <span className="inline-flex">
+                                          <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Low
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.status === "completed" ? (
+                                        <span className="inline-flex">
+                                          <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <span>Completed</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>
+                                                Device repair has been completed
+                                                successfully
+                                              </p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div
+                                      onClick={() =>
+                                        viewFullInfo(
+                                          repairRequest?._id as Id<"repairRequests">
+                                        )
+                                      }
+                                      className="inline-flex"
+                                    >
+                                      <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                      <p className="text-sm">
+                                        View full information
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ) : null
+                            )}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -947,50 +1261,156 @@ export function Repair() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">
-                                Iphone 12 Pro Max
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">WiFi issue</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Low</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <TruckIcon className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Shipped</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Device has been shipped for delivery</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          {repairRequests &&
+                            repairRequests.map((repairRequest) =>
+                              repairRequest.status === "shipped" ? (
+                                <TableRow key={repairRequest._id}>
+                                  <TableCell className="hidden md:block">
+                                    {repairRequest?.contentType?.startsWith(
+                                      "image/"
+                                    ) ? (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src={
+                                          repairRequest?.fileUrl ||
+                                          "/images/device-placeholder.jpg"
+                                        }
+                                        alt={
+                                          repairRequest?.brandName ||
+                                          "Device placeholder"
+                                        }
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    ) : repairRequest?.contentType?.startsWith(
+                                        "video/"
+                                      ) ? (
+                                      <video
+                                        controls
+                                        loop
+                                        className="rounded-md object-contain"
+                                        preload="auto"
+                                        playsInline
+                                        poster="/images/device-placeholder.jpg"
+                                        height="64"
+                                        width="100"
+                                      >
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type={repairRequest?.contentType}
+                                        />
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type="video/webm"
+                                        />
+                                        Your browser does not support the video
+                                        tag.
+                                      </video>
+                                    ) : (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src="/images/device-placeholder.jpg"
+                                        alt="Device placeholder"
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.model}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.damages && (
+                                        <ul>
+                                          {repairRequest.damages.map(
+                                            (
+                                              damageItem: string,
+                                              index: number
+                                            ) => (
+                                              <li
+                                                key={index}
+                                                className="mt-1 text-muted-foreground text-sm capitalize"
+                                              >
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                {damageItem}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 text-muted-foreground text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.priority === "high" ? (
+                                        <span className="inline-flex">
+                                          <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          High
+                                        </span>
+                                      ) : repairRequest?.priority ===
+                                        "medium" ? (
+                                        <span className="inline-flex">
+                                          <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Medium
+                                        </span>
+                                      ) : repairRequest?.priority === "low" ? (
+                                        <span className="inline-flex">
+                                          <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Low
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.status === "shipped" ? (
+                                        <span className="inline-flex">
+                                          <TruckIcon className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <span>Shipped</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>
+                                                Device has been shipped for
+                                                delivery
+                                              </p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div
+                                      onClick={() =>
+                                        viewFullInfo(
+                                          repairRequest?._id as Id<"repairRequests">
+                                        )
+                                      }
+                                      className="inline-flex"
+                                    >
+                                      <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                      <p className="text-sm">
+                                        View full information
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ) : null
+                            )}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -1007,52 +1427,156 @@ export function Repair() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">
-                                Iphone 16 Pro Max
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Water damage</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Low</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <PackageOpen className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Delivered</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device has been delivered successfully
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          {repairRequests &&
+                            repairRequests.map((repairRequest) =>
+                              repairRequest.status === "delivered" ? (
+                                <TableRow key={repairRequest._id}>
+                                  <TableCell className="hidden md:block">
+                                    {repairRequest?.contentType?.startsWith(
+                                      "image/"
+                                    ) ? (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src={
+                                          repairRequest?.fileUrl ||
+                                          "/images/device-placeholder.jpg"
+                                        }
+                                        alt={
+                                          repairRequest?.brandName ||
+                                          "Device placeholder"
+                                        }
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    ) : repairRequest?.contentType?.startsWith(
+                                        "video/"
+                                      ) ? (
+                                      <video
+                                        controls
+                                        loop
+                                        className="rounded-md object-contain"
+                                        preload="auto"
+                                        playsInline
+                                        poster="/images/device-placeholder.jpg"
+                                        height="64"
+                                        width="100"
+                                      >
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type={repairRequest?.contentType}
+                                        />
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type="video/webm"
+                                        />
+                                        Your browser does not support the video
+                                        tag.
+                                      </video>
+                                    ) : (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src="/images/device-placeholder.jpg"
+                                        alt="Device placeholder"
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.model}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.damages && (
+                                        <ul>
+                                          {repairRequest.damages.map(
+                                            (
+                                              damageItem: string,
+                                              index: number
+                                            ) => (
+                                              <li
+                                                key={index}
+                                                className="mt-1 text-muted-foreground text-sm capitalize"
+                                              >
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                {damageItem}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 text-muted-foreground text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.priority === "high" ? (
+                                        <span className="inline-flex">
+                                          <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          High
+                                        </span>
+                                      ) : repairRequest?.priority ===
+                                        "medium" ? (
+                                        <span className="inline-flex">
+                                          <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Medium
+                                        </span>
+                                      ) : repairRequest?.priority === "low" ? (
+                                        <span className="inline-flex">
+                                          <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Low
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.status === "delivered" ? (
+                                        <span className="inline-flex">
+                                          <PackageOpen className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <span>Delivered</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>
+                                                Device has been delivered
+                                                successfully
+                                              </p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div
+                                      onClick={() =>
+                                        viewFullInfo(
+                                          repairRequest?._id as Id<"repairRequests">
+                                        )
+                                      }
+                                      className="inline-flex"
+                                    >
+                                      <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                      <p className="text-sm">
+                                        View full information
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ) : null
+                            )}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -1069,48 +1593,155 @@ export function Repair() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 13</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Broken screen</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>High</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CircleX className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Cancelled</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Device repair has been cancelled</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          {repairRequests &&
+                            repairRequests.map((repairRequest) =>
+                              repairRequest.status === "cancelled" ? (
+                                <TableRow key={repairRequest._id}>
+                                  <TableCell className="hidden md:block">
+                                    {repairRequest?.contentType?.startsWith(
+                                      "image/"
+                                    ) ? (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src={
+                                          repairRequest?.fileUrl ||
+                                          "/images/device-placeholder.jpg"
+                                        }
+                                        alt={
+                                          repairRequest?.brandName ||
+                                          "Device placeholder"
+                                        }
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    ) : repairRequest?.contentType?.startsWith(
+                                        "video/"
+                                      ) ? (
+                                      <video
+                                        controls
+                                        loop
+                                        className="rounded-md object-contain"
+                                        preload="auto"
+                                        playsInline
+                                        poster="/images/device-placeholder.jpg"
+                                        height="64"
+                                        width="100"
+                                      >
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type={repairRequest?.contentType}
+                                        />
+                                        <source
+                                          src={repairRequest?.fileUrl}
+                                          type="video/webm"
+                                        />
+                                        Your browser does not support the video
+                                        tag.
+                                      </video>
+                                    ) : (
+                                      <Image
+                                        className="aspect-square rounded-md object-cover"
+                                        height="64"
+                                        width="100"
+                                        src="/images/device-placeholder.jpg"
+                                        alt="Device placeholder"
+                                        quality={100}
+                                        unoptimized
+                                      />
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.model}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.damages && (
+                                        <ul>
+                                          {repairRequest.damages.map(
+                                            (
+                                              damageItem: string,
+                                              index: number
+                                            ) => (
+                                              <li
+                                                key={index}
+                                                className="mt-1 text-muted-foreground text-sm capitalize"
+                                              >
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                {damageItem}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 text-muted-foreground text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.priority === "high" ? (
+                                        <span className="inline-flex">
+                                          <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          High
+                                        </span>
+                                      ) : repairRequest?.priority ===
+                                        "medium" ? (
+                                        <span className="inline-flex">
+                                          <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Medium
+                                        </span>
+                                      ) : repairRequest?.priority === "low" ? (
+                                        <span className="inline-flex">
+                                          <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Low
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.status === "cancelled" ? (
+                                        <span className="inline-flex">
+                                          <CircleX className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <span>Cancelled</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>
+                                                Device repair has been cancelled
+                                              </p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div
+                                      onClick={() =>
+                                        viewFullInfo(
+                                          repairRequest?._id as Id<"repairRequests">
+                                        )
+                                      }
+                                      className="inline-flex"
+                                    >
+                                      <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                      <p className="text-sm">
+                                        View full information
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ) : null
+                            )}
                         </TableBody>
                       </Table>
                     </TabsContent>

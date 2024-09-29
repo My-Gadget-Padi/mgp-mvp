@@ -12,14 +12,12 @@ import {
   Bike,
   Package,
   Copy,
-  Route,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -35,8 +33,7 @@ import {
 import { format } from "date-fns";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useQuery, useMutation } from "convex/react";
-import { useRouter } from "next/navigation";
+import { useQuery } from "convex/react";
 import { useToast } from "@/components/ui/use-toast";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
@@ -44,71 +41,11 @@ interface SelectDeviceProps {
   requestId: Id<"repairRequests">;
 }
 
-const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
-  const router = useRouter();
+const SingleRepair = ({ requestId }: SelectDeviceProps) => {
   const { toast } = useToast();
-
   const repairRequest = useQuery(api.repairRequests.getRepairRequestById, {
     requestId,
   });
-
-  const cancelRequest = useMutation(api.repairRequests.deleteRepairRequest);
-
-  const handleLaunchWhatsApp = async () => {
-    const details = encodeURIComponent(
-      `
-      Device:
-      ${repairRequest?.model}
-
-      Damage(s):
-      ${
-        repairRequest?.damages?.length
-          ? repairRequest.damages.map((damage) => `- ${damage}`).join("\n")
-          : "No damages specified"
-      }
-      ${repairRequest?.comments}
-
-      Priority:
-      ${repairRequest?.priority}
-
-      Delivery Method:
-      ${repairRequest?.deliveryType} - [${
-        repairRequest?.address || repairRequest?.dropOffLocation || ""
-      }]
-
-      View damage image/video:
-      ${repairRequest?.fileUrl}
-      `
-    );
-
-    const currentHour = new Date().getHours();
-
-    const phoneNumber =
-      currentHour % 2 === 0 ? "+2347076641696" : "+2347072665255";
-
-    window.open(`https://wa.me/${phoneNumber}?text=${details}`, "_blank");
-  };
-
-  const handleCancel = async (requestId: Id<"repairRequests">) => {
-    try {
-      await cancelRequest({
-        requestId,
-        fileStorageId:
-          repairRequest?.fileStorageId !== null
-            ? repairRequest?.fileStorageId
-            : undefined,
-      });
-
-      toast({ title: "Repair request cancelled successfully!" });
-      router.push("/dashboard/request-fix");
-    } catch (error) {
-      toast({ title: "Failed to cancel repair request!" });
-    }
-  };
-
-  const trackRepair = async (requestId: Id<"repairRequests">) => {
-    router.push(`/dashboard/repairs/${requestId}`);
-  };
 
   return (
     <ScrollArea className="h-screen">
@@ -118,8 +55,7 @@ const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
             <div className="flex pl-4 pr-4 pt-3">
               <div>
                 <h1 className="text-xl font-bold">
-                  Fix your{" "}
-                  <span className="capitalize">{repairRequest?.device}</span>
+                  <span className="capitalize">{repairRequest?.model}</span>
                 </h1>
               </div>
               <div className="flex ml-auto space-x-4">
@@ -134,36 +70,14 @@ const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
           <header className="sticky top-0 z-30 flex items-center gap-4 border-b bg-background sm:static sm:h-auto sm:border-0 sm:bg-transparent px-4">
             <Breadcrumb className="">
               <BreadcrumbList>
-                <BreadcrumbItem
-                  onClick={() =>
-                    handleCancel(repairRequest?._id as Id<"repairRequests">)
-                  }
-                >
-                  Request a Fix
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <Link href={`/dashboard/request-fix/${requestId}`}>
-                    Select Device
-                  </Link>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <Link href={`/dashboard/request-fix/damage/${requestId}`}>
-                    Damage Details
-                  </Link>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <Link href={`/dashboard/request-fix/delivery/${requestId}`}>
-                    Delivery Details
-                  </Link>
+                  <Link href="/dashboard/repairs">Repairs</Link>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbPage>
-                    <Link href={`/dashboard/request-fix/review/${requestId}`}>
-                      Review Request
+                    <Link href={`/dashboard/repairs/${requestId}`}>
+                      {repairRequest?.model} Details
                     </Link>
                   </BreadcrumbPage>
                 </BreadcrumbItem>
@@ -171,12 +85,71 @@ const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
             </Breadcrumb>
           </header>
           <main className="grid gap-4 p-4 sm:py-0">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="flex items-center gap-4">
-                <div className="items-center gap-2 ml-auto flex">
-                  <Button onClick={handleLaunchWhatsApp}>
-                    Yes, request fix
-                  </Button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="col-span-1 md:col-span-2 gap-4 lg:gap-8">
+                <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>
+                        Damage{" "}
+                        {repairRequest?.contentType?.startsWith("image/") ? (
+                          <span>Image</span>
+                        ) : repairRequest?.contentType?.startsWith("video/") ? (
+                          <span>Video</span>
+                        ) : (
+                          <span>Image/Video</span>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-6">
+                      {repairRequest?.contentType?.startsWith("image/") ? (
+                        <Image
+                          className="rounded-md object-cover w-full"
+                          layout="responsive"
+                          width={800}
+                          height={600}
+                          src={
+                            repairRequest?.fileUrl ||
+                            "/images/device-placeholder.jpg"
+                          }
+                          alt={repairRequest?.brandName || "Device placeholder"}
+                          quality={100}
+                          unoptimized
+                        />
+                      ) : repairRequest?.contentType?.startsWith("video/") ? (
+                        <video
+                          autoPlay
+                          controls
+                          loop
+                          className="object-contain w-full rounded-md aspect-video"
+                          preload="auto"
+                          playsInline
+                          poster="/images/device-placeholder.jpg"
+                        >
+                          <source
+                            src={repairRequest?.fileUrl}
+                            type={repairRequest?.contentType}
+                          />
+                          <source
+                            src={repairRequest?.fileUrl}
+                            type="video/webm"
+                          />
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <Image
+                          className="rounded-md object-cover w-full"
+                          layout="responsive"
+                          width={800}
+                          height={600}
+                          src="/images/device-placeholder.jpg"
+                          alt="Device placeholder"
+                          quality={100}
+                          unoptimized
+                        />
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
               <div className="col-span-1">
@@ -215,23 +188,6 @@ const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
                             )
                           : "N/A"}
                       </CardDescription>
-                    </div>
-                    <div className="ml-auto flex items-center gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 gap-1"
-                        onClick={() =>
-                          trackRepair(
-                            repairRequest?._id as Id<"repairRequests">
-                          )
-                        }
-                      >
-                        <Route className="h-3.5 w-3.5" />
-                        <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
-                          Track Repair
-                        </span>
-                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="p-6 text-sm">
@@ -295,7 +251,6 @@ const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
                         </li>
                         <li className="flex items-center justify-between">
                           <span className="text-muted-foreground">Status</span>
-
                           {repairRequest?.status === "scheduled" ? (
                             <span className="inline-flex">
                               <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
@@ -335,53 +290,6 @@ const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="flex flex-row items-center border-t px-6 py-3">
-                    {repairRequest?.contentType?.startsWith("image/") ? (
-                      <Image
-                        className="rounded-md object-cover"
-                        height={100}
-                        width={250}
-                        src={
-                          repairRequest?.fileUrl ||
-                          "/images/device-placeholder.jpg"
-                        }
-                        alt={repairRequest?.brandName || "Device placeholder"}
-                        quality={100}
-                        unoptimized
-                      />
-                    ) : repairRequest?.contentType?.startsWith("video/") ? (
-                      <video
-                        controls
-                        loop
-                        className="rounded-md object-contain"
-                        preload="auto"
-                        playsInline
-                        poster="/images/device-placeholder.jpg"
-                        height={100}
-                        width={250}
-                      >
-                        <source
-                          src={repairRequest?.fileUrl}
-                          type={repairRequest?.contentType}
-                        />
-                        <source
-                          src={repairRequest?.fileUrl}
-                          type="video/webm"
-                        />
-                        Your browser does not support the video tag.
-                      </video>
-                    ) : (
-                      <Image
-                        className="rounded-md object-cover"
-                        height={100}
-                        width={250}
-                        src="/images/device-placeholder.jpg"
-                        alt="Device placeholder"
-                        quality={100}
-                        unoptimized
-                      />
-                    )}
-                  </CardFooter>
                 </Card>
               </div>
             </div>
@@ -392,4 +300,4 @@ const ReviewRequest = ({ requestId }: SelectDeviceProps) => {
   );
 };
 
-export default ReviewRequest;
+export default SingleRepair;

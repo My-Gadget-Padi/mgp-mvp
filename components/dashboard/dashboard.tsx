@@ -3,7 +3,6 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Separator } from "../ui/separator";
-import { Input } from "../ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,16 +15,11 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUp,
-  CircleX,
   CircleCheck,
-  Timer,
-  Archive,
-  TruckIcon,
-  PackageOpen,
   CalendarClock,
-  UserCheck,
+  ArrowUpRight,
+  CheckCheck,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import {
@@ -37,16 +31,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
   Table,
   TableBody,
   TableCell,
@@ -54,33 +38,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  CreditCard,
-  MoreVertical,
-  Truck,
-} from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "@/components/ui/pagination";
-import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "../ui/scroll-area";
-import {
-  Activity,
-  ArrowUpRight,
-  CircleUser,
-  DollarSign,
-  Menu,
-  Users,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserNav } from "../user-nav";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 export function Dashboard() {
+  const router = useRouter();
+  const { user } = useUser();
+  const userId = user?.id;
+  const userProfile = useQuery(api.users.getUserByClerkId, {
+    clerkId: userId || "",
+  });
+
+  const profileId = userProfile?._id;
+
+  const repairRequests = useQuery(
+    api.repairRequests.getRepairRequestsByUserId,
+    {
+      userId: profileId,
+    }
+  );
+
   const [showFirstButton, setShowFirstButton] = useState(true);
 
   useEffect(() => {
@@ -90,7 +72,11 @@ export function Dashboard() {
     const intervalId = setInterval(toggleButtons, 3600000);
     return () => clearInterval(intervalId);
   }, []);
-  
+
+  const viewFullInfo = async (requestId: Id<"repairRequests">) => {
+    router.push(`/dashboard/repairs/${requestId}`);
+  };
+
   return (
     <ScrollArea className="h-screen">
       <div className="flex h-screen w-full flex-col sm:w-[714px] md:w-[1300px]">
@@ -205,67 +191,157 @@ export function Dashboard() {
               <div className="sm:mb-8">
                 <div className="mb-6 mt-6 space-y-2">
                   <h1 className="text-2xl font-semibold leading-none tracking-tight">
-                    Ongoing Repairs
+                    Ongoing Repair
                   </h1>
                   <p className="text-sm text-muted-foreground">
-                    Your most recent device repair requests.
+                    This device is currently being repaired
                   </p>
                 </div>
                 <div className="lg:col-span-1 space-y-8">
                   <Card className="rounded-xl overflow-hidden mt-4">
                     <CardContent className="p-0 flex">
-                      <div
-                        className={cn(
-                          "relative w-full",
-                          "shadow-[0px_1px_1px_0px_rgba(0,0,0,0.05),0px_1px_1px_0px_rgba(255,252,240,0.5)_inset,0px_0px_0px_1px_hsla(0,0%,100%,0.1)_inset,0px_0px_1px_0px_rgba(28,27,26,0.5)]",
-                          "dark:shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_0_rgba(0,0,0,0.1),0_4px_4px_0_rgba(0,0,0,0.1),0_8px_8px_0_rgba(0,0,0,0.1)]",
-                          "text-neutral-900 w-[220px]"
-                        )}
-                      >
-                        <img
-                          src="/images/iphone14.jpg"
-                          alt=""
-                          width={200}
-                          height={200}
-                          className="object-cover absolute h-full w-full inset-0 "
-                        />
-                        <div className="absolute inset-0">
-                          <div
-                            className={cn(
-                              "absolute inset-0",
-                              "shadow-[0px_0px_0px_1px_rgba(0,0,0,.07),0px_0px_0px_3px_#fff,0px_0px_0px_4px_rgba(0,0,0,.08)]",
-                              "dark:shadow-[0px_0px_0px_1px_rgba(0,0,0,.07),0px_0px_0px_3px_rgba(100,100,100,0.3),0px_0px_0px_4px_rgba(0,0,0,.08)]"
-                            )}
-                          />
-                          <div
-                            className={cn(
-                              "absolute inset-0",
-                              "dark:shadow-[0px_1px_1px_0px_rgba(0,0,0,0.15),0px_1px_1px_0px_rgba(0,0,0,0.15)_inset,0px_0px_0px_1px_rgba(0,0,0,0.15)_inset,0px_0px_1px_0px_rgba(0,0,0,0.15)]"
-                            )}
-                          />
+                      {repairRequests &&
+                      repairRequests
+                        .filter(
+                          (repairRequest) => repairRequest.status === "in-progress"
+                        )
+                        .sort(
+                          (a, b) =>
+                            new Date(b._creationTime).getTime() -
+                            new Date(a._creationTime).getTime()
+                        )
+                        .slice(0, 1).length > 0 ? (
+                        repairRequests
+                          .filter(
+                            (repairRequest) =>
+                              repairRequest.status === "in-progress"
+                          )
+                          .sort(
+                            (a, b) =>
+                              new Date(b._creationTime).getTime() -
+                              new Date(a._creationTime).getTime()
+                          )
+                          .slice(0, 1)
+                          .map((repairRequest) => (
+                            <div
+                              key={repairRequest._id}
+                              className="flex w-full"
+                            >
+                              <div
+                                className={cn(
+                                  "relative w-full",
+                                  "shadow-[0px_1px_1px_0px_rgba(0,0,0,0.05),0px_1px_1px_0px_rgba(255,252,240,0.5)_inset,0px_0px_0px_1px_hsla(0,0%,100%,0.1)_inset,0px_0px_1px_0px_rgba(28,27,26,0.5)]",
+                                  "dark:shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_0_rgba(0,0,0,0.1),0_4px_4px_0_rgba(0,0,0,0.1),0_8px_8px_0_rgba(0,0,0,0.1)]",
+                                  "text-neutral-900 w-[220px]"
+                                )}
+                              >
+                                {repairRequest?.contentType?.startsWith(
+                                  "image/"
+                                ) ? (
+                                  <img
+                                    src={
+                                      repairRequest?.fileUrl ||
+                                      "/images/device-placeholder.jpg"
+                                    }
+                                    alt={repairRequest?.model || "Device Image"}
+                                    width={200}
+                                    height={200}
+                                    className="object-cover absolute h-full w-full inset-0"
+                                  />
+                                ) : repairRequest?.contentType?.startsWith(
+                                    "video/"
+                                  ) ? (
+                                  <img
+                                    src="/images/device-placeholder.jpg"
+                                    alt={repairRequest?.model || "Device Image"}
+                                    width={200}
+                                    height={200}
+                                    className="object-cover absolute h-full w-full inset-0"
+                                  />
+                                ) : (
+                                  <img
+                                    src="/images/device-placeholder.jpg"
+                                    alt={repairRequest?.model || "Device Image"}
+                                    width={200}
+                                    height={200}
+                                    className="object-cover absolute h-full w-full inset-0"
+                                  />
+                                )}
+                                <div className="absolute inset-0">
+                                  <div
+                                    className={cn(
+                                      "absolute inset-0",
+                                      "shadow-[0px_0px_0px_1px_rgba(0,0,0,.07),0px_0px_0px_3px_#fff,0px_0px_0px_4px_rgba(0,0,0,.08)]",
+                                      "dark:shadow-[0px_0px_0px_1px_rgba(0,0,0,.07),0px_0px_0px_3px_rgba(100,100,100,0.3),0px_0px_0px_4px_rgba(0,0,0,.08)]"
+                                    )}
+                                  />
+                                  <div
+                                    className={cn(
+                                      "absolute inset-0",
+                                      "dark:shadow-[0px_1px_1px_0px_rgba(0,0,0,0.15),0px_1px_1px_0px_rgba(0,0,0,0.15)_inset,0px_0px_0px_1px_rgba(0,0,0,0.15)_inset,0px_0px_1px_0px_rgba(0,0,0,0.15)]"
+                                    )}
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex flex-col flex-1">
+                                <div className="w-full p-3">
+                                  <p className="text-sm">
+                                    Device:
+                                    <br />
+                                    <span className="font-semibold">
+                                      {repairRequest?.model}
+                                    </span>
+                                  </p>
+                                  <p className="mt-4 text-sm">
+                                    Damage:
+                                    <br />
+                                    <span className="font-semibold">
+                                      {repairRequest?.damages &&
+                                        repairRequest.damages.length > 0 && (
+                                          <ul>
+                                            <li className="mt-1 font-semibold text-sm capitalize">
+                                              <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                              {repairRequest.damages[0]}
+                                            </li>
+                                            {repairRequest.damages.length >
+                                              1 && (
+                                              <li className="mt-1 font-semibold text-sm capitalize">
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                ...
+                                              </li>
+                                            )}
+                                          </ul>
+                                        )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 font-semibold text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </span>
+                                  </p>
+                                </div>
+                                <Separator orientation="horizontal" />
+                                <div
+                                  className="w-full flex items-center p-3 gap-2 cursor-pointer"
+                                  onClick={() =>
+                                    viewFullInfo(
+                                      repairRequest?._id as Id<"repairRequests">
+                                    )
+                                  }
+                                >
+                                  <Fullscreen />
+                                  <p className="text-sm">
+                                    View full information
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                      ) : (
+                        <div className="ml-2 flex text-sm justify-center text-center py-4 text-muted-foreground">
+                          No ongoing device repairs
                         </div>
-                      </div>
-                      <div className="flex flex-col flex-1">
-                        <div className="w-full p-3">
-                          <p className="text-sm">
-                            Device:
-                            <br />
-                            <span className="font-semibold">
-                              Iphone 14 Pro Max
-                            </span>
-                          </p>
-                          <p className="mt-4 text-sm">
-                            Damage:
-                            <br />
-                            <span className="font-semibold">Broken screen</span>
-                          </p>
-                        </div>
-                        <Separator orientation="horizontal" />
-                        <div className="w-full flex items-center p-3 gap-2">
-                          <Fullscreen />
-                          <p className="text-sm">View full information</p>
-                        </div>
-                      </div>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -278,8 +354,7 @@ export function Dashboard() {
                   <div className="grid gap-2">
                     <CardTitle>Device Repairs</CardTitle>
                     <CardDescription>
-                      All recent repairs that have been scheduled and recently
-                      completed.
+                      Recent repairs that have been scheduled and completed
                     </CardDescription>
                   </div>
                 </CardHeader>
@@ -291,7 +366,7 @@ export function Dashboard() {
                         className="text-zinc-600 dark:text-zinc-200"
                       >
                         <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                        Scheduled
+                        Recently Scheduled
                       </TabsTrigger>
                       <TabsTrigger
                         value="completed"
@@ -305,7 +380,6 @@ export function Dashboard() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="hidden md:block"></TableHead>
                             <TableHead>Device</TableHead>
                             <TableHead>Damage</TableHead>
                             <TableHead>Priority</TableHead>
@@ -314,104 +388,135 @@ export function Dashboard() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 14</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Back cover</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>High</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Scheduled</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device has been successfully scheduled to
-                                      repair "Back cover" damage
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 14</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Back cover</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>High</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Scheduled</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device has been successfully scheduled to
-                                      repair "Back cover" damage
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          {repairRequests &&
+                          repairRequests
+                            .filter(
+                              (repairRequest) =>
+                                repairRequest.status === "scheduled"
+                            )
+                            .sort(
+                              (a, b) =>
+                                new Date(b._creationTime).getTime() -
+                                new Date(a._creationTime).getTime()
+                            )
+                            .slice(0, 3).length > 0 ? (
+                            repairRequests
+                              .filter(
+                                (repairRequest) =>
+                                  repairRequest.status === "scheduled"
+                              )
+                              .sort(
+                                (a, b) =>
+                                  new Date(b._creationTime).getTime() -
+                                  new Date(a._creationTime).getTime()
+                              )
+                              .slice(0, 3)
+                              .map((repairRequest) => (
+                                <TableRow key={repairRequest._id}>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.model}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.damages && (
+                                        <ul>
+                                          {repairRequest.damages.map(
+                                            (
+                                              damageItem: string,
+                                              index: number
+                                            ) => (
+                                              <li
+                                                key={index}
+                                                className="mt-1 text-muted-foreground text-sm capitalize"
+                                              >
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                {damageItem}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 text-muted-foreground text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.priority === "high" ? (
+                                        <span className="inline-flex">
+                                          <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          High
+                                        </span>
+                                      ) : repairRequest?.priority ===
+                                        "medium" ? (
+                                        <span className="inline-flex">
+                                          <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Medium
+                                        </span>
+                                      ) : repairRequest?.priority === "low" ? (
+                                        <span className="inline-flex">
+                                          <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Low
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                      <Tooltip>
+                                        <TooltipTrigger>
+                                          <span>Scheduled</span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>
+                                            Device has been successfully
+                                            scheduled for repairs
+                                          </p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div
+                                      onClick={() =>
+                                        viewFullInfo(
+                                          repairRequest?._id as Id<"repairRequests">
+                                        )
+                                      }
+                                      className="inline-flex"
+                                    >
+                                      <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                      <p className="text-sm">
+                                        View full information
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan={5}
+                                className="text-center py-4 text-muted-foreground"
+                              >
+                                No device repairs have been scheduled
+                              </td>
+                            </tr>
+                          )}
                         </TableBody>
                       </Table>
                     </TabsContent>
+
                     <TabsContent value="completed">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="hidden md:block"></TableHead>
                             <TableHead>Device</TableHead>
                             <TableHead>Damage</TableHead>
                             <TableHead>Priority</TableHead>
@@ -420,141 +525,127 @@ export function Dashboard() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 15</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Camera</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Medium</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Completed</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device repair has been completed
-                                      successfully
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 14</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Needs cleaning</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Medium</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Completed</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device repair has been completed
-                                      successfully
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="hidden md:block">
-                              <Image
-                                alt="Product image"
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src="/images/iphone14.jpg"
-                                width="64"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Iphone 14</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">Needs cleaning</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <span>Medium</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span>Completed</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Device repair has been completed
-                                      successfully
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="inline-flex">
-                                <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
-                                <p className="text-sm">View full information</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          {repairRequests &&
+                          repairRequests
+                            .filter(
+                              (repairRequest) =>
+                                repairRequest.status === "completed"
+                            )
+                            .sort(
+                              (a, b) =>
+                                new Date(b._creationTime).getTime() -
+                                new Date(a._creationTime).getTime()
+                            )
+                            .slice(0, 3).length > 0 ? (
+                            repairRequests
+                              .filter(
+                                (repairRequest) =>
+                                  repairRequest.status === "completed"
+                              )
+                              .sort(
+                                (a, b) =>
+                                  new Date(b._creationTime).getTime() -
+                                  new Date(a._creationTime).getTime()
+                              )
+                              .slice(0, 3)
+                              .map((repairRequest) => (
+                                <TableRow key={repairRequest._id}>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.model}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {repairRequest?.damages && (
+                                        <ul>
+                                          {repairRequest.damages.map(
+                                            (
+                                              damageItem: string,
+                                              index: number
+                                            ) => (
+                                              <li
+                                                key={index}
+                                                className="mt-1 text-muted-foreground text-sm capitalize"
+                                              >
+                                                <CheckCheck className="w-4 h-4 inline-flex mr-2" />
+                                                {damageItem}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      )}
+                                      {repairRequest?.comments ? (
+                                        <p className="mt-1 text-muted-foreground text-sm">
+                                          {repairRequest.comments}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      {repairRequest?.priority === "high" ? (
+                                        <span className="inline-flex">
+                                          <ArrowUp className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          High
+                                        </span>
+                                      ) : repairRequest?.priority ===
+                                        "medium" ? (
+                                        <span className="inline-flex">
+                                          <ArrowRight className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Medium
+                                        </span>
+                                      ) : repairRequest?.priority === "low" ? (
+                                        <span className="inline-flex">
+                                          <ArrowDown className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                          Low
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="inline-flex">
+                                      <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                                      <Tooltip>
+                                        <TooltipTrigger>
+                                          <span>Completed</span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>
+                                            Device repair has been completed
+                                            successfully
+                                          </p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div
+                                      onClick={() =>
+                                        viewFullInfo(
+                                          repairRequest?._id as Id<"repairRequests">
+                                        )
+                                      }
+                                      className="inline-flex"
+                                    >
+                                      <Fullscreen className="mr-1.5 h-5 text-muted-foreground" />
+                                      <p className="text-sm">
+                                        View full information
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan={5}
+                                className="text-center py-4 text-muted-foreground"
+                              >
+                                No device repairs have been completed
+                              </td>
+                            </tr>
+                          )}
                         </TableBody>
                       </Table>
                     </TabsContent>

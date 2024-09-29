@@ -1,47 +1,15 @@
 "use client";
+
 import * as React from "react";
-import { Separator } from "../ui/separator";
-import { Input } from "../ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import Image from "next/image";
-import Link from "next/link";
-import {
-  CalendarDays,
-  File,
-  Home,
-  LineChart,
-  ListFilter,
-  Mail,
-  MoreHorizontal,
-  Package,
-  Package2,
-  PanelLeft,
-  PlusCircle,
-  Search,
-  Settings,
-  ShoppingCart,
-  Users2,
-} from "lucide-react";
+import { Mail, MailOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -50,38 +18,53 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  CreditCard,
-  MoreVertical,
-  Truck,
-} from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "@/components/ui/pagination";
-import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "../ui/scroll-area";
-import {
-  Activity,
-  ArrowUpRight,
-  CircleUser,
-  DollarSign,
-  Menu,
-  Users,
-} from "lucide-react";
-import ThemeSwitch from "@/components/theme-switch";
 import { UserNav } from "@/components/user-nav";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useQuery, useMutation } from "convex/react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 export function Notification() {
+  const router = useRouter();
+  const { user } = useUser();
+  const userId = user?.id;
+  const userProfile = useQuery(api.users.getUserByClerkId, {
+    clerkId: userId || "",
+  });
+
+  const profileId = userProfile?._id;
+
+  const allNotifications = useQuery(api.notifications.getNotificationByUserId, {
+    userId: profileId,
+  });
+
+  const updateNotification = useMutation(api.notifications.updateNotification);
+
+  const notifications = allNotifications ? [...allNotifications].reverse() : [];
+
+  const openMessage = async (notificationId: Id<"notifications">) => {
+    const notification = notifications.find(
+      (notif) => notif._id === notificationId
+    );
+
+    if (notification?.read === false) {
+      try {
+        await updateNotification({
+          notificationId,
+          read: true,
+        });
+
+        router.push(`/dashboard/notifications/${notificationId}`);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      router.push(`/dashboard/notifications/${notificationId}`);
+    }
+  };
+
   return (
     <ScrollArea className="h-screen">
       <div className="flex h-screen w-full flex-col sm:w-[714px] md:w-[1300px]">
@@ -132,99 +115,73 @@ export function Notification() {
                             <TableHead>Method</TableHead>
                             <TableHead>Contact Details</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell>
-                              <div className="font-medium">
-                                Your device repair has been completed
-                              </div>
-                              <div className="hidden text-xs text-muted-foreground md:inline">
-                                25/09/2024
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">Email</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">
-                                ayo@mygadgetpadi.com
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-200 text-primary">
-                                Unread
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>
-                              <div className="font-medium">
-                                Your device repair has been completed
-                              </div>
-                              <div className="hidden text-xs text-muted-foreground md:inline">
-                                25/09/2024
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">SMS</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">
-                                +234 1234567890
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">Seen</Badge>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>
-                              <div className="font-medium">
-                                Your device repair has been completed
-                              </div>
-                              <div className="hidden text-xs text-muted-foreground md:inline">
-                                25/09/2024
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">Email</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">
-                                ayo@mygadgetpadi.com
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-200 text-primary">
-                                Unread
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>
-                              <div className="font-medium">
-                                Your device repair has been completed
-                              </div>
-                              <div className="hidden text-xs text-muted-foreground md:inline">
-                                25/09/2024
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">Email</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">
-                                ayo@mygadgetpadi.com
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-200 text-primary">
-                                Unread
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
+                          {notifications.map((notification) => (
+                            <TableRow
+                              key={notification._id}
+                              onClick={() =>
+                                openMessage(
+                                  notification?._id as Id<"notifications">
+                                )
+                              }
+                            >
+                              <TableCell>
+                                <div className="font-medium">
+                                  {notification.message}
+                                </div>
+                                <div className="hidden text-xs text-muted-foreground md:inline">
+                                  {new Date(
+                                    notification._creationTime
+                                  ).toLocaleDateString("en-GB")}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="text-muted-foreground">
+                                  {notification.type === "sms"
+                                    ? "SMS"
+                                    : "Email"}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="text-muted-foreground">
+                                  {notification.emailAddress ||
+                                    notification.phoneNumber}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {notification.read === false ? (
+                                  <Badge className="bg-green-200 text-primary">
+                                    Unread
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline">Seen</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="inline-flex">
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      {notification.read === false ? (
+                                        <Mail className="mr-1.5 h-5 text-muted-foreground" />
+                                      ) : (
+                                        <MailOpen className="mr-1.5 h-5 text-muted-foreground" />
+                                      )}
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>
+                                        {notification.read === false
+                                          ? "Read message"
+                                          : "Message has been read"}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -236,78 +193,71 @@ export function Notification() {
                             <TableHead>Method</TableHead>
                             <TableHead>Contact Details</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell>
-                              <div className="font-medium">
-                                Your device repair has been completed
-                              </div>
-                              <div className="hidden text-xs text-muted-foreground md:inline">
-                                25/09/2024
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">Email</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">
-                                ayo@mygadgetpadi.com
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-200 text-primary">
-                                Unread
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>
-                              <div className="font-medium">
-                                Your device repair has been completed
-                              </div>
-                              <div className="hidden text-xs text-muted-foreground md:inline">
-                                25/09/2024
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">Email</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">
-                                ayo@mygadgetpadi.com
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-200 text-primary">
-                                Unread
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>
-                              <div className="font-medium">
-                                Your device repair has been completed
-                              </div>
-                              <div className="hidden text-xs text-muted-foreground md:inline">
-                                25/09/2024
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">Email</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">
-                                ayo@mygadgetpadi.com
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-200 text-primary">
-                                Unread
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
+                          {notifications
+                            .filter((notification) => !notification.read)
+                            .map((notification) => (
+                              <TableRow
+                                key={notification._id}
+                                onClick={() =>
+                                  openMessage(
+                                    notification?._id as Id<"notifications">
+                                  )
+                                }
+                              >
+                                <TableCell>
+                                  <div className="font-medium">
+                                    {notification.message}
+                                  </div>
+                                  <div className="hidden text-xs text-muted-foreground md:inline">
+                                    {new Date(
+                                      notification._creationTime
+                                    ).toLocaleDateString("en-GB")}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-muted-foreground">
+                                    {notification.type === "sms"
+                                      ? "SMS"
+                                      : "Email"}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-muted-foreground">
+                                    {notification.emailAddress ||
+                                      notification.phoneNumber}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className="bg-green-200 text-primary">
+                                    Unread
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="inline-flex">
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        {notification.read === false ? (
+                                          <Mail className="mr-1.5 h-5 text-muted-foreground" />
+                                        ) : (
+                                          <MailOpen className="mr-1.5 h-5 text-muted-foreground" />
+                                        )}
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          {notification.read === false
+                                            ? "Read message"
+                                            : "Message has been read"}
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -319,30 +269,69 @@ export function Notification() {
                             <TableHead>Method</TableHead>
                             <TableHead>Contact Details</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell>
-                              <div className="font-medium">
-                                Your device repair has been completed
-                              </div>
-                              <div className="hidden text-xs text-muted-foreground md:inline">
-                                25/09/2024
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">SMS</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-muted-foreground">
-                                +234 1234567890
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">Seen</Badge>
-                            </TableCell>
-                          </TableRow>
+                          {notifications
+                            .filter((notification) => notification.read)
+                            .map((notification) => (
+                              <TableRow
+                                key={notification._id}
+                                onClick={() =>
+                                  openMessage(
+                                    notification?._id as Id<"notifications">
+                                  )
+                                }
+                              >
+                                <TableCell>
+                                  <div className="font-medium">
+                                    {notification.message}
+                                  </div>
+                                  <div className="hidden text-xs text-muted-foreground md:inline">
+                                    {new Date(
+                                      notification._creationTime
+                                    ).toLocaleDateString("en-GB")}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-muted-foreground">
+                                    {notification.type === "sms"
+                                      ? "SMS"
+                                      : "Email"}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-muted-foreground">
+                                    {notification.emailAddress ||
+                                      notification.phoneNumber}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">Seen</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="inline-flex">
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        {notification.read === false ? (
+                                          <Mail className="mr-1.5 h-5 text-muted-foreground" />
+                                        ) : (
+                                          <MailOpen className="mr-1.5 h-5 text-muted-foreground" />
+                                        )}
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          {notification.read === false
+                                            ? "Read message"
+                                            : "Message has been read"}
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
                         </TableBody>
                       </Table>
                     </TabsContent>

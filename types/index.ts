@@ -13,4 +13,5 @@ export interface UploadDeviceImageOrVideoProps {
   setFile: Dispatch<SetStateAction<string>>;
   setFileStorageId: Dispatch<SetStateAction<Id<"_storage"> | null>>;
   file: string;
+  setContentType: Dispatch<SetStateAction<string>>;
 };

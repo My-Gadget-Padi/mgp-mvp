@@ -14,7 +14,7 @@ import {
   Bike,
   Package,
   Copy,
-  Truck,
+  Route,
   Loader,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -145,7 +145,10 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
     try {
       await cancelRequest({
         requestId,
-        fileStorageId: repairRequest?.fileStorageId !== null ? repairRequest?.fileStorageId : undefined,
+        fileStorageId:
+          repairRequest?.fileStorageId !== null
+            ? repairRequest?.fileStorageId
+            : undefined,
       });
 
       toast({ title: "Repair request cancelled successfully!" });
@@ -409,7 +412,9 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
                             <Copy
                               className="h-3 w-3"
                               onClick={() =>
-                                toast({ title: "Request ID copied to clipboard!" })
+                                toast({
+                                  title: "Request ID copied to clipboard!",
+                                })
                               }
                             />
                             <span className="sr-only">Copy Request ID</span>
@@ -437,7 +442,7 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
                           )
                         }
                       >
-                        <Truck className="h-3.5 w-3.5" />
+                        <Route className="h-3.5 w-3.5" />
                         <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
                           Track Repair
                         </span>
@@ -472,6 +477,11 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
                                 )}
                               </ul>
                             )}
+                            {repairRequest?.comments ? (
+                              <p className="mt-1 text-muted-foreground text-sm">
+                                {repairRequest.comments}
+                              </p>
+                            ) : null}
                           </div>
                         </li>
                       </ul>
@@ -534,28 +544,58 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
                           </address>
                         ) : repairRequest?.dropOffLocation ? (
                           <address className="grid gap-0.5 not-italic text-muted-foreground capitalize">
-                            <span>
-                              {repairRequest?.dropOffLocation}
-                            </span>
+                            <span>{repairRequest?.dropOffLocation}</span>
                           </address>
                         ) : null}
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter className="flex flex-row items-center border-t px-6 py-3">
-                    <Image
-                      className="rounded-md object-cover"
-                      height="100"
-                      width="200"
-                      src={
-                        (repairRequest?.fileUrl as string) ||
-                        "/images/device-placeholder.jpg"
-                      }
-                      alt={
-                        (repairRequest?.brandName as string) ||
-                        "Device placeholder"
-                      }
-                    />
+                    {repairRequest?.contentType?.startsWith("image/") ? (
+                      <Image
+                        className="rounded-md object-cover"
+                        height={100}
+                        width={250}
+                        src={
+                          repairRequest?.fileUrl ||
+                          "/images/device-placeholder.jpg"
+                        }
+                        alt={repairRequest?.brandName || "Device placeholder"}
+                        quality={100}
+                        unoptimized
+                      />
+                    ) : repairRequest?.contentType?.startsWith("video/") ? (
+                      <video
+                        controls
+                        loop
+                        className="rounded-md object-contain"
+                        preload="auto"
+                        playsInline
+                        poster="/images/device-placeholder.jpg"
+                        height={100}
+                        width={250}
+                      >
+                        <source
+                          src={repairRequest?.fileUrl}
+                          type={repairRequest?.contentType}
+                        />
+                        <source
+                          src={repairRequest?.fileUrl}
+                          type="video/webm"
+                        />
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                      <Image
+                        className="rounded-md object-cover"
+                        height={100}
+                        width={250}
+                        src="/images/device-placeholder.jpg"
+                        alt="Device placeholder"
+                        quality={100}
+                        unoptimized
+                      />
+                    )}
                   </CardFooter>
                 </Card>
               </div>

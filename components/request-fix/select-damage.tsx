@@ -8,7 +8,7 @@ import {
   Package,
   Copy,
   Bike,
-  Truck,
+  Route,
   ArrowDown,
   ArrowRight,
   ArrowUp,
@@ -50,6 +50,7 @@ import { useQuery, useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import { Textarea } from "../ui/textarea";
 
 interface SelectDeviceProps {
   requestId: Id<"repairRequests">;
@@ -65,7 +66,10 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
     null
   );
   const [fileUrl, setFileUrl] = useState("");
+  const [contentType, setContentType] = useState<string>("");
   const [selectedDamages, setSelectedDamages] = useState<string[]>([]);
+  const [otherDamage, setOtherDamage] = useState("");
+  const [showTextarea, setShowTextarea] = useState(false);
 
   const repairRequest = useQuery(api.repairRequests.getRepairRequestById, {
     requestId,
@@ -80,6 +84,13 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
   };
 
   const handleSelectChange = (value: string) => {
+    if (value === "other") {
+      setShowTextarea(true);
+      return;
+    } else {
+      setShowTextarea(false);
+    }
+
     if (selectedDamages.includes(value)) {
       return;
     }
@@ -115,8 +126,10 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
         requestId,
         priority,
         damages: selectedDamages,
+        comments: otherDamage,
         fileUrl: fileUrl || "",
         fileStorageId: fileStorageId !== null ? fileStorageId : undefined,
+        contentType,
       });
 
       setPriority("");
@@ -127,7 +140,7 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
       });
       router.push(`/dashboard/request-fix/delivery/${requestId}`);
     } catch (error) {
-      console.error("Repair request updated", error);
+      console.error("Repair request cannot be updated", error);
       toast({
         title: "Repair request is unsuccessful",
         variant: "destructive",
@@ -217,11 +230,17 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
                     <CardContent>
                       <div className="grid gap-3">
                         <div className="grid gap-2">
-                          <Label htmlFor="upload">Device Image/Video (optional)</Label>
+                          <Label htmlFor="upload">
+                            Device Image/Video{" "}
+                            <span className="text-muted-foreground text-xs">
+                              (optional)
+                            </span>
+                          </Label>
                           <UploadDeviceImageOrVideo
                             setFile={setFileUrl}
                             setFileStorageId={setFileStorageId}
                             file={fileUrl}
+                            setContentType={setContentType}
                           />
                         </div>
                         <div className="grid gap-2 mt-4">
@@ -331,6 +350,21 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
                           </ul>
                         </div>
                       )}
+                      {showTextarea && (
+                        <div className="mt-4">
+                          <Label htmlFor="other-damage">
+                            Please describe the issue:
+                          </Label>
+                          <Textarea
+                            id="other-damage"
+                            rows={6}
+                            value={otherDamage}
+                            onChange={(e) => setOtherDamage(e.target.value)}
+                            className="w-full p-2 mt-1 border rounded-md"
+                            placeholder="Describe the issue"
+                          />
+                        </div>
+                      )}
                     </CardContent>
                     <CardFooter>
                       <div className="ml-auto flex items-center justify-center gap-2">
@@ -368,7 +402,9 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
                             <Copy
                               className="h-3 w-3"
                               onClick={() =>
-                                toast({ title: "Request ID copied to clipboard!" })
+                                toast({
+                                  title: "Request ID copied to clipboard!",
+                                })
                               }
                             />
                             <span className="sr-only">Copy Request ID</span>
@@ -396,7 +432,7 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
                           )
                         }
                       >
-                        <Truck className="h-3.5 w-3.5" />
+                        <Route className="h-3.5 w-3.5" />
                         <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
                           Track Repair
                         </span>
@@ -431,6 +467,11 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
                                 )}
                               </ul>
                             )}
+                            {repairRequest?.comments ? (
+                              <p className="mt-1 text-muted-foreground text-sm">
+                                {repairRequest.comments}
+                              </p>
+                            ) : null}
                           </div>
                         </li>
                       </ul>
@@ -493,28 +534,58 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
                           </address>
                         ) : repairRequest?.dropOffLocation ? (
                           <address className="grid gap-0.5 not-italic text-muted-foreground capitalize">
-                            <span>
-                              {repairRequest?.dropOffLocation}
-                            </span>
+                            <span>{repairRequest?.dropOffLocation}</span>
                           </address>
                         ) : null}
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter className="flex flex-row items-center border-t px-6 py-3">
-                    <Image
-                      className="rounded-md object-cover"
-                      height="100"
-                      width="200"
-                      src={
-                        (repairRequest?.fileUrl as string) ||
-                        "/images/device-placeholder.jpg"
-                      }
-                      alt={
-                        (repairRequest?.brandName as string) ||
-                        "Device placeholder"
-                      }
-                    />
+                    {repairRequest?.contentType?.startsWith("image/") ? (
+                      <Image
+                        className="rounded-md object-cover"
+                        height={100}
+                        width={250}
+                        src={
+                          repairRequest?.fileUrl ||
+                          "/images/device-placeholder.jpg"
+                        }
+                        alt={repairRequest?.brandName || "Device placeholder"}
+                        quality={100}
+                        unoptimized
+                      />
+                    ) : repairRequest?.contentType?.startsWith("video/") ? (
+                      <video
+                        controls
+                        loop
+                        className="rounded-md object-contain"
+                        preload="auto"
+                        playsInline
+                        poster="/images/device-placeholder.jpg"
+                        height={100}
+                        width={250}
+                      >
+                        <source
+                          src={repairRequest?.fileUrl}
+                          type={repairRequest?.contentType}
+                        />
+                        <source
+                          src={repairRequest?.fileUrl}
+                          type="video/webm"
+                        />
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                      <Image
+                        className="rounded-md object-cover"
+                        height={100}
+                        width={250}
+                        src="/images/device-placeholder.jpg"
+                        alt="Device placeholder"
+                        quality={100}
+                        unoptimized
+                      />
+                    )}
                   </CardFooter>
                 </Card>
               </div>
