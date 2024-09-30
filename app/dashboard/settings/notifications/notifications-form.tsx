@@ -24,7 +24,7 @@ import { useUser } from "@clerk/nextjs";
 import { Loader } from "lucide-react";
 
 const notificationsFormSchema = z.object({
-  method: z.enum(["both", "email", "sms"], {
+  method: z.enum(["whatsapp", "email", "sms"], {
     required_error: "You need to select a notification method.",
   }),
   type: z.enum(["all", "repairs only", "none"], {
@@ -63,7 +63,7 @@ export function NotificationsForm() {
 
       form.reset({
         method:
-          notificationMethod === "both" ||
+          notificationMethod === "whatsapp" ||
           notificationMethod === "email" ||
           notificationMethod === "sms"
             ? notificationMethod
@@ -138,15 +138,15 @@ export function NotificationsForm() {
                   </FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
-                      <RadioGroupItem value="sms" />
+                      <RadioGroupItem value="whatsapp" />
                     </FormControl>
-                    <FormLabel className="font-normal">SMS</FormLabel>
+                    <FormLabel className="font-normal">WhatsApp</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
-                      <RadioGroupItem value="both" />
+                      <RadioGroupItem value="sms" />
                     </FormControl>
-                    <FormLabel className="font-normal">Both</FormLabel>
+                    <FormLabel className="font-normal">SMS</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>

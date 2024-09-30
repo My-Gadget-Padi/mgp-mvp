@@ -142,7 +142,10 @@ export function Notification() {
                                 <div className="text-muted-foreground">
                                   {notification.type === "sms"
                                     ? "SMS"
-                                    : "Email"}
+                                    : notification.type === "whatsapp"
+                                    ? "WhatsApp"
+                                    : "Email"
+                                  }
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -221,8 +224,11 @@ export function Notification() {
                                 <TableCell>
                                   <div className="text-muted-foreground">
                                     {notification.type === "sms"
-                                      ? "SMS"
-                                      : "Email"}
+                                    ? "SMS"
+                                    : notification.type === "whatsapp"
+                                    ? "WhatsApp"
+                                    : "Email"
+                                    }
                                   </div>
                                 </TableCell>
                                 <TableCell>
@@ -297,8 +303,11 @@ export function Notification() {
                                 <TableCell>
                                   <div className="text-muted-foreground">
                                     {notification.type === "sms"
-                                      ? "SMS"
-                                      : "Email"}
+                                    ? "SMS"
+                                    : notification.type === "whatsapp"
+                                    ? "WhatsApp"
+                                    : "Email"
+                                    }
                                   </div>
                                 </TableCell>
                                 <TableCell>

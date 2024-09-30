@@ -21,7 +21,7 @@ const menuData: Menu[] = [
   {
     id: 4,
     title: "Join Community",
-    path: "/auth/signup",
+    path: "/auth/sign-up",
     newTab: false,
   },
   // {

@@ -4,7 +4,7 @@ import { mutation, query } from "./_generated/server";
 export const createNotification = mutation({
   args: {
     userId: v.id("users"),
-    type: v.string(), //email or SMS
+    type: v.string(), //email or sms or whatsapp
     message: v.string(),
     emailAddress: v.optional(v.string()),
     phoneNumber: v.optional(v.number()),
@@ -31,7 +31,7 @@ export const updateNotification = mutation({
   args: {
     notificationId: v.id("notifications"),
     userId: v.optional(v.id("users")),
-    type: v.optional(v.string()), //email or SMS
+    type: v.optional(v.string()), //email or sms or whatsapp
     message: v.optional(v.string()),
     emailAddress: v.optional(v.string()),
     phoneNumber: v.optional(v.number()),

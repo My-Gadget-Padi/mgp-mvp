@@ -12,7 +12,7 @@ export default defineSchema({
     phoneNumber: v.optional(v.number()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
-    notificationMethod: v.optional(v.string()), // email, sms, both
+    notificationMethod: v.optional(v.string()), // email, sms, whatsapp
     notificationType: v.optional(v.string()), // all, repairs only, none
     communication_updates: v.optional(v.boolean()), // true or false : default = true
     marketing_updates: v.optional(v.boolean()), // true or false

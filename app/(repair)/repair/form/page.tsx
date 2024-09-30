@@ -19,7 +19,7 @@ const RepairPage = () => {
           <div className="lg:w-6/12 sm:w-full  h-full relative" style={styles.bgimg}>
             <div className="px-5 py-3">
               <button type="button" className="rounded-lg px-10 py-3 bg-white text-base font-normal text-black">
-                <Link href="/auth/signup" >Repair</Link></button>
+                <Link href="/auth/sign-up" >Repair</Link></button>
             </div>
 
             <div className="text-base text-white">

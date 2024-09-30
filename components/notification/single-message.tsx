@@ -91,7 +91,12 @@ const SingleMessage = ({ notificationId }: SelectMessageProps) => {
               <div>
                 <h1 className="text-xl font-bold">
                   <span className="capitalize">
-                    {notification?.type === "sms" ? "SMS" : "Email"} Message
+                    {notification?.type === "sms"
+                      ? "SMS"
+                      : notification?.type === "whatsapp"
+                      ? "WhatsApp"
+                      : "Email"
+                    } Message
                   </span>
                 </h1>
               </div>
@@ -177,7 +182,12 @@ const SingleMessage = ({ notificationId }: SelectMessageProps) => {
                         <li className="flex items-center justify-between">
                           <span className="text-muted-foreground">Method:</span>
                           <span>
-                            {notification?.type === "sms" ? "SMS" : "Email"}
+                            {notification?.type === "sms"
+                              ? "SMS"
+                              : notification?.type === "whatsapp"
+                              ? "WhatsApp"
+                              : "Email"
+                            }
                           </span>
                         </li>
                         <li className="flex items-center justify-between">

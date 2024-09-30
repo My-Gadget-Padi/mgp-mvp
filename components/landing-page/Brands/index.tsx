@@ -19,7 +19,7 @@ const BrandForm = () => {
             <div className="lg:w-5/12 lg:flex flex-wrap justify-end lg:mt-0 sm:mt-5">
             <p className="text-base font-thin text-white">this is a text, don’t read except you’re one... I caught you reading this, better stop now or the next line is going to hit you really well. You are smart👌</p>
             <p className=" text-base font-medium text-white py-3 px-8 mt-2 border-2 rounded-lg">
-            <Link href="/auth/signup"> Join community <span className="pl-2"></span></Link>
+            <Link href="/auth/sign-up"> Join community <span className="pl-2"></span></Link>
                 </p>
             </div>
           </div>
