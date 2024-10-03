@@ -4,6 +4,7 @@ import { mutation, query } from "./_generated/server";
 export const createRepairRequest = mutation({
   args: {
     userId: v.optional(v.id("users")),
+    user_status: v.optional(v.string()), // guest or registered
     price: v.optional(v.number()),
     assignedTechnician: v.optional(v.id("users")),
     device: v.optional(v.string()),
@@ -28,6 +29,7 @@ export const createRepairRequest = mutation({
 
     const requestId = await ctx.db.insert("repairRequests", {
       userId: args.userId,
+      user_status: args.user_status,
       price: args.price,
       assignedTechnician: args.assignedTechnician,
       device: args.device,
@@ -57,6 +59,7 @@ export const updateRepairRequest = mutation({
   args: {
     requestId: v.id("repairRequests"),
     userId: v.optional(v.id("users")),
+    user_status: v.optional(v.string()), // guest or registered
     price: v.optional(v.number()),
     assignedTechnician: v.optional(v.id("users")),
     device: v.optional(v.string()),
@@ -87,6 +90,7 @@ export const updateRepairRequest = mutation({
 
     const updateRequest = {
       ...(args.userId !== undefined && { userId: args.userId }),
+      ...(args.user_status !== undefined && { user_status: args.user_status }),
       ...(args.price !== undefined && { price: args.price }),
       ...(args.assignedTechnician !== undefined && { assignedTechnician: args.assignedTechnician }),
       ...(args.device !== undefined && { device: args.device }),

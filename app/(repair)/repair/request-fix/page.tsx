@@ -26,12 +26,24 @@ import {
   Smartphone,
   TabletSmartphone,
   CheckCheck,
+  MessageSquareMore,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
+import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 const LandingRequestFix = () => {
   const { toast } = useToast();
+  const router = useRouter();
   const [deviceType, setDeviceType] = useState("phone"); //tablet, laptop, computer
   const [deviceBrand, setDeviceBrand] = useState("");
   const [deviceModel, setDeviceModel] = useState("");
@@ -39,6 +51,8 @@ const LandingRequestFix = () => {
   const [selectedDamages, setSelectedDamages] = useState<string[]>([]);
   const [otherDamage, setOtherDamage] = useState("");
   const [showTextarea, setShowTextarea] = useState(false);
+
+  const saveRequest = useMutation(api.repairRequests.createRepairRequest);
 
   const getBrandsForDevice = (device: string | undefined) => {
     switch (device) {
@@ -115,34 +129,71 @@ const LandingRequestFix = () => {
       return;
     }
 
-    const details = encodeURIComponent(
-      `
-      Device:
-      ${deviceModel}
+    try {
+      const requestId = await saveRequest({
+        user_status: "guest",
+        device: deviceType,
+        brandName: deviceBrand,
+        model: deviceModel,
+        damages: selectedDamages,
+        comments: otherDamage,
+      });
 
-      Damage(s):
-      ${
-        selectedDamages?.length
-          ? selectedDamages.map((damage) => `- ${damage}`).join("\n")
-          : "No damages specified"
+      toast({
+        title: "Repair request submitted",
+        description: "You will be redirected to a customer agent on WhatsApp",
+      });
+
+      setDeviceType("phone");
+      setDeviceBrand("");
+      setDeviceModel("");
+      setAvailableModels([]);
+      setSelectedDamages([]);
+      setOtherDamage("");
+      setShowTextarea(false);
+
+      if (requestId) {
+        const details = encodeURIComponent(
+          `
+          Device:
+          ${deviceModel}
+
+          Damage(s):
+          ${
+            selectedDamages?.length
+              ? selectedDamages.map((damage) => `- ${damage}`).join("\n")
+              : "No damages specified"
+          }
+
+          ${otherDamage || "I need it fixed urgently, please."}
+          `
+        );
+        const currentHour = new Date().getHours();
+
+        const phoneNumber =
+          currentHour % 2 === 0 ? "+2347076641696" : "+2347072665255";
+
+        const whatsAppUrl = `https://wa.me/${phoneNumber}?text=${details}`;
+
+        setTimeout(() => {
+          router.push(whatsAppUrl);
+        }, 10000); // 10 seconds
       }
+    } catch (error) {
+      console.error("Repair request error", error);
+      toast({
+        title: "Repair request is unsuccessful",
+        variant: "destructive",
+      });
+    }
+  };
 
-      ${otherDamage || "I need it fixed urgently, please."}
-      `
-    );
-
-    const currentHour = new Date().getHours();
-
-    const phoneNumber =
-      currentHour % 2 === 0 ? "+2347076641696" : "+2347072665255";
-
-    const whatsAppUrl = `https://wa.me/${phoneNumber}?text=${details}`;
-
-    window.open(whatsAppUrl, "_blank");
+  const handleShowComment = () => {
+    setShowTextarea((prev) => !prev);
   };
 
   return (
-    <section className="relative lg:h-screen lg:overflow-y-auto md:h-auto sm:h-auto sm:overflow-none">
+    <section className="pr-4 pl-4 sm:pr-0 sm:pl-0 relative lg:h-screen lg:overflow-y-auto md:h-auto sm:h-auto sm:overflow-none">
       <div className="lg:flex mx-auto">
         <div
           className="lg:w-6/12 sm:w-full hidden lg:flex h-screen sticky top-0"
@@ -172,7 +223,7 @@ const LandingRequestFix = () => {
           </div>
         </div>
         <ScrollArea className="lg:w-6/12 sm:w-full bg-white dark:bg-dark sm:p-[60px] relative lg:overflow-y-auto">
-          <div className="w-full flex justify-end  absolute right-6 top-3 py-3 px-5">
+          <div className="hidden sm:flex w-full justify-end  absolute right-6 top-3 py-3 px-5">
             <Link href="/">
               <div>
                 <Image
@@ -192,12 +243,18 @@ const LandingRequestFix = () => {
             <p className="mb-5 text-center text-sm font-normal text-indigo-700">
               One stop for everything about your gadget
             </p>
-            <form className="my-2">
+            <div className="my-2">
               <div className="mb-5">
                 <RadioGroup
                   defaultValue="phone"
-                  onValueChange={setDeviceType}
-                  className="grid grid-cols-4 mb-6 gap-4"
+                  onValueChange={(value) => {
+                    setDeviceType(value);
+                    setDeviceBrand("");
+                    setDeviceModel("");
+                    setAvailableModels([]);
+                    setShowTextarea(false);
+                  }}
+                  className="grid grid-cols-2 sm:grid-cols-4 mb-6 gap-4"
                 >
                   <div>
                     <RadioGroupItem
@@ -282,7 +339,7 @@ const LandingRequestFix = () => {
                     <Label htmlFor="model">Model</Label>
                     <Select
                       onValueChange={(id: string) => handleModelChange(id)}
-                      disabled={availableModels.length === 0}
+                      disabled={!deviceBrand || availableModels.length === 0}
                     >
                       <SelectTrigger id="model">
                         <SelectValue placeholder="Select device model" />
@@ -302,62 +359,97 @@ const LandingRequestFix = () => {
                   </div>
                 </div>
               </div>
-              <div className="grid gap-2 mt-2">
+              <div className="gap-2 mt-2">
                 <Label htmlFor="damages">Damages</Label>
-                <Select
-                  onValueChange={(value) => {
-                    handleSelectChange(value);
-                    const damageSelect = document.getElementById("damage");
-                    if (damageSelect) {
-                      (damageSelect as HTMLInputElement).value = "";
-                    }
-                  }}
-                  disabled={deviceModel === ""}
-                >
-                  <SelectTrigger id="damage" aria-label="Select damage">
-                    <SelectValue placeholder="Select damage(s)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="broken screen">Broken Screen</SelectItem>
-                    <SelectItem value="doesn't power on">
-                      Doesn't Power On
-                    </SelectItem>
-                    <SelectItem value="broken inner screen">
-                      Broken Inner Screen
-                    </SelectItem>
-                    <SelectItem value="water damage">Water Damage</SelectItem>
-                    <SelectItem value="broken outer screen">
-                      Broken Outer Screen
-                    </SelectItem>
-                    <SelectItem value="short battery life">
-                      Short Battery Life
-                    </SelectItem>
-                    <SelectItem value="won't charge">Won't Charge</SelectItem>
-                    <SelectItem value="back camera doesn't work">
-                      Back Camera Doesn't Work
-                    </SelectItem>
-                    <SelectItem value="can't hear / no audio">
-                      Can't Hear / No Audio
-                    </SelectItem>
-                    <SelectItem value="microphone doesn't work">
-                      Microphone Doesn't Work
-                    </SelectItem>
-                    <SelectItem value="volume button doesn't work">
-                      Volume Button Doesn't Work
-                    </SelectItem>
-                    <SelectItem value="power button doesn't work">
-                      Power Button Doesn't Work
-                    </SelectItem>
-                    <SelectItem value="vibrator">Vibrator</SelectItem>
-                    <SelectItem value="back cover damage">
-                      Back Housing/Cover
-                    </SelectItem>
-                    <SelectItem value="ear speaker / no audio">
-                      Ear Speaker / No Audio
-                    </SelectItem>
-                    <SelectItem value="other">I don't know / Other</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-4">
+                  <div className="col-span-3">
+                    <Select
+                      onValueChange={(value) => {
+                        handleSelectChange(value);
+                        const damageSelect = document.getElementById("damage");
+                        if (damageSelect) {
+                          (damageSelect as HTMLInputElement).value = "";
+                        }
+                      }}
+                      disabled={deviceModel === ""}
+                    >
+                      <SelectTrigger id="damage" aria-label="Select damage">
+                        <SelectValue placeholder="Select damage(s)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="broken screen">
+                          Broken Screen
+                        </SelectItem>
+                        <SelectItem value="doesn't power on">
+                          Doesn't Power On
+                        </SelectItem>
+                        <SelectItem value="broken inner screen">
+                          Broken Inner Screen
+                        </SelectItem>
+                        <SelectItem value="water damage">
+                          Water Damage
+                        </SelectItem>
+                        <SelectItem value="broken outer screen">
+                          Broken Outer Screen
+                        </SelectItem>
+                        <SelectItem value="short battery life">
+                          Short Battery Life
+                        </SelectItem>
+                        <SelectItem value="won't charge">
+                          Won't Charge
+                        </SelectItem>
+                        <SelectItem value="back camera doesn't work">
+                          Back Camera Doesn't Work
+                        </SelectItem>
+                        <SelectItem value="can't hear / no audio">
+                          Can't Hear / No Audio
+                        </SelectItem>
+                        <SelectItem value="microphone doesn't work">
+                          Microphone Doesn't Work
+                        </SelectItem>
+                        <SelectItem value="volume button doesn't work">
+                          Volume Button Doesn't Work
+                        </SelectItem>
+                        <SelectItem value="power button doesn't work">
+                          Power Button Doesn't Work
+                        </SelectItem>
+                        <SelectItem value="vibrator">Vibrator</SelectItem>
+                        <SelectItem value="back cover damage">
+                          Back Housing/Cover
+                        </SelectItem>
+                        <SelectItem value="ear speaker / no audio">
+                          Ear Speaker / No Audio
+                        </SelectItem>
+                        <SelectItem value="other">
+                          I don't know / Other
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    className="col-span-1 ml-2"
+                    disabled={deviceModel === ""}
+                    variant={deviceModel === "" ? "secondary" : "default"}
+                    onClick={() => handleShowComment()}
+                  >
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <MessageSquareMore className="flex sm:hidden" />
+                          <span className="hidden sm:flex">
+                            Add a comment
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Click here to provide additional details about your{" "}
+                            {deviceType}'s issue.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </Button>
+                </div>
               </div>
               {selectedDamages.length > 0 && (
                 <div className="mt-3">
@@ -386,7 +478,7 @@ const LandingRequestFix = () => {
                     value={otherDamage}
                     onChange={(e) => setOtherDamage(e.target.value)}
                     className="w-full p-2 mt-1 border rounded-md"
-                    placeholder="I need a quick fix, my screen is broken."
+                    placeholder={`I need a quick fix, my ${deviceType}'s screen is broken.`}
                   />
                 </div>
               )}
@@ -399,7 +491,7 @@ const LandingRequestFix = () => {
                   Submit Request
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </ScrollArea>
       </div>

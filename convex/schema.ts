@@ -29,6 +29,7 @@ export default defineSchema({
 
   repairRequests: defineTable({
     userId: v.optional(v.id("users")),
+    user_status: v.optional(v.string()), // guest or registered
     price: v.optional(v.number()),
     assignedTechnician: v.optional(v.id("users")),
     device: v.optional(v.string()),

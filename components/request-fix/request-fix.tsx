@@ -44,6 +44,7 @@ export function RequestFix() {
     try {
       const id = await repairRequest({
         userId: profileId as Id<"users">,
+        user_status: "registered",
         device: deviceType,
       });
 

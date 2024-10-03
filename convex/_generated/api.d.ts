@@ -22,6 +22,7 @@ import type * as notifications from "../notifications.js";
 import type * as repairRequests from "../repairRequests.js";
 import type * as sendEmail from "../sendEmail.js";
 import type * as sendSMS from "../sendSMS.js";
+import type * as sendWhatsApp from "../sendWhatsApp.js";
 import type * as users from "../users.js";
 
 /**
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   repairRequests: typeof repairRequests;
   sendEmail: typeof sendEmail;
   sendSMS: typeof sendSMS;
+  sendWhatsApp: typeof sendWhatsApp;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

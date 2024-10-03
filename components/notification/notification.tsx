@@ -129,8 +129,8 @@ export function Notification() {
                               }
                             >
                               <TableCell>
-                                <div className="font-medium">
-                                  {notification.message}
+                                <div className="font-normal">
+                                  {notification.message.slice(0, 50)}...
                                 </div>
                                 <div className="hidden text-xs text-muted-foreground md:inline">
                                   {new Date(
@@ -212,8 +212,8 @@ export function Notification() {
                                 }
                               >
                                 <TableCell>
-                                  <div className="font-medium">
-                                    {notification.message}
+                                  <div className="font-normal">
+                                    {notification.message.slice(0, 50)}...
                                   </div>
                                   <div className="hidden text-xs text-muted-foreground md:inline">
                                     {new Date(
@@ -291,8 +291,8 @@ export function Notification() {
                                 }
                               >
                                 <TableCell>
-                                  <div className="font-medium">
-                                    {notification.message}
+                                  <div className="font-normal">
+                                    {notification.message.slice(0, 50)}...
                                   </div>
                                   <div className="hidden text-xs text-muted-foreground md:inline">
                                     {new Date(

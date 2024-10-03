@@ -14,9 +14,16 @@ const CustomSignIn = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [redirectUrl, setRedirectUrl] = useState('/dashboard');
 
   const router = useRouter();
-  const redirectUrl = new URLSearchParams(window.location.search).get('redirect_url') || '/dashboard';
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URLSearchParams(window.location.search).get('redirect_url') || '/dashboard';
+      setRedirectUrl(url);
+    }
+  }, []);
 
   useEffect(() => {
     if (isSignedIn) {
