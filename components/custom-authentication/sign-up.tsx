@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSignUp, useAuth } from "@clerk/nextjs";
@@ -86,7 +86,7 @@ const CustomSignUp = () => {
         >
           <div className="px-5 py-3">
             <button type="button" className="rounded-lg px-10 py-3 bg-white text-base font-normal text-black">
-              <Link href="/repair/form">Repair</Link>{" "}
+              <Link href="/repair/request-fix">Repair</Link>{" "}
             </button>
           </div>
 

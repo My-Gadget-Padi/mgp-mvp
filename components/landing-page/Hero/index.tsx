@@ -23,7 +23,7 @@ const Hero = () => {
                   in one place. No hassle, No worries – just tech solutions made easy.
                 </p>
                 <button className="bg-indigo-600 text-base font-medium text-white py-3 px-8 rounded mt-2" type="button">
-                  <Link href="/repair/form">Request a repair</Link>
+                  <Link href="/repair/request-fix">Request a repair</Link>
                 </button>
 
                 <div className="flex lg:mt-32 md:mt-10 sm:mt-8">

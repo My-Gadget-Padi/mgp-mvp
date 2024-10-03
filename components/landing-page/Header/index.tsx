@@ -1,4 +1,6 @@
 "use client";
+
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,11 +26,14 @@ const Header = () => {
   };
   useEffect(() => {
     window.addEventListener("scroll", handleStickyNavbar);
-  });
+    return () => {
+      window.removeEventListener("scroll", handleStickyNavbar);
+    };
+  }, []);
 
   // submenu handler
   const [openIndex, setOpenIndex] = useState(-1);
-  const handleSubmenu = (index) => {
+  const handleSubmenu = (index: any) => {
     if (openIndex === index) {
       setOpenIndex(-1);
     } else {
@@ -75,6 +80,7 @@ const Header = () => {
             <div className="flex w-full items-center justify-between px-4 py-2">
               <div>
                 <button
+                  type="button"
                   onClick={navbarToggleHandler}
                   id="navbarToggler"
                   aria-label="Mobile Menu"
@@ -141,7 +147,7 @@ const Header = () => {
                                 openIndex === index ? "block" : "hidden"
                               }`}
                             > */}
-                              {/* {menuItem.submenu.map((submenuItem, index) => (
+                            {/* {menuItem.submenu.map((submenuItem, index) => (
                                 <Link
                                   href={submenuItem.path}
                                   key={index}
@@ -152,20 +158,18 @@ const Header = () => {
                               ))} */}
                             {/* </div> */}
                           </>
-                        )
-                        }
+                        )}
                       </li>
                     ))}
                   </ul>
                 </nav>
               </div>
-              
               <div className="flex items-center justify-between pr-16 lg:pr-0 pl-5">
                 <Link
                   href="/auth/sign-in"
                   className="ease-in-up mr-5 hidden rounded-lg border-2 bg-transparent border-black text-black px-5 py-3 text-base font-normal transition duration-300 hover:bg-opacity-90 md:block md:px-9 lg:px-6 xl:px-9"
                 >
-                  Login 
+                  Login
                 </Link>
                 <Link
                   href="/auth/sign-up"
@@ -174,8 +178,7 @@ const Header = () => {
                 >
                   Create an account
                 </Link>
-                <div>
-                </div>
+                <div></div>
               </div>
             </div>
           </div>

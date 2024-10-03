@@ -194,7 +194,7 @@ export function Dashboard() {
                     Ongoing Repair
                   </h1>
 
-                  {repairRequests &&
+                  {repairRequests && repairRequests.length > 0 ? (
                     (() => {
                       const ongoingRepair = repairRequests
                         .filter(
@@ -217,7 +217,12 @@ export function Dashboard() {
                           No ongoing device repairs
                         </p>
                       );
-                    })()}
+                    })()
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No ongoing device repairs
+                    </p>
+                  )}
                 </div>
 
                 <div className="lg:col-span-1 space-y-8">
@@ -372,10 +377,7 @@ export function Dashboard() {
                   </Card>
                 </div>
               </div>
-              <Card
-                className="lg:col-span-2 mb-4"
-                x-chunk="dashboard-01-chunk-4"
-              >
+              <Card className="lg:col-span-2 mb-4">
                 <CardHeader className="flex flex-row items-center">
                   <div className="grid gap-2">
                     <CardTitle>Device Repairs</CardTitle>
@@ -383,6 +385,12 @@ export function Dashboard() {
                       Recent repairs that have been scheduled and completed
                     </CardDescription>
                   </div>
+                  <Button asChild size="sm" className="ml-auto gap-1">
+                    <Link href="/dashboard/repairs">
+                      View repair history
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="scheduled">

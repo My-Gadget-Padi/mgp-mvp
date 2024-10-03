@@ -18,7 +18,7 @@ export const createRepairRequest = mutation({
     deviceSerialNumber: v.optional(v.string()),
     comments: v.optional(v.string()),
     priority: v.optional(v.string()), //high, medium, low
-    deliveryType: v.optional(v.string()), //pickup, drop-off
+    deliveryType: v.optional(v.string()), //pick-up, drop-off
     deliveryTypeDate: v.optional(v.string()),
     deliveryTypeTime: v.optional(v.string()),
     warranty: v.optional(v.boolean()), //true or false
@@ -71,7 +71,7 @@ export const updateRepairRequest = mutation({
     deviceSerialNumber: v.optional(v.string()),
     comments: v.optional(v.string()),
     priority: v.optional(v.string()), //high, medium, low
-    deliveryType: v.optional(v.string()), //pickup, drop-off, mail-in (not yet configured)
+    deliveryType: v.optional(v.string()), //pick-up, drop-off, mail-in (not yet configured)
     deliveryTypeDate: v.optional(v.string()),
     deliveryTypeTime: v.optional(v.string()),
     warranty: v.optional(v.boolean()), //true or false
@@ -176,3 +176,16 @@ export const getUrl = mutation({
     return await ctx.storage.getUrl(args.storageId);
   },
 });
+
+// New APIs to create:
+// For the landing page repair, it can still work with "createRepairRequest" and "updateRepairRequest", so no need to write those
+// 1. Work on an API for the warranty that checks with the "deviceProtections" table to see if a user has a warranty with MyGadgetPadi.
+// 2. Write an API that can set and update the availability of a technician ensuring that only available technicians can be assigned to a repair request.
+// NOTE: Technicians are also stored on the "Users" table
+// 3. Create a technician details schema and assign a userId to it.
+// 4. Write an API that automatically assigns the most suitable technician to a repair request based on their location, availability, and device expertise.
+// 5. Write the SMS sending API that notifies customers and technicians of updates, such as "new assignment" and repair status change.
+// 6. Write a schema to track repair history
+// 7. Write an API to collect feedback from customers after a repair has been completed, this will be used to rate work done and improve service quality.
+
+// If you need any help with any, please let me know on WhatsApp, not cliq as I am more active there.

@@ -51,6 +51,7 @@ import { useQuery, useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import { useUser } from "@clerk/nextjs";
 
 interface SelectDeviceProps {
   requestId: Id<"repairRequests">;
@@ -59,8 +60,14 @@ interface SelectDeviceProps {
 const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useUser();
+  const userId = user?.id;
+  const userProfile = useQuery(api.users.getUserByClerkId, {
+    clerkId: userId || "",
+  });
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [ownLoading, setOwnLoading] = useState<boolean>(false);
   const [address, setAddress] = useState("");
   const [address2, setAddress2] = useState("");
   const [city, setCity] = useState("");
@@ -161,6 +168,43 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
   const trackRepair = async (requestId: Id<"repairRequests">) => {
     router.push(`/dashboard/repairs/${requestId}`);
   };
+
+  const handleCompleteWithProfileAddress = async () => {
+    if (!deliveryMethod) {
+      toast({
+        title: "Please select a delivery method",
+      });
+      return;
+    }
+
+    setOwnLoading(true);
+
+    try {
+      await updateRequest({
+        requestId,
+        deliveryType: deliveryMethod,
+        address: userProfile?.address,
+        status: "scheduled",
+      });
+
+      setPickUpAddress("");
+      setDropOffLocation("");
+
+      toast({
+        title: "Device delivery method has been selected!",
+      });
+      router.push(`/dashboard/request-fix/review/${requestId}`);
+    } catch (error) {
+      console.error("Repair request updated", error);
+      toast({
+        title: "Repair request is unsuccessful",
+        variant: "destructive",
+      });
+    } finally {
+      setOwnLoading(false);
+    }
+  };
+
   return (
     <ScrollArea className="h-screen">
       <div className="flex w-full flex-col sm:w-[714px] md:w-[1300px]">
@@ -263,6 +307,27 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
                       </RadioGroup>
                       {deliveryMethod === "pick-up" ? (
                         <>
+                          {userProfile?.address === "" ? null : (
+                            <div className="">
+                              <div className="text-sm text-muted-foreground">
+                                Saved address <Link href="/dashboard/settings/account" target="_blank" className="hover:underline">(on your account)</Link>: <span className="font-semibold">{userProfile?.address}</span>
+                              </div>
+                              <Button
+                                onClick={handleCompleteWithProfileAddress}
+                                disabled={ownLoading}
+                                className="mt-1.5"
+                                size="sm"
+                                variant="outline"
+                              >
+                                {ownLoading ? (
+                                  <Loader size={20} className="animate-spin ml-2" />
+                                ) : (
+                                  "Use address"
+                                )}
+                              </Button>
+                              <Separator className="my-2" />
+                            </div>
+                          )}
                           <div className="grid gap-6">
                             <div className="grid gap-2">
                               <Label htmlFor="address">Address</Label>
@@ -368,12 +433,12 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
                                 <SelectValue placeholder="Select location" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="lagos">Lagos</SelectItem>
-                                <SelectItem value="port-harcourt">
-                                  Port-Harcourt
+                                <SelectItem value="ikeja, lagos">Ikeja, Lagos</SelectItem>
+                                <SelectItem value="mokola, ibadan">
+                                  Mokola, Ibadan
                                 </SelectItem>
-                                <SelectItem value="akure">Akure</SelectItem>
-                                <SelectItem value="ibadan">Ibadan</SelectItem>
+                                <SelectItem value="futa, akure">FUTA, Akure</SelectItem>
+                                <SelectItem value="alagbaka, akure">Alagbaka, Akure</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -431,6 +496,7 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
                           : "N/A"}
                       </CardDescription>
                     </div>
+                    {/**
                     <div className="ml-auto flex items-center gap-1">
                       <Button
                         size="sm"
@@ -448,6 +514,7 @@ const SelectDelivery = ({ requestId }: SelectDeviceProps) => {
                         </span>
                       </Button>
                     </div>
+                    */}
                   </CardHeader>
                   <CardContent className="p-6 text-sm">
                     <div className="grid gap-3">

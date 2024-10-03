@@ -75,7 +75,7 @@ const CustomForgotPassword = () => {
           <div className="relative h-full hidden lg:flex lg:w-6/12 sm:w-full" style={styles.bgImg}>
             <div className="px-5 py-3">
               <button type='button' className="px-10 py-3 text-base font-normal text-black bg-white rounded-lg">
-                <Link href="/repair/form">Repair</Link>
+                <Link href="/repair/request-fix">Repair</Link>
               </button>
             </div>
 

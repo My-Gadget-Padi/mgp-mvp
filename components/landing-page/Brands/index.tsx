@@ -13,7 +13,7 @@ const BrandForm = () => {
             Get your gadget fix in <br/>by professionals only.
                 </h2>
             <button className="bg-indigo-600 lg:text-base sm:text-sm font-medium text-white py-3 px-8  rounded mt-3" type="button">
-            <Link href="/repair/form">Request a Fix</Link>
+            <Link href="/repair/request-fix">Request a Fix</Link>
                 </button>
             </div>
             <div className="lg:w-5/12 lg:flex flex-wrap justify-end lg:mt-0 sm:mt-5">

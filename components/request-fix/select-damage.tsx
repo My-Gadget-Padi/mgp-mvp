@@ -421,6 +421,7 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
                           : "N/A"}
                       </CardDescription>
                     </div>
+                    {/**
                     <div className="ml-auto flex items-center gap-1">
                       <Button
                         size="sm"
@@ -438,6 +439,7 @@ const SelectDamage = ({ requestId }: SelectDeviceProps) => {
                         </span>
                       </Button>
                     </div>
+                    */}
                   </CardHeader>
                   <CardContent className="p-6 text-sm">
                     <div className="grid gap-3">

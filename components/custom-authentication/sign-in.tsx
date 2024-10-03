@@ -68,7 +68,7 @@ const CustomSignIn = () => {
         >
           <div className="px-5 py-3">
             <button type="button" className="rounded-lg px-10 py-3 bg-white text-base font-normal text-black">
-              <Link href="/repair/form">Repair</Link>{" "}
+              <Link href="/repair/request-fix">Repair</Link>{" "}
             </button>
           </div>
 

@@ -12,6 +12,13 @@ import {
   Bike,
   Package,
   Copy,
+  CircleX,
+  CircleCheck,
+  Timer,
+  Archive,
+  TruckIcon,
+  PackageOpen,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +43,11 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { useToast } from "@/components/ui/use-toast";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SelectDeviceProps {
   requestId: Id<"repairRequests">;
@@ -254,7 +266,109 @@ const SingleRepair = ({ requestId }: SelectDeviceProps) => {
                           {repairRequest?.status === "scheduled" ? (
                             <span className="inline-flex">
                               <CalendarClock className="h-5 w-4 mr-1.5 text-muted-foreground" />
-                              Scheduled
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span>Scheduled</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    Device has been successfully scheduled for
+                                    repairs
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </span>
+                          ) : repairRequest?.status === "received" ? (
+                            <span className="inline-flex">
+                              <Archive className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span>Received</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    Device has been received by MyGadgetPadi for
+                                    repairs
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </span>
+                          ) : repairRequest?.status === "assigned" ? (
+                            <span className="inline-flex">
+                              <UserCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span>Assigned</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    Device has been assigned to a Technician
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </span>
+                          ) : repairRequest?.status === "in-progress" ? (
+                            <span className="inline-flex">
+                              <Timer className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span>In progress</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Device repairs have started</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </span>
+                          ) : repairRequest?.status === "completed" ? (
+                            <span className="inline-flex">
+                              <CircleCheck className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span>Completed</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    Device repair has been completed
+                                    successfully
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </span>
+                          ) : repairRequest?.status === "shipped" ? (
+                            <span className="inline-flex">
+                              <TruckIcon className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span>Shipped</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Device has been shipped for delivery</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </span>
+                          ) : repairRequest?.status === "delivered" ? (
+                            <span className="inline-flex">
+                              <PackageOpen className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span>Delivered</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Device has been delivered successfully</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </span>
+                          ) : repairRequest?.status === "cancelled" ? (
+                            <span className="inline-flex">
+                              <CircleX className="h-5 w-4 mr-1.5 text-muted-foreground" />
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span>Cancelled</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Device repair has been cancelled</p>
+                                </TooltipContent>
+                              </Tooltip>
                             </span>
                           ) : null}
                         </li>

@@ -3,10 +3,10 @@
 import Footer from "@/components/landing-page/Footer";
 import Header from "@/components/landing-page/Header";
 import ScrollToTop from "@/components/landing-page/ScrollToTop";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import "../../styles/index.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'] });
 
 export default function MarketingLayout({
   children,
@@ -14,7 +14,7 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main>
+    <main className={jakarta.className}>
       <Header />
       {children}
       <Footer />

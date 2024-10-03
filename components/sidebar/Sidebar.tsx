@@ -88,7 +88,7 @@ export function Sidebar() {
       subLinks: [
         {
           title: "Message",
-          url: "/dashboard/notifications/:notificationId",
+          url: "/dashboard/notifications/",
         },
       ],
     },
@@ -101,7 +101,7 @@ export function Sidebar() {
       subLinks: [
         {
           title: "Repair",
-          url: "/dashboard/repairs/:requestId",
+          url: "/dashboard/repairs/",
         },
       ],
     },
@@ -112,13 +112,13 @@ export function Sidebar() {
       variant: "ghost",
       url: "/dashboard/protections",
     },
-    {
-      title: "Devices",
-      label: "",
-      icon: MonitorSmartphone as LucideIcon,
-      variant: "ghost",
-      url: "/dashboard/devices",
-    },
+    //{
+    //  title: "Devices",
+    //  label: "",
+    //  icon: MonitorSmartphone as LucideIcon,
+    //  variant: "ghost",
+    //  url: "/dashboard/devices",
+    //},
     {
       title: "Settings",
       label: "",
@@ -186,7 +186,7 @@ export function Sidebar() {
         {isCollapsed ? (
           <Image
             onClick={toggleCollapse}
-            src="/images/logo-icon.png"
+            src="/images/logo-icon.svg"
             alt="LOGO"
             sizes="100vw"
             className="ml-4"
@@ -199,7 +199,7 @@ export function Sidebar() {
           />
         ) : (
           <Image
-            src="/images/logo.png"
+            src="/images/logo.svg"
             alt="LOGO"
             sizes="100vw"
             style={{
