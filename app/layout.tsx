@@ -15,10 +15,21 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "MyGadgetPadi",
-  description: "One stop for device protection",
+  title: "MyGadgetPadi | One stop for device protection",
+  description: "At My Gadget Padi, we’re all about keeping you connected. Get the latest devices, fast repairs, and affordable insurance in one place. No hassle, No worries – just tech solutions made easy.",
   icons: {
-    icon: '/icons/logo.svg'
+    icon: '/logo/favicon.ico'
+  },
+  openGraph: {
+    title: "MyGadgetPadi | One stop for device protection",
+    description: "At My Gadget Padi, we’re all about keeping you connected. Get the latest devices, fast repairs, and affordable insurance in one place. No hassle, No worries – just tech solutions made easy.",
+    images: [
+      {
+        url: 'https://mygadgetpadi.vercel.app/images/home.png',
+        alt: 'MyGadgetPadi | One stop for device protection'
+      }
+    ],
+    type: 'website'
   }
 };
 
