@@ -4,7 +4,7 @@ import { v } from "convex/values";
 export default defineSchema({
   users: defineTable({
     email: v.string(),
-    clerkId: v.string(),
+    clerkId: v.optional(v.string()),
     type: v.optional(v.string()), //customer or technician
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
@@ -24,7 +24,10 @@ export default defineSchema({
     requests: v.optional(v.array(v.id("repairRequests"))),
     protection: v.optional(v.id("deviceProtections")),
     isAdmin: v.optional(v.boolean()),
-    secretCode: v.optional(v.string())
+    secretCode: v.optional(v.string()),
+    otp: v.optional(v.string()),
+    otpSalt: v.optional(v.string()),
+    otpExpires: v.optional(v.string()),
   }),
 
   repairRequests: defineTable({
@@ -48,7 +51,7 @@ export default defineSchema({
     deliveryTypeDate: v.optional(v.string()),
     deliveryTypeTime: v.optional(v.string()),
     warranty: v.optional(v.boolean()), //true or false
-    status: v.optional(v.string()) //scheduled, received, assigned, in-progress, fixed, ready for pickup/delivery, delivered, cancelled
+    status: v.optional(v.string()), //scheduled, received, assigned, in-progress, fixed, ready for pickup/delivery, delivered, cancelled
   }),
 
   devices: defineTable({
@@ -59,7 +62,7 @@ export default defineSchema({
     name: v.string(),
     model: v.string(),
     serialNumber: v.number(),
-    protection: v.optional(v.id("deviceProtections"))
+    protection: v.optional(v.id("deviceProtections")),
   }),
 
   deviceProtections: defineTable({
@@ -68,7 +71,7 @@ export default defineSchema({
     device: v.id("devices"),
     type: v.string(), //monthly or yearly
     name: v.string(),
-    price: v.number()
+    price: v.number(),
   }),
 
   notifications: defineTable({
@@ -78,6 +81,13 @@ export default defineSchema({
     emailAddress: v.optional(v.string()),
     phoneNumber: v.optional(v.number()),
     read: v.boolean(), //true or false
-    response: v.optional(v.string())
-  })
+    response: v.optional(v.string()),
+  }),
+
+  sessions: defineTable({
+    userId: v.id("users"),
+    sessionId: v.string(),
+    createdAt: v.string(),
+    expiresAt: v.string(),
+  }),
 });
