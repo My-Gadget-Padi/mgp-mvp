@@ -14,15 +14,18 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as auth from "../auth.js";
 import type * as deviceProtections from "../deviceProtections.js";
 import type * as devices from "../devices.js";
 import type * as files from "../files.js";
+import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
 import type * as notifications from "../notifications.js";
 import type * as repairRequests from "../repairRequests.js";
 import type * as sendEmail from "../sendEmail.js";
 import type * as sendSMS from "../sendSMS.js";
 import type * as sendWhatsApp from "../sendWhatsApp.js";
+import type * as sessions from "../sessions.js";
 import type * as users from "../users.js";
 
 /**
@@ -34,15 +37,18 @@ import type * as users from "../users.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   deviceProtections: typeof deviceProtections;
   devices: typeof devices;
   files: typeof files;
+  helpers: typeof helpers;
   http: typeof http;
   notifications: typeof notifications;
   repairRequests: typeof repairRequests;
   sendEmail: typeof sendEmail;
   sendSMS: typeof sendSMS;
   sendWhatsApp: typeof sendWhatsApp;
+  sessions: typeof sessions;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

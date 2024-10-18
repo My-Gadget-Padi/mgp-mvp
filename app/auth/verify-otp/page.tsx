@@ -1,5 +1,4 @@
-import CustomSignIn from "@/components/custom-authentication/sign-in";
-import Authorize from "@/components/custom-authentication/authorize";
+import VerifyOTP from "@/components/custom-authentication/verify-otp";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -8,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 const SigninPage = () => {
-  return <Authorize />;
+  return <VerifyOTP />;
 };
 
 export default SigninPage;

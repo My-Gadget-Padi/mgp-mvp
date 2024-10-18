@@ -36,7 +36,19 @@ export const getUserByConvexId = query({
     }
 
     return user;
-  }
+  },
+});
+
+export const getUserByEmail = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), args.email))
+      .unique();
+
+    return user;
+  },
 });
 
 export const getUsersByPlainIds = query({
@@ -51,7 +63,10 @@ export const getUsersByPlainIds = query({
     // Collect all users by their IDs
     const users = [];
     for (const userId of userIds) {
-      const user = await ctx.db.query("users").filter(q => q.eq(q.field("_id"), userId)).unique();
+      const user = await ctx.db
+        .query("users")
+        .filter((q) => q.eq(q.field("_id"), userId))
+        .unique();
       if (user) {
         users.push(user);
       }
@@ -63,7 +78,7 @@ export const getUsersByPlainIds = query({
 
 export const createUser = internalMutation({
   args: {
-    clerkId: v.string(),
+    clerkId: v.optional(v.string()),
     email: v.string(),
     type: v.optional(v.string()), //customer or technician
     firstName: v.optional(v.string()),
@@ -84,7 +99,10 @@ export const createUser = internalMutation({
     requests: v.optional(v.array(v.id("repairRequests"))),
     protection: v.optional(v.id("deviceProtections")),
     isAdmin: v.optional(v.boolean()),
-    secretCode: v.optional(v.string())
+    secretCode: v.optional(v.string()),
+    otp: v.optional(v.string()),
+    otpExpires: v.optional(v.string()),
+    otpSalt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     try {
@@ -104,13 +122,16 @@ export const createUser = internalMutation({
         marketing_updates: false,
         social_updates: false,
         security_updates: true,
-        notifications: args.notifications,
+        // notifications: args.notifications,
         stripeId: args.stripeId || "",
         paystackId: args.paystackId || "",
-        requests: args.requests || [],
-        protection: args.protection,
+        // requests: args.requests || [],
+        // protection: args.protection,
+        otp: args.otp || "",
+        otpSalt: args.otpSalt || "",
+        otpExpires: args.otpExpires || "",
         isAdmin: false,
-        secretCode: ""
+        secretCode: "",
       });
       const updatedUser = await ctx.db.get(newUserId);
 
@@ -119,7 +140,7 @@ export const createUser = internalMutation({
       console.error("Error creating user:", error);
       throw new ConvexError("Failed to create user.");
     }
-  }
+  },
 });
 
 export const updateUser = mutation({
@@ -143,7 +164,10 @@ export const updateUser = mutation({
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
     requests: v.optional(v.array(v.id("repairRequests"))),
-    protection: v.optional(v.id("deviceProtections"))
+    protection: v.optional(v.id("deviceProtections")),
+    otp: v.optional(v.string()),
+    otpExpires: v.optional(v.string()),
+    otpSalt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
@@ -157,14 +181,30 @@ export const updateUser = mutation({
 
     const updateFields = {
       ...(args.imageUrl !== undefined && { imageUrl: args.imageUrl }),
-      ...(args.imageStorageId !== undefined && { imageStorageId: args.imageStorageId }),
-      ...(args.notificationMethod !== undefined && { notificationMethod: args.notificationMethod }),
-      ...(args.notificationType !== undefined && { notificationType: args.notificationType }),
-      ...(args.communication_updates !== undefined && { communication_updates: args.communication_updates }),
-      ...(args.marketing_updates !== undefined && { marketing_updates: args.marketing_updates }),
-      ...(args.social_updates !== undefined && { social_updates: args.social_updates }),
-      ...(args.security_updates !== undefined && { security_updates: args.security_updates }),
-      ...(args.notifications !== undefined && { notifications: args.notifications }),
+      ...(args.imageStorageId !== undefined && {
+        imageStorageId: args.imageStorageId,
+      }),
+      ...(args.notificationMethod !== undefined && {
+        notificationMethod: args.notificationMethod,
+      }),
+      ...(args.notificationType !== undefined && {
+        notificationType: args.notificationType,
+      }),
+      ...(args.communication_updates !== undefined && {
+        communication_updates: args.communication_updates,
+      }),
+      ...(args.marketing_updates !== undefined && {
+        marketing_updates: args.marketing_updates,
+      }),
+      ...(args.social_updates !== undefined && {
+        social_updates: args.social_updates,
+      }),
+      ...(args.security_updates !== undefined && {
+        security_updates: args.security_updates,
+      }),
+      ...(args.notifications !== undefined && {
+        notifications: args.notifications,
+      }),
       ...(args.email !== undefined && { email: args.email }),
       ...(args.phoneNumber !== undefined && { phoneNumber: args.phoneNumber }),
       ...(args.firstName !== undefined && { firstName: args.firstName }),
@@ -174,7 +214,10 @@ export const updateUser = mutation({
       ...(args.paystackId !== undefined && { paystackId: args.paystackId }),
       ...(args.address !== undefined && { address: args.address }),
       ...(args.requests !== undefined && { requests: args.requests }),
-      ...(args.protection !== undefined && { protection: args.protection })
+      ...(args.protection !== undefined && { protection: args.protection }),
+      ...(args.otp !== undefined && { otp: args.otp }),
+      ...(args.otpExpires !== undefined && { otpExpires: args.otpExpires }),
+      ...(args.otpSalt !== undefined && { otpSalt: args.otpSalt }),
     };
 
     await ctx.db.patch(args.userId, updateFields);
@@ -213,7 +256,7 @@ export const updateClerkUser = internalMutation({
     email: v.optional(v.string()),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
-    stripeId: v.optional(v.string())
+    stripeId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
@@ -231,7 +274,7 @@ export const updateClerkUser = internalMutation({
       ...(args.email !== undefined && { email: args.email }),
       ...(args.firstName !== undefined && { firstName: args.firstName }),
       ...(args.lastName !== undefined && { lastName: args.lastName }),
-      ...(args.stripeId !== undefined && { stripeId: args.stripeId })
+      ...(args.stripeId !== undefined && { stripeId: args.stripeId }),
     };
 
     await ctx.db.patch(user._id, updateFields);

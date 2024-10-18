@@ -3,7 +3,7 @@ import "./globals.css";
 import { Toaster } from '@/components/ui/toaster'
 //import { ThemeProvider } from '@/context/theme-provider'
 import { Plus_Jakarta_Sans } from 'next/font/google'
-import ConvexClerkProvider from "@/providers/ConvexClerkProvider";
+import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import { Analytics } from "@vercel/analytics/react"
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'] });
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ConvexClerkProvider>
+  <ConvexClientProvider >
       <html lang="en">
         <body className={jakarta.className || ""}>
           {children}
@@ -44,6 +44,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Analytics />
         </body>
       </html>
-    </ConvexClerkProvider>
+    </ConvexClientProvider>
   );
 };
