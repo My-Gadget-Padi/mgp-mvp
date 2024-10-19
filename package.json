@@ -50,6 +50,7 @@
     "convex": "^1.12.2",
     "date-fns": "^3.6.0",
     "dompurify": "^3.1.5",
+    "google-auth-library": "^9.14.2",
     "install": "^0.13.0",
     "jotai": "^2.8.4",
     "linkify-react": "^4.1.3",

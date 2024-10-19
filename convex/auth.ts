@@ -102,18 +102,36 @@ export const verifyOtp = action({
   },
 });
 
+interface GoogleUserResult {
+  email?: string;
+  email_verified?: boolean;
+  name?: string;
+  given_name?: string;
+  family_name?: string;
+  picture?: string;
+  locale?: string;
+}
+
 export const signInWithGoogle = action({
   args: {
-    email: v.string(),
+    code: v.string(),
     userAgent: v.string(),
-    firstName: v.optional(v.string()),
-    lastName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { email, firstName, lastName, userAgent } = args;
+    const { code, userAgent } = args;
+    const payload: GoogleUserResult | null = await ctx.runAction(
+      internal.oauth.verifyCallback,
+      { code }
+    );
+    if (!payload) {
+      throw new ConvexError("Failed to sign in with Google!");
+    }
 
     try {
       let userId;
+      const email = payload.email!;
+      const firstName = payload.given_name!;
+      const lastName = payload.family_name!;
 
       const user = await ctx.runQuery(api.users.getUserByEmail, {
         email,

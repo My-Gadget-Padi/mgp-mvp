@@ -21,6 +21,7 @@ import type * as files from "../files.js";
 import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
 import type * as notifications from "../notifications.js";
+import type * as oauth from "../oauth.js";
 import type * as repairRequests from "../repairRequests.js";
 import type * as sendEmail from "../sendEmail.js";
 import type * as sendSMS from "../sendSMS.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   helpers: typeof helpers;
   http: typeof http;
   notifications: typeof notifications;
+  oauth: typeof oauth;
   repairRequests: typeof repairRequests;
   sendEmail: typeof sendEmail;
   sendSMS: typeof sendSMS;
