@@ -12,19 +12,22 @@ export default defineSchema({
     phoneNumber: v.optional(v.number()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
-    notificationMethod: v.optional(v.string()), // email, sms, whatsapp
+    notificationMethod: v.optional(v.string()), // email, sms, whatsapp, call
     notificationType: v.optional(v.string()), // all, repairs only, none
     communication_updates: v.optional(v.boolean()), // true or false : default = true
     marketing_updates: v.optional(v.boolean()), // true or false
     social_updates: v.optional(v.boolean()), // true or false
     security_updates: v.optional(v.boolean()), // true or false : default = true
-    //notifications: v.optional(v.id("notifications")),
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
-    //requests: v.optional(v.array(v.id("repairRequests"))),
-    //protection: v.optional(v.array(v.id("deviceProtections"))),
     isAdmin: v.optional(v.boolean()),
-    secretCode: v.optional(v.string())
+    secretCode: v.optional(v.string()),
+    otp: v.optional(v.string()),
+    otpExpires: v.optional(v.any()),
+    otpSalt: v.optional(v.string()),
+    protection: v.optional(v.array(v.id("deviceProtections"))), //to be deleted
+    requests: v.optional(v.array(v.id("repairRequests"))), //to be deleted
+    notifications: v.optional(v.id("notifications")), //to be deleted
   }),
 
   //admin
@@ -61,7 +64,7 @@ export default defineSchema({
     name: v.string(),
     model: v.string(),
     serialNumber: v.number(),
-    //protection: v.optional(v.id("deviceProtections"))
+    protection: v.optional(v.id("deviceProtections"))
   }),
 
   deviceProtections: defineTable({
@@ -77,8 +80,9 @@ export default defineSchema({
 
   notifications: defineTable({
     userId: v.id("users"),
-    type: v.string(), //email or SMS
-    message: v.string(),
+    type: v.string(), //account, repairs, protections, security, offers, warranty, payments, security
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
     emailAddress: v.optional(v.string()),
     phoneNumber: v.optional(v.number()),
     read: v.boolean(), //true or false

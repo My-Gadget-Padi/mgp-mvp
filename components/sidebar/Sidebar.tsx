@@ -75,7 +75,7 @@ export function Sidebar() {
       subLinks: [
         {
           title: "Request Fix",
-          url: "/dashboard/request-fix",
+          url: "/repair",
         },
       ],
     },

@@ -75,7 +75,7 @@ const CustomForgotPassword = () => {
           <div className="relative h-full hidden lg:flex lg:w-6/12 sm:w-full" style={styles.bgImg}>
             <div className="px-5 py-3">
               <button type='button' className="px-10 py-3 text-base font-normal text-black bg-white rounded-lg">
-                <Link href="/repair/request-fix">Repair</Link>
+                <Link href="/request-fix">Repair</Link>
               </button>
             </div>
 
@@ -125,7 +125,7 @@ const CustomForgotPassword = () => {
                       />
                     </div>
                     <div className="mb-6">
-                      <button className="flex items-center justify-center w-full py-4 text-base font-medium text-white duration-300 bg-indigo-600 rounded-lg shadow-submit dark:shadow-submit-dark px-9 hover:bg-gray-600">
+                      <button className="flex items-center justify-center w-full py-4 text-base font-medium text-white duration-300 bg-[#6445E8] rounded-lg shadow-submit dark:shadow-submit-dark px-9 hover:bg-gray-600">
                         Send password reset code
                       </button>
                     </div>
@@ -159,7 +159,7 @@ const CustomForgotPassword = () => {
                       />
                     </div>
                     <div className="mb-6">
-                      <button className="flex items-center justify-center w-full py-4 text-base font-medium text-white duration-300 bg-indigo-600 rounded-lg shadow-submit dark:shadow-submit-dark px-9 hover:bg-gray-600">
+                      <button className="flex items-center justify-center w-full py-4 text-base font-medium text-white duration-300 bg-[#6445E8] rounded-lg shadow-submit dark:shadow-submit-dark px-9 hover:bg-gray-600">
                         Reset Password
                       </button>
                     </div>

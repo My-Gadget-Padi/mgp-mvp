@@ -12,8 +12,8 @@ const BrandForm = () => {
             <h2 className="lg:text-2xl sm:text-base font-medium leading-normal text-white">
               Get your gadget fixed <br/>by professionals only.
             </h2>
-            <button className="bg-indigo-600 mt-6 lg:text-base sm:text-sm font-medium text-white py-3 px-8  rounded" type="button">
-            <Link href="/repair/request-fix">Request a Fix</Link>
+            <button className="bg-[#6445E8] mt-6 lg:text-base sm:text-sm font-medium text-white py-3 px-8  rounded" type="button">
+            <Link href="/request-fix">Request a Fix</Link>
                 </button>
             </div>
             <div className="lg:w-5/12 lg:flex flex-wrap justify-end lg:mt-4 pb-4 pt-4 sm:mt-5">

@@ -8,7 +8,7 @@ export const getAllUsers = query({
 });
 
 export const getUserByClerkId = query({
-  args: { clerkId: v.string() },
+  args: { clerkId: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query("users")
@@ -72,17 +72,14 @@ export const createUser = internalMutation({
     phoneNumber: v.optional(v.number()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
-    notificationMethod: v.optional(v.string()), // email, sms, whatsapp
+    notificationMethod: v.optional(v.string()), // email, sms, whatsapp, call
     notificationType: v.optional(v.string()), // all, repairs only, none
     communication_updates: v.optional(v.boolean()), // true or false : default = true
     marketing_updates: v.optional(v.boolean()), // true or false
     social_updates: v.optional(v.boolean()), // true or false
     security_updates: v.optional(v.boolean()), // true or false : default = true
-    notifications: v.optional(v.id("notifications")),
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
-    requests: v.optional(v.array(v.id("repairRequests"))),
-    protection: v.optional(v.id("deviceProtections")),
     isAdmin: v.optional(v.boolean()),
     secretCode: v.optional(v.string())
   },
@@ -98,17 +95,14 @@ export const createUser = internalMutation({
         phoneNumber: args.phoneNumber || 0,
         imageUrl: args.imageUrl,
         imageStorageId: args.imageStorageId,
-        notificationType: args.notificationType,
+        notificationType: "all",
         notificationMethod: "email",
         communication_updates: true,
         marketing_updates: false,
         social_updates: false,
         security_updates: true,
-        notifications: args.notifications,
         stripeId: args.stripeId || "",
         paystackId: args.paystackId || "",
-        requests: args.requests || [],
-        protection: args.protection,
         isAdmin: false,
         secretCode: ""
       });
@@ -133,17 +127,14 @@ export const updateUser = mutation({
     phoneNumber: v.optional(v.number()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
-    notificationMethod: v.optional(v.string()), // email, sms, whatsapp
+    notificationMethod: v.optional(v.string()), // email, sms, whatsapp, call
     notificationType: v.optional(v.string()), // all, repairs only, none
     communication_updates: v.optional(v.boolean()), // true or false : default = true
     marketing_updates: v.optional(v.boolean()), // true or false
     social_updates: v.optional(v.boolean()), // true or false
     security_updates: v.optional(v.boolean()), // true or false : default = true
-    notifications: v.optional(v.id("notifications")),
     stripeId: v.optional(v.string()),
-    paystackId: v.optional(v.string()),
-    requests: v.optional(v.array(v.id("repairRequests"))),
-    protection: v.optional(v.id("deviceProtections"))
+    paystackId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
@@ -164,7 +155,6 @@ export const updateUser = mutation({
       ...(args.marketing_updates !== undefined && { marketing_updates: args.marketing_updates }),
       ...(args.social_updates !== undefined && { social_updates: args.social_updates }),
       ...(args.security_updates !== undefined && { security_updates: args.security_updates }),
-      ...(args.notifications !== undefined && { notifications: args.notifications }),
       ...(args.email !== undefined && { email: args.email }),
       ...(args.phoneNumber !== undefined && { phoneNumber: args.phoneNumber }),
       ...(args.firstName !== undefined && { firstName: args.firstName }),
@@ -172,9 +162,7 @@ export const updateUser = mutation({
       ...(args.type !== undefined && { type: args.type }),
       ...(args.stripeId !== undefined && { stripeId: args.stripeId }),
       ...(args.paystackId !== undefined && { paystackId: args.paystackId }),
-      ...(args.address !== undefined && { address: args.address }),
-      ...(args.requests !== undefined && { requests: args.requests }),
-      ...(args.protection !== undefined && { protection: args.protection })
+      ...(args.address !== undefined && { address: args.address })
     };
 
     await ctx.db.patch(args.userId, updateFields);
