@@ -4,8 +4,9 @@ import { mutation, query } from "./_generated/server";
 export const createNotification = mutation({
   args: {
     userId: v.id("users"),
-    type: v.string(), //email or sms or whatsapp
-    message: v.string(),
+    type: v.string(), //account, repairs, protections, security, offers, warranty, payments, security
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
     emailAddress: v.optional(v.string()),
     phoneNumber: v.optional(v.number()),
     read: v.boolean(), //true or false
@@ -16,7 +17,8 @@ export const createNotification = mutation({
     const notificationId = await ctx.db.insert("notifications", {
       userId: args.userId,
       type: args.type,
-      message: args.message,
+      title: args.title || "",
+      description: args.description || "",
       emailAddress: args.emailAddress,
       phoneNumber: args.phoneNumber,
       read: args.read,
@@ -31,8 +33,9 @@ export const updateNotification = mutation({
   args: {
     notificationId: v.id("notifications"),
     userId: v.optional(v.id("users")),
-    type: v.optional(v.string()), //email or sms or whatsapp
-    message: v.optional(v.string()),
+    type: v.optional(v.string()), //account, repairs, protections, security, offers, warranty, payments, security
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
     emailAddress: v.optional(v.string()),
     phoneNumber: v.optional(v.number()),
     read: v.boolean(), //true or false
@@ -49,7 +52,8 @@ export const updateNotification = mutation({
     const updateNotification = {
       ...(args.userId !== undefined && { userId: args.userId }),
       ...(args.type !== undefined && { type: args.type }),
-      ...(args.message !== undefined && { message: args.message }),
+      ...(args.title !== undefined && { title: args.title }),
+      ...(args.description !== undefined && { description: args.description }),
       ...(args.emailAddress !== undefined && { emailAddress: args.emailAddress }),
       ...(args.phoneNumber !== undefined && { phoneNumber: args.phoneNumber }),
       ...(args.read !== undefined && { read: args.read }),

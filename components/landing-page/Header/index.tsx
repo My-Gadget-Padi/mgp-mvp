@@ -48,7 +48,7 @@ const Header = () => {
       <header
         className={`header left-0 top-0 z-40 flex w-full items-center ${
           sticky
-            ? "dark:bg-gray-dark dark:shadow-sticky-dark  bg-white fixed z-[9999]"
+            ? "dark:bg-gray-dark dark:shadow-sticky-dark bg-white fixed z-[9999]"
             : "absolute bg-white"
         }`}
       >
@@ -66,7 +66,7 @@ const Header = () => {
                   alt="logo"
                   width={130}
                   height={25}
-                  className="w-full dark:hidden"
+                  className="w-full ml-3 dark:hidden"
                 />
                 <Image
                   src="/images/logo/logo.svg"
@@ -104,7 +104,7 @@ const Header = () => {
                 </button>
                 <nav
                   id="navbarCollapse"
-                  className={`navbar absolute right-0 z-30 w-[250px] rounded border-[1px] bg-white px-6 py-5 duration-300 dark:border-body-color/20 dark:bg-dark lg:visible lg:static lg:w-auto lg:border-none lg:!bg-transparent lg:p-0 lg:opacity-100 ${
+                  className={`navbar absolute right-4 z-30 w-[220px] rounded border-[1px] bg-white px-6 py-5 duration-300 dark:border-body-color/20 dark:bg-dark lg:visible lg:static lg:w-auto lg:border-none lg:!bg-transparent lg:p-0 lg:opacity-100 ${
                     navbarOpen
                       ? "visibility top-full opacity-100"
                       : "invisible top-[120%] opacity-0"

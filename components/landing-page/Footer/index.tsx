@@ -38,7 +38,7 @@ const Footer = () => {
               Privacy Policy
             </Link>
             */}
-            <Link href="/repair/request-fix" className="px-1">
+            <Link href="/request-fix" className="px-1">
               Request a Fix
             </Link>
             <Link href="#about-us" className="px-1">

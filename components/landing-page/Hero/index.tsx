@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -25,12 +26,18 @@ const Hero = () => {
                 <br />
                 we’ve got it all in one easy place.
               </p>
-              <button
-                className="bg-indigo-600 mt-6 sm:mt-2 text-base font-medium text-white py-3 px-8 rounded"
-                type="button"
-              >
-                <Link href="/repair/request-fix">Request a repair</Link>
-              </button>
+              <div className="mt-4">
+                <Link href="/request-fix">
+                  <Button className="py-6 px-8 bg-[#6445E8] hover:bg-[#6445E8]/90">
+                    Request a repair
+                  </Button>
+                </Link>
+                <Link href="/auth/sign-in" className="lg:hidden">
+                  <Button variant="outline" className="py-6 px-8 border-[#6445E8] hover:bg-[#6445E8]/90 hover:text-white ml-2">
+                    Login
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
 

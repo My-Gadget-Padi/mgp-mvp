@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/custom/button";
-import { BellRing, LogOut, Settings, Wrench } from "lucide-react";
+import { FileClock, LogOut, Settings, Wrench } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,20 +62,20 @@ export function UserNav() {
         <DropdownMenuGroup>
           <DropdownMenuItem
             onClick={() =>
-              handleItemClick(() => router.push("/dashboard/request-fix"))
+              handleItemClick(() => router.push("/repair"))
             }
           >
             <Wrench className="mr-2 h-4 w-4" />
-            Request fix
+            Repair gadget
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => handleItemClick(() => router.push("/dashboard/notifications"))}
+            onClick={() => handleItemClick(() => router.push("/history"))}
           >
-            <BellRing className="mr-2 h-4 w-4" />
-            Notifications
+            <FileClock className="mr-2 h-4 w-4" />
+            History
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => handleItemClick(() => router.push("/dashboard/settings"))}
+            onClick={() => handleItemClick(() => router.push("/settings"))}
           >
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
@@ -87,7 +87,7 @@ export function UserNav() {
           onClick={() => signOut({ redirectUrl: "/auth/sign-in" })}
         >
           <LogOut className="stroke-red-500 mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span>Logout</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

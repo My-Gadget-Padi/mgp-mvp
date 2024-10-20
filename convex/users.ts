@@ -8,7 +8,7 @@ export const getAllUsers = query({
 });
 
 export const getUserByClerkId = query({
-  args: { clerkId: v.string() },
+  args: { clerkId: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query("users")
@@ -87,17 +87,14 @@ export const createUser = internalMutation({
     phoneNumber: v.optional(v.number()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
-    notificationMethod: v.optional(v.string()), // email, sms, whatsapp
+    notificationMethod: v.optional(v.string()), // email, sms, whatsapp, call
     notificationType: v.optional(v.string()), // all, repairs only, none
     communication_updates: v.optional(v.boolean()), // true or false : default = true
     marketing_updates: v.optional(v.boolean()), // true or false
     social_updates: v.optional(v.boolean()), // true or false
     security_updates: v.optional(v.boolean()), // true or false : default = true
-    notifications: v.optional(v.id("notifications")),
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
-    requests: v.optional(v.array(v.id("repairRequests"))),
-    protection: v.optional(v.id("deviceProtections")),
     isAdmin: v.optional(v.boolean()),
     secretCode: v.optional(v.string()),
     otp: v.optional(v.string()),
@@ -116,7 +113,7 @@ export const createUser = internalMutation({
         phoneNumber: args.phoneNumber || 0,
         imageUrl: args.imageUrl,
         imageStorageId: args.imageStorageId,
-        notificationType: args.notificationType,
+        notificationType: "all",
         notificationMethod: "email",
         communication_updates: true,
         marketing_updates: false,
@@ -154,17 +151,15 @@ export const updateUser = mutation({
     phoneNumber: v.optional(v.number()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
-    notificationMethod: v.optional(v.string()), // email, sms, whatsapp
+    notificationMethod: v.optional(v.string()), // email, sms, whatsapp, call
     notificationType: v.optional(v.string()), // all, repairs only, none
     communication_updates: v.optional(v.boolean()), // true or false : default = true
     marketing_updates: v.optional(v.boolean()), // true or false
     social_updates: v.optional(v.boolean()), // true or false
     security_updates: v.optional(v.boolean()), // true or false : default = true
-    notifications: v.optional(v.id("notifications")),
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
     requests: v.optional(v.array(v.id("repairRequests"))),
-    protection: v.optional(v.id("deviceProtections")),
     otp: v.optional(v.string()),
     otpExpires: v.optional(v.string()),
     otpSalt: v.optional(v.string()),
@@ -181,30 +176,13 @@ export const updateUser = mutation({
 
     const updateFields = {
       ...(args.imageUrl !== undefined && { imageUrl: args.imageUrl }),
-      ...(args.imageStorageId !== undefined && {
-        imageStorageId: args.imageStorageId,
-      }),
-      ...(args.notificationMethod !== undefined && {
-        notificationMethod: args.notificationMethod,
-      }),
-      ...(args.notificationType !== undefined && {
-        notificationType: args.notificationType,
-      }),
-      ...(args.communication_updates !== undefined && {
-        communication_updates: args.communication_updates,
-      }),
-      ...(args.marketing_updates !== undefined && {
-        marketing_updates: args.marketing_updates,
-      }),
-      ...(args.social_updates !== undefined && {
-        social_updates: args.social_updates,
-      }),
-      ...(args.security_updates !== undefined && {
-        security_updates: args.security_updates,
-      }),
-      ...(args.notifications !== undefined && {
-        notifications: args.notifications,
-      }),
+      ...(args.imageStorageId !== undefined && { imageStorageId: args.imageStorageId }),
+      ...(args.notificationMethod !== undefined && { notificationMethod: args.notificationMethod }),
+      ...(args.notificationType !== undefined && { notificationType: args.notificationType }),
+      ...(args.communication_updates !== undefined && { communication_updates: args.communication_updates }),
+      ...(args.marketing_updates !== undefined && { marketing_updates: args.marketing_updates }),
+      ...(args.social_updates !== undefined && { social_updates: args.social_updates }),
+      ...(args.security_updates !== undefined && { security_updates: args.security_updates }),
       ...(args.email !== undefined && { email: args.email }),
       ...(args.phoneNumber !== undefined && { phoneNumber: args.phoneNumber }),
       ...(args.firstName !== undefined && { firstName: args.firstName }),
@@ -214,7 +192,6 @@ export const updateUser = mutation({
       ...(args.paystackId !== undefined && { paystackId: args.paystackId }),
       ...(args.address !== undefined && { address: args.address }),
       ...(args.requests !== undefined && { requests: args.requests }),
-      ...(args.protection !== undefined && { protection: args.protection }),
       ...(args.otp !== undefined && { otp: args.otp }),
       ...(args.otpExpires !== undefined && { otpExpires: args.otpExpires }),
       ...(args.otpSalt !== undefined && { otpSalt: args.otpSalt }),

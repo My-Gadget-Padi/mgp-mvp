@@ -5,7 +5,7 @@ const menuData: Menu[] = [
   {
     id: 1,
     title: "Request a Fix",
-    path: "/repair/request-fix",
+    path: "/request-fix",
     newTab: false,
   },
   {

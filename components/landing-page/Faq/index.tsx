@@ -117,7 +117,7 @@ const Faq = () => {
                           onClick={() => toggleQuestion(item.question)}
                           className="flex items-center justify-between w-full px-4 py-4 text-lg text-left text-black rounded-full bg-gray-50 hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-indigo-100 focus-visible:ring-opacity-75 dark:bg-trueGray-800 dark:text-gray-200"
                         >
-                          <span className="font-semibold text-base">{item.question}</span>
+                          <span className="font-semibold text-sm sm:text-base">{item.question}</span>
                           <ChevronDown
                             className={`${
                               openQuestion === item.question ? "transform rotate-180" : ""
@@ -125,7 +125,7 @@ const Faq = () => {
                           />
                         </DisclosureButton>
                         {openQuestion === item.question && (
-                          <DisclosurePanel className="text-left px-4 pt-4 pb-2 text-white dark:text-gray-300">
+                          <DisclosurePanel className="text-left text-sm sm:text-base px-4 pt-4 pb-2 text-white dark:text-gray-300">
                             {item.answer}
                           </DisclosurePanel>
                         )}

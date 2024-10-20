@@ -457,7 +457,7 @@ export const laptopBrands: DeviceBrand[] = [
   { id: "other", label: "Other Device", models: others },
 ];
 
-export const computerBrands: DeviceBrand[] = [
+export const desktopBrands: DeviceBrand[] = [
   { id: "imac", label: "Apple Desktop", models: imacModels },
   { id: "dellDesktop", label: "Dell Desktop", models: dellDesktopModels },
   { id: "hpDesktop", label: "HP Desktop", models: hpLaptopModels },

@@ -75,7 +75,7 @@ const CustomSignIn = () => {
         >
           <div className="px-5 py-3">
             <button type="button" className="rounded-lg px-10 py-3 bg-white text-base font-normal text-black">
-              <Link href="/repair/request-fix">Repair</Link>{" "}
+              <Link href="/request-fix">Repair</Link>{" "}
             </button>
           </div>
 
@@ -149,7 +149,7 @@ const CustomSignIn = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`shadow-submit dark:shadow-submit-dark flex w-full items-center justify-center rounded-lg bg-indigo-600 px-9 py-4 text-base font-medium text-white duration-300 hover:bg-gray-600 ${
+                  className={`shadow-submit dark:shadow-submit-dark flex w-full items-center justify-center rounded-lg bg-[#6445E8] px-9 py-4 text-base font-medium text-white duration-300 hover:bg-gray-600 ${
                     loading ? "opacity-50" : ""
                   }`}
                 >

@@ -1,7 +1,6 @@
-import { userAgent } from "next/server";
 import { internalMutation, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-userAgent;
+
 export const createSession = internalMutation({
   args: { userId: v.id("users"), sessionId: v.string(), userAgent: v.any() },
   handler: async (ctx, args) => {

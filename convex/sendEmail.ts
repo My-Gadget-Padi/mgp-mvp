@@ -74,10 +74,7 @@ export const sendOtpEmail = internalAction({
         html: `<p>Welcome to MyGadgetPadi</p><p>Please continue your verification process by entering this otp</p><p>${args.otp}</p>`,
       };
 
-      console.log({ transporter });
-      console.log({ smtpConfig });
       const info = await transporter.sendMail(mailOptions);
-      console.log(`Email sent: ${info.response}`);
       return {
         success: true,
         message: `Email sent successfully: ${info.response}`,
