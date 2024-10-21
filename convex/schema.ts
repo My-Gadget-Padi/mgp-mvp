@@ -64,6 +64,7 @@ export default defineSchema({
     name: v.string(),
     model: v.string(),
     serialNumber: v.number(),
+    protection: v.optional(v.id("deviceProtections")),
   }),
 
   deviceProtections: defineTable({
