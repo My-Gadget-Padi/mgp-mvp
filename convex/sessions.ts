@@ -1,6 +1,7 @@
+import { userAgent } from "next/server";
 import { internalMutation, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-
+userAgent;
 export const createSession = internalMutation({
   args: { userId: v.id("users"), sessionId: v.string(), userAgent: v.any() },
   handler: async (ctx, args) => {
@@ -59,7 +60,7 @@ export const validateSession = mutation({
         .unique();
 
       if (!session) {
-        throw new ConvexError("Invalid session.");
+        throw new ConvexError("Session expired!.");
       }
 
       if (new Date(session.expiresAt) <= new Date()) {
@@ -68,10 +69,14 @@ export const validateSession = mutation({
       }
 
       const user = await ctx.db.get(session.userId);
+      if (!user) {
+        throw new ConvexError("Session expired!");
+      }
+
       return { user };
     } catch (error) {
       console.error("Error validating session:", error);
-      throw new ConvexError("Session validation failed.");
+      throw new ConvexError("Session expired!.");
     }
   },
 });
