@@ -82,9 +82,9 @@ export const verifyOtp = action({
       const userId = user._id;
       await ctx.runMutation(api.users.updateUser, {
         userId,
-        otp: undefined,
-        otpExpires: undefined,
-        otpSalt: undefined,
+        otp: "",
+        otpExpires: "",
+        otpSalt: "",
       });
 
       const sessionId: string = await ctx.runAction(internal.helpers.generateId);
