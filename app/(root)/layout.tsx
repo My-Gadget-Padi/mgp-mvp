@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import PageLoader from "@/components/PageLoader";
@@ -89,13 +89,15 @@ function MainLayout({
 
   const redirectUrl = searchParams.get("redirect_url") || "/dashboard";
 
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
   if (!isLoaded) {
     return <PageLoader />;
   }
 
   if (!isSignedIn) {
     router.push(
-      `/auth/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}`
+      `/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}`
     );
     return null;
   }
@@ -107,6 +109,11 @@ function MainLayout({
       currentHour % 2 === 0 ? "+2347076641696" : "+2347072665255";
 
     window.open(`https://wa.me/${phoneNumber}`, "_blank");
+  };
+
+  const handleNavigation = (url: string) => {
+    setIsSheetOpen(false);
+    router.push(url);
   };
 
   const renderContent = () => {
@@ -393,7 +400,7 @@ function MainLayout({
                     </Link>
                     <p
                       className="flex items-center gap-3 rounded-lg px-3 py-2 text-red-500 hover:text-red-500 transition-all hover:text-primary"
-                      onClick={() => signOut({ redirectUrl: "/auth/sign-in" })}
+                      onClick={() => signOut({ redirectUrl: "/sign-in" })}
                     >
                       <Button
                         size="icon"
@@ -443,12 +450,13 @@ function MainLayout({
                 </div>
                 <UserNotifs />
                 <UserNav />
-                <Sheet>
+                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                   <SheetTrigger asChild>
                     <Button
                       variant="outline"
                       size="icon"
                       className="shrink-0 md:hidden"
+                      onClick={() => setIsSheetOpen(true)}
                     >
                       <Menu className="h-5 w-5" />
                       <span className="sr-only">Toggle navigation menu</span>
@@ -456,8 +464,8 @@ function MainLayout({
                   </SheetTrigger>
                   <SheetContent side="left" className="flex flex-col">
                     <nav className="grid gap-4 text-base font-medium">
-                      <Link
-                        href="/dashboard"
+                      <div
+                        onClick={() => handleNavigation('/dashboard')}
                         className={`flex items-center gap-2 text-lg font-semibold ${
                           location.includes("/dashboard")
                             ? "text-foreground"
@@ -472,9 +480,9 @@ function MainLayout({
                           width={0}
                           height={0}
                         />
-                      </Link>
-                      <Link
-                        href="/dashboard"
+                      </div>
+                      <div
+                        onClick={() => handleNavigation('/dashboard')}
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/dashboard")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"
@@ -498,9 +506,9 @@ function MainLayout({
                           />
                         </Button>
                         Dashboard
-                      </Link>
-                      <Link
-                        href="/repair"
+                      </div>
+                      <div
+                        onClick={() => handleNavigation('/repair')}
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/repair")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"
@@ -524,9 +532,9 @@ function MainLayout({
                           />
                         </Button>
                         Repair
-                      </Link>
-                      <Link
-                        href="#" //= /protection
+                      </div>
+                      <div
+                        onClick={() => handleNavigation('#')} //= /protection
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/protection")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"
@@ -551,9 +559,9 @@ function MainLayout({
                         </Button>
                         Protection
                         <Badge className="text-[10px]">Coming soon</Badge>
-                      </Link>
-                      <Link
-                        href="/history"
+                      </div>
+                      <div
+                        onClick={() => handleNavigation('/history')}
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/history")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"
@@ -577,14 +585,14 @@ function MainLayout({
                           />
                         </Button>
                         History
-                      </Link>
+                      </div>
                     </nav>
                     <h1 className="font-bold text-sm mt-3 mb-3">
                       ACCOUNT PAGES
                     </h1>
                     <nav className="grid gap-4 text-base font-medium">
-                      <Link
-                        href="/settings"
+                      <div
+                        onClick={() => handleNavigation('/settings')}
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/settings")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"
@@ -608,12 +616,13 @@ function MainLayout({
                           />
                         </Button>
                         Settings
-                      </Link>
+                      </div>
                       <p
                         className="flex items-center gap-4 rounded-xl text-red-500 hover:text-red-500"
-                        onClick={() =>
-                          signOut({ redirectUrl: "/auth/sign-in" })
-                        }
+                        onClick={() => {
+                          setIsSheetOpen(false);
+                          signOut({ redirectUrl: "/sign-in" });
+                        }}
                       >
                         <Button
                           size="icon"

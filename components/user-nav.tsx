@@ -48,7 +48,10 @@ export function UserNav() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
+        <DropdownMenuLabel
+          className="font-normal"
+          onClick={() => handleItemClick(() => router.push("/dashboard"))}
+        >
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none capitalize">
               {userProfile?.firstName} {userProfile?.lastName}
@@ -84,7 +87,7 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="hover:text-red-500"
-          onClick={() => signOut({ redirectUrl: "/auth/sign-in" })}
+          onClick={() => signOut({ redirectUrl: "/sign-in" })}
         >
           <LogOut className="stroke-red-500 mr-2 h-4 w-4" />
           <span>Logout</span>

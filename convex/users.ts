@@ -69,7 +69,7 @@ export const createUser = internalMutation({
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
     address: v.optional(v.string()),
-    phoneNumber: v.optional(v.number()),
+    phoneNumber: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
     notificationMethod: v.optional(v.string()), // email, sms, whatsapp, call
@@ -92,7 +92,7 @@ export const createUser = internalMutation({
         firstName: args.firstName || "",
         lastName: args.lastName || "",
         address: args.address || "",
-        phoneNumber: args.phoneNumber || 0,
+        phoneNumber: args.phoneNumber || "+234",
         imageUrl: args.imageUrl,
         imageStorageId: args.imageStorageId,
         notificationType: "all",
@@ -124,7 +124,7 @@ export const updateUser = mutation({
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
     address: v.optional(v.string()),
-    phoneNumber: v.optional(v.number()),
+    phoneNumber: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
     notificationMethod: v.optional(v.string()), // email, sms, whatsapp, call
@@ -167,6 +167,59 @@ export const updateUser = mutation({
 
     await ctx.db.patch(args.userId, updateFields);
     return args.userId;
+  },
+});
+
+export const deleteAndUpdateImage = mutation({
+  args: {
+    userId: v.id("users"),
+    oldImageStorageId: v.id('_storage'),
+    newImageUrl: v.string(),
+    newImageStorageId: v.id("_storage")
+  },
+  handler: async (ctx, args) => {
+    await ctx.storage.delete(args.oldImageStorageId);
+
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("_id"), args.userId))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    const updateProfileImage = {
+      ...(args.newImageUrl !== undefined && { imageUrl: args.newImageUrl }),
+      ...(args.newImageStorageId !== undefined && { imageStorageId: args.newImageStorageId })
+    };
+
+    await ctx.db.patch(args.userId, updateProfileImage);
+  },
+});
+
+export const saveNewProfileImage = mutation({
+  args: {
+    userId: v.id("users"),
+    newImageUrl: v.string(),
+    newImageStorageId: v.id("_storage")
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("_id"), args.userId))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    const updateProfileImage = {
+      ...(args.newImageUrl !== undefined && { imageUrl: args.newImageUrl }),
+      ...(args.newImageStorageId !== undefined && { imageStorageId: args.newImageStorageId })
+    };
+
+    await ctx.db.patch(args.userId, updateProfileImage);
   },
 });
 

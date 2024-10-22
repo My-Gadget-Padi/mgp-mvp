@@ -166,13 +166,13 @@ const Header = () => {
               </div>
               <div className="flex items-center justify-between pr-16 lg:pr-0 pl-5">
                 <Link
-                  href="/auth/sign-in"
+                  href="/sign-in"
                   className="ease-in-up mr-5 hidden rounded-lg border-2 bg-transparent border-black text-black px-5 py-3 text-base font-normal transition duration-300 hover:bg-opacity-90 md:block md:px-9 lg:px-6 xl:px-9"
                 >
                   Login
                 </Link>
                 <Link
-                  href="/auth/sign-up"
+                  href="/sign-up"
                   className="ease-in-up shadow-btn hover:shadow-btn-hover hidden rounded-lg bg-black text-white px-8 py-3 text-base
                    font-normal transition duration-300 hover:bg-opacity-90 md:block md:px-9 lg:px-6 xl:px-9"
                 >

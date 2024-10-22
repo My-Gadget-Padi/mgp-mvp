@@ -174,10 +174,15 @@ const Delivery = ({ requestId }: SelectDeviceProps) => {
       .join(", ")
       .replace(/(,\s?)+$/g, "");
 
+    const finalAddress =
+        formattedAddress === country?.trim()
+          ? userProfile?.address
+          : formattedAddress;
+
     if (saveAddress === true) {
       await saveUserAddress({
         userId: userProfile?._id as Id<"users">,
-        address: formattedAddress,
+        address: finalAddress,
       });
     }
 
@@ -187,7 +192,7 @@ const Delivery = ({ requestId }: SelectDeviceProps) => {
       await updateRequest({
         requestId,
         deliveryType: deliveryMethod,
-        address: formattedAddress || "",
+        address: finalAddress || "",
         dropOffLocation: dropOffLocation || "",
         status: "scheduled",
       });

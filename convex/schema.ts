@@ -9,7 +9,7 @@ export default defineSchema({
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
     address: v.optional(v.string()),
-    phoneNumber: v.optional(v.number()),
+    phoneNumber: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
     notificationMethod: v.optional(v.string()), // email, sms, whatsapp, call
@@ -22,12 +22,6 @@ export default defineSchema({
     paystackId: v.optional(v.string()),
     isAdmin: v.optional(v.boolean()),
     secretCode: v.optional(v.string()),
-    otp: v.optional(v.string()),
-    otpExpires: v.optional(v.any()),
-    otpSalt: v.optional(v.string()),
-    protection: v.optional(v.array(v.id("deviceProtections"))), //to be deleted
-    requests: v.optional(v.array(v.id("repairRequests"))), //to be deleted
-    notifications: v.optional(v.id("notifications")), //to be deleted
   }),
 
   //admin

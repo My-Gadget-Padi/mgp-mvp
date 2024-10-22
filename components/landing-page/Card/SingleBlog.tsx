@@ -10,7 +10,7 @@ const SingleLanding = ({ landing }: { landing: Landing }) => {
         <div className="p-6 sm:p-8 md:px-8 md:py-8 lg:p-10 xl:px-5 xl:py-8 2xl:p-8">
           <h3 className="flex">
             <Link
-              href="/landing-details"
+              href="#services"
               className="mb-1 text-2xl font-bold text-black hover:text-indigo-700 dark:text-white dark:hover:text-indigo-700"
             >
               {title}
@@ -25,7 +25,7 @@ const SingleLanding = ({ landing }: { landing: Landing }) => {
             {paragraph}
           </p>
           <Link
-            href="/landing-details"
+            href="#services"
             className="relative block aspect-[37/22] w-full">
             <div className="h-15">
               <Image src={image} alt="image" fill className="rounded-lg" />

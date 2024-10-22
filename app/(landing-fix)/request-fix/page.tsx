@@ -26,16 +26,9 @@ import {
   Smartphone,
   TabletSmartphone,
   CheckCheck,
-  MessageSquareMore,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/convex/_generated/api";
@@ -58,8 +51,6 @@ const LandingRequestFix = () => {
   const [availableModels, setAvailableModels] = useState<any[]>([]);
   const [selectedDamages, setSelectedDamages] = useState<string[]>([]);
   const [otherDamage, setOtherDamage] = useState("");
-  const [showTextarea, setShowTextarea] = useState(false);
-
   const saveRequest = useMutation(api.repairRequests.createRepairRequest);
 
   const damages = [
@@ -139,6 +130,8 @@ const LandingRequestFix = () => {
         model: deviceModel,
         damages: selectedDamages,
         comments: otherDamage,
+        status: "scheduled",
+        priority: "medium"
       });
 
       setLoading(false);
@@ -154,34 +147,9 @@ const LandingRequestFix = () => {
       setAvailableModels([]);
       setSelectedDamages([]);
       setOtherDamage("");
-      setShowTextarea(false);
 
       if (requestId) {
-        const details = encodeURIComponent(
-          `
-          Device:
-          ${deviceModel}
-
-          Damage(s):
-          ${
-            selectedDamages?.length
-              ? selectedDamages.map((damage) => `- ${damage}`).join("\n")
-              : "No damages specified"
-          }
-
-          ${otherDamage || "I need it fixed urgently, please."}
-          `
-        );
-        const currentHour = new Date().getHours();
-
-        const phoneNumber =
-          currentHour % 2 === 0 ? "+2347076641696" : "+2347072665255";
-
-        const whatsAppUrl = `https://wa.me/${phoneNumber}?text=${details}`;
-
-        setTimeout(() => {
-          router.push(whatsAppUrl);
-        }, 2000); //2 seconds
+        router.push(`/request-fix/complete/${requestId}`);
       }
     } catch (error) {
       console.error("Repair request error", error);
@@ -199,17 +167,12 @@ const LandingRequestFix = () => {
         ? prev.filter((v) => v !== value)
         : [...prev, value];
       if (value === "I don't know / Other") {
-        setShowTextarea(!isAlreadySelected);
         if (isAlreadySelected) {
           setOtherDamage("");
         }
       }
       return updatedDamages;
     });
-  };
-
-  const handleShowComment = () => {
-    setShowTextarea((prev) => !prev);
   };
 
   return (
@@ -224,7 +187,7 @@ const LandingRequestFix = () => {
               type="button"
               className="rounded-lg px-10 py-3 bg-white text-base font-normal text-black"
             >
-              <Link href="/auth/sign-up">Create your account</Link>
+              <Link href="/sign-up">Create your account</Link>
             </button>
           </div>
           <div className="text-base text-white">
@@ -276,7 +239,6 @@ const LandingRequestFix = () => {
                       setDeviceModel("");
                       setAvailableModels([]);
                       setSelectedDamages([]);
-                      setShowTextarea(false);
                     }}
                     className="grid grid-cols-2 sm:grid-cols-4 mb-6 gap-4"
                   >
@@ -437,8 +399,8 @@ const LandingRequestFix = () => {
 
                 <div className="gap-2 mt-2">
                   <Label htmlFor="damages">Damages</Label>
-                  <div className="grid grid-cols-4">
-                    <div className="col-span-3">
+                  <div className="w-full">
+                    <div className="">
                       <Button
                         variant="outline"
                         className="w-full flex justify-between items-center"
@@ -482,30 +444,6 @@ const LandingRequestFix = () => {
                         </ScrollArea>
                       )}
                     </div>
-
-                    <Button
-                      className="col-span-1 ml-2 bg-[#6445E8] hover:bg-[#6445E8]/80 text-white"
-                      disabled={!deviceBrand || !deviceModel}
-                      variant={!deviceBrand || !deviceModel ? "secondary" : "default"}
-                      onClick={() => handleShowComment()}
-                    >
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <MessageSquareMore className="flex sm:hidden" />
-                            <span className="hidden sm:flex">
-                              Describe the issue
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              Click here to provide additional details about
-                              your {deviceType}'s issue.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </Button>
                   </div>
                 </div>
                 {selectedDamages.length > 0 && (
@@ -528,22 +466,20 @@ const LandingRequestFix = () => {
                     </ul>
                   </div>
                 )}
+                <div className="mt-4">
+                  <Label htmlFor="other-damage">
+                    Describe the issue (optional)
+                  </Label>
+                  <Textarea
+                    id="other-damage"
+                    rows={6}
+                    value={otherDamage}
+                    onChange={(e) => setOtherDamage(e.target.value)}
+                    className="w-full p-2 mt-1 border rounded-md"
+                    placeholder={`I need a quick fix, my ${deviceType}'s screen is broken.`}
+                  />
+                </div>
 
-                {showTextarea && (
-                  <div>
-                    <Label htmlFor="other-damage">
-                      Please describe the issue:
-                    </Label>
-                    <Textarea
-                      id="other-damage"
-                      rows={6}
-                      value={otherDamage}
-                      onChange={(e) => setOtherDamage(e.target.value)}
-                      className="w-full p-2 mt-1 border rounded-md"
-                      placeholder={`I need a quick fix, my ${deviceType}'s screen is broken.`}
-                    />
-                  </div>
-                )}
                 <div className="mt-6">
                   <button
                     disabled={!deviceModel}

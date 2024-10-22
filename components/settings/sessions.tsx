@@ -191,7 +191,7 @@ export default function Sessions() {
                       variant="outline"
                       size="sm"
                       className="bg-red-500 hover:bg-red-500/90 text-white hover:text-white"
-                      onClick={() => signOut({ redirectUrl: "/auth/sign-in" })}
+                      onClick={() => signOut({ redirectUrl: "/sign-in" })}
                     >
                       Logout
                     </Button>

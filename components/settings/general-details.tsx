@@ -10,7 +10,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery, useMutation } from "convex/react";
 import { useUser } from "@clerk/nextjs";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import LoaderSpinner from "../loader/loader-spinner";
 import {
   Select,
@@ -86,8 +86,6 @@ export function GeneralDetails() {
   const [zipCode, setZipCode] = useState("");
   const [country] = useState("Nigeria");
   const [address, setAddress] = useState<string>("");
-  const [dropOffLocation, setDropOffLocation] = useState("");
-  const [deliveryMethod, setDeliveryMethod] = useState("pick-up");
 
   const [states, setStates] = useState<State[]>([]);
   const [lgas, setLgas] = useState<LGA[]>([]);
@@ -98,7 +96,11 @@ export function GeneralDetails() {
   const [city, setCity] = useState<string>("");
 
   const [emailAddress, setEmailAddress] = useState(userProfile?.email);
-  const [phone, setPhone] = useState(userProfile?.phoneNumber);
+  const [phone, setPhone] = useState<string>(userProfile?.phoneNumber || "");
+
+  const saveProfileImage = useMutation(api.users.saveNewProfileImage);
+
+  const changeProfileImage = useMutation(api.users.deleteAndUpdateImage);
 
   useEffect(() => {
     if (userProfile) {
@@ -106,7 +108,7 @@ export function GeneralDetails() {
       setLastName(userProfile.lastName || "");
       setEmailAddress(userProfile.email || "");
       setImageUrl(userProfile.imageUrl || "");
-      setPhone(userProfile.phoneNumber);
+      setPhone(userProfile.phoneNumber || "");
     }
   }, [userProfile]);
 
@@ -169,7 +171,9 @@ export function GeneralDetails() {
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPhone(Number(e.target.value));
+    const inputValue = e.target.value;
+    const sanitizedValue = inputValue.replace(/[^0-9]/g, "");
+    setPhone(sanitizedValue);
     setFormChanged(true);
   };
 
@@ -212,10 +216,36 @@ export function GeneralDetails() {
 
       const fileUrl = await getFileUrl({ storageId });
       setImageUrl(fileUrl as string);
-      setFormChanged(true);
+
+      if (
+        !userProfile?.imageStorageId?.trim() ||
+        !userProfile?.imageUrl?.trim()
+      ) {
+        if (fileUrl && storageId) {
+          await saveProfileImage({
+            userId: profileId as Id<"users">,
+            newImageUrl: fileUrl,
+            newImageStorageId: storageId as Id<"_storage">,
+          });
+        }
+      } else {
+        if (
+          (storageId && storageId !== userProfile?.imageStorageId) ||
+          (fileUrl && fileUrl !== userProfile?.imageUrl)
+        ) {
+          if (fileUrl && storageId) {
+            await changeProfileImage({
+              userId: profileId as Id<"users">,
+              oldImageStorageId: userProfile?.imageStorageId as Id<"_storage">,
+              newImageUrl: fileUrl,
+              newImageStorageId: storageId as Id<"_storage">,
+            });
+          }
+        }
+      }
       toast({
         title: "Success",
-        description: "Profile image uploaded successfully!",
+        description: "Profile image saved successfully!",
       });
     } catch (error) {
       console.log(error);
@@ -276,7 +306,7 @@ export function GeneralDetails() {
       setLastName(userProfile?.lastName);
       setImageUrl(userProfile?.imageUrl as string);
       setEmailAddress(userProfile?.email);
-      setPhone(userProfile?.phoneNumber);
+      setPhone(userProfile?.phoneNumber as string);
 
       toast({
         title: "Success",
@@ -376,7 +406,7 @@ export function GeneralDetails() {
                 <Button
                   onClick={handleUpdate}
                   disabled={isLoading || uploadingImage}
-                  className="bg-[#6445E8] px-12"
+                  className="bg-[#6445E8] hover:bg-[#6445E8]/90 hover:text-white px-12"
                 >
                   {isLoading ? (
                     <Loader size={20} className="animate-spin ml-2" />
@@ -411,19 +441,19 @@ export function GeneralDetails() {
                   </p>
                 </div>
                 <div className="mt-5">
-                  <Label className="text-sm">Email address</Label>
+                  <Label className="text-sm">Email Address</Label>
                   <p className="text-xs text-muted-foreground">
                     To change your email address, contact our support team
                   </p>
                 </div>
                 <div className="mt-5">
-                  <Label className="text-sm">Phone number</Label>
+                  <Label className="text-sm">Phone Number</Label>
                   <p className="text-xs text-muted-foreground">
                     This is the phone number saved to your account
                   </p>
                 </div>
                 <div className="mt-5">
-                  <Label className="text-sm">Delivery address</Label>
+                  <Label className="text-sm">Delivery Address</Label>
                   <p className="text-xs text-muted-foreground">
                     This address will be used to deliver your gadgets
                   </p>
@@ -461,8 +491,8 @@ export function GeneralDetails() {
                 <div className="mt-5">
                   <Input
                     id="phone"
-                    type="text"
-                    placeholder="+2341234567890"
+                    type="tel"
+                    placeholder="08012345678"
                     onChange={handlePhoneChange}
                     value={phone}
                   />
@@ -707,7 +737,7 @@ export function GeneralDetails() {
                 <Button
                   onClick={handleUpdate}
                   disabled={isLoading || uploadingImage}
-                  className="bg-[#6445E8] px-5"
+                  className="bg-[#6445E8] hover:bg-[#6445E8]/90 hover:text-white px-5"
                 >
                   {isLoading ? (
                     <Loader size={20} className="animate-spin ml-2" />
@@ -771,8 +801,9 @@ export function GeneralDetails() {
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
+                  type="tel"
                   className="w-full p-2 mt-1 border rounded-md"
-                  placeholder="+2341234567890"
+                  placeholder="08012345678"
                   value={phone}
                   onChange={handlePhoneChange}
                 />

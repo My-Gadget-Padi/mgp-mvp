@@ -97,7 +97,7 @@ const CustomForgotPassword = () => {
 
           <div className="lg:w-6/12 sm:w-full bg-white dark:bg-dark sm:p-[60px] relative">
             <button className="absolute px-5 py-2 border-2 border-black rounded-lg right-6 top-3">
-              <Link href="/auth/sign-in">Login</Link>
+              <Link href="/sign-in">Login</Link>
             </button>
 
             <div className="mx-auto lg:w-10/12 sm:w-full">

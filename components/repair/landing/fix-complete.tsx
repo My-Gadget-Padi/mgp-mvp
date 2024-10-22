@@ -1,22 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { useToast } from "@/components/ui/use-toast";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { Stepper } from "./stepper";
 import { useRouter } from "next/navigation";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 interface SelectDeviceProps {
   requestId: Id<"repairRequests">;
 }
 
-const Complete = ({ requestId }: SelectDeviceProps) => {
+const RequestFixComplete = ({ requestId }: SelectDeviceProps) => {
   const { toast } = useToast();
   const router = useRouter();
 
@@ -35,18 +34,7 @@ const Complete = ({ requestId }: SelectDeviceProps) => {
           ? repairRequest.damages.map((damage) => `- ${damage}`).join("\n")
           : "No damages specified"
       }
-      ${repairRequest?.comments}
-
-      Priority:
-      ${repairRequest?.priority}
-
-      Delivery Method:
-      ${repairRequest?.deliveryType} - [${
-      repairRequest?.address || repairRequest?.dropOffLocation || ""
-    }]
-
-      View damage image/video:
-      ${repairRequest?.fileUrl}
+      ${repairRequest?.comments || "I need it fixed urgently."}
       `
   );
 
@@ -67,8 +55,6 @@ const Complete = ({ requestId }: SelectDeviceProps) => {
 
   return (
     <main className="flex flex-1 mt-6 sm:mt-0 flex-col gap-4 p-4 lg:gap-2 lg:p-6">
-      <Stepper currentStep={3} />
-
       <div className="items-center justify-center text-center">
         <div className="">
           <div className="flex justify-center items-center mb-6">
@@ -117,4 +103,4 @@ const Complete = ({ requestId }: SelectDeviceProps) => {
   );
 };
 
-export default Complete;
+export default RequestFixComplete;

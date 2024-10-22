@@ -146,7 +146,7 @@ export function Sidebar() {
       icon: LogOut as LucideIcon,
       variant: "ghost",
       url: "",
-      onClick: () => signOut({ redirectUrl: '/auth/sign-in' }),
+      onClick: () => signOut({ redirectUrl: '/sign-in' }),
     },
   ];
 

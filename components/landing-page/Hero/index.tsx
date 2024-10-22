@@ -32,7 +32,7 @@ const Hero = () => {
                     Request a repair
                   </Button>
                 </Link>
-                <Link href="/auth/sign-in" className="lg:hidden">
+                <Link href="/sign-in" className="lg:hidden">
                   <Button variant="outline" className="py-6 px-8 border-[#6445E8] hover:bg-[#6445E8]/90 hover:text-white ml-2">
                     Login
                   </Button>
