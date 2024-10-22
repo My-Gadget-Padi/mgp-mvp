@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 export const getAllUsers = query({
   handler: async (ctx) => {
@@ -85,14 +86,19 @@ export const createUser = internalMutation({
   },
   handler: async (ctx, args) => {
     try {
+      const tempUser = await ctx.db
+      .query("tempUsers")
+      .filter((q) => q.eq(q.field("email"), args.email))
+      .unique();
+
       const newUserId = await ctx.db.insert("users", {
         clerkId: args.clerkId,
         email: args.email,
         type: args.type || "customer",
-        firstName: args.firstName || "",
-        lastName: args.lastName || "",
+        firstName: tempUser?.firstName || args.firstName,
+        lastName: tempUser?.lastName || args.lastName,
         address: args.address || "",
-        phoneNumber: args.phoneNumber || "+234",
+        phoneNumber: tempUser?.phoneNumber,
         imageUrl: args.imageUrl,
         imageStorageId: args.imageStorageId,
         notificationType: "all",
@@ -106,9 +112,14 @@ export const createUser = internalMutation({
         isAdmin: false,
         secretCode: ""
       });
-      const updatedUser = await ctx.db.get(newUserId);
 
+      if (tempUser) {
+        await ctx.db.delete(tempUser._id);
+      }
+
+      const updatedUser = await ctx.db.get(newUserId);
       return updatedUser;
+      
     } catch (error) {
       console.error("Error creating user:", error);
       throw new ConvexError("Failed to create user.");

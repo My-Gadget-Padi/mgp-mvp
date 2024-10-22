@@ -2,6 +2,14 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  tempUsers: defineTable({
+    email: v.optional(v.string()),
+    type: v.optional(v.string()), //customer or technician
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    phoneNumber: v.optional(v.string())
+  }),
+
   users: defineTable({
     email: v.string(),
     clerkId: v.string(),
