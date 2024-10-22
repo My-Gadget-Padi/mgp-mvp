@@ -81,6 +81,18 @@ const samsungModels: DeviceModel[] = [
   { id: "galaxys9plus", label: "Galaxy S9 Plus" },
   { id: "galaxys8", label: "Galaxy S8" },
   { id: "galaxys8plus", label: "Galaxy S8 Plus" },
+  { id: "galaxynote20ultra", label: "Galaxy Note 20 Ultra" },
+  { id: "galaxynote20", label: "Galaxy Note 20" },
+  { id: "galaxynote10plus", label: "Galaxy Note 10 Plus" },
+  { id: "galaxynote10", label: "Galaxy Note 10" },
+  { id: "galaxynote9", label: "Galaxy Note 9" },
+  { id: "galaxynote8", label: "Galaxy Note 8" },
+  { id: "galaxynote7", label: "Galaxy Note 7" },
+  { id: "galaxynote5", label: "Galaxy Note 5" },
+  { id: "galaxynote4", label: "Galaxy Note 4" },
+  { id: "galaxynote3", label: "Galaxy Note 3" },
+  { id: "galaxynote2", label: "Galaxy Note 2" },
+  { id: "galaxynote", label: "Galaxy Note" },
 ];
 
 const googleModels: DeviceModel[] = [

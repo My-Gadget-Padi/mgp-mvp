@@ -435,7 +435,7 @@ function MainLayout({
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="relative z-10">
-                      <Button className="w-full py-6 rounded-2xl bg-white text-primary font-black hover:bg-white bg:text-primary">
+                      <Button onClick={handleContact} className="w-full py-6 rounded-2xl bg-white text-primary font-black hover:bg-white bg:text-primary">
                         CONTACT MYPADI
                       </Button>
                     </CardContent>

@@ -44,6 +44,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Id } from "@/convex/_generated/dataModel";
 import { useUploadFiles } from "@xixixao/uploadstuff/react";
 import LoaderSpinner from "../loader/loader-spinner";
+import { Progress } from "../ui/progress";
 
 type FileExtension =
   | "mp4"
@@ -332,7 +333,9 @@ export function Repair() {
       <Stepper currentStep={1} />
 
       <div>
-        <h1 className="text-xl sm:text-2xl font-semibold">Choose what you want to repair</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold">
+          Choose what you want to repair
+        </h1>
         <p className="text-muted-foreground text-sm sm:text-base">
           Which category best describes what you want to repair
         </p>
@@ -451,7 +454,9 @@ export function Repair() {
         <>
           <div className="grid mt-4 grid-cols-1 gap-4">
             <div>
-              <h1 className="text-lg sm:text-xl font-semibold">Choose the brand</h1>
+              <h1 className="text-lg sm:text-xl font-semibold">
+                Choose the brand
+              </h1>
               <p className="text-muted-foreground text-sm">
                 What kind of {deviceType} is it?
               </p>
@@ -521,7 +526,7 @@ export function Repair() {
           </div>
 
           <div className="grid w-full mt-4 items-center gap-1.5">
-            <Label htmlFor="file-upload">
+            <Label>
               Gadget Damage Image/Video
               <span className="ml-1 text-muted-foreground text-xs italic">
                 (Drag 'n' drop or click to upload)
@@ -552,13 +557,20 @@ export function Repair() {
                 if (file) handleFile(file);
               }}
             />
-            {selectedDeviceFile && (
-              <div className="mt-1 text-sm text-muted-foreground">
+            {uploadingDeviceFile ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Uploading file...
+                </p>
+                <Progress value={uploadProgress} className="mt-1" />
+              </>
+            ) : selectedDeviceFile ? (
+              <div className="text-sm text-muted-foreground">
                 <p>
                   Uploaded: <strong>{selectedDeviceFile.name}</strong>
                 </p>
               </div>
-            )}
+            ) : null}
           </div>
 
           <div className="gap-2 mt-2">
