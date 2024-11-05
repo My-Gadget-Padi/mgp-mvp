@@ -4,21 +4,22 @@ import { mutation, query } from "./_generated/server";
 export const createDeviceProtection = mutation({
   args: {
     userId: v.id("users"),
-    phoneNumber: v.number(),
-    device: v.id("devices"),
+    planId: v.id("plans"),
+    deviceId: v.optional(v.id("devices")),
     type: v.string(), //monthly or yearly
     name: v.string(),
-    price: v.number()
+    amountLeft: v.number(),
+    claimsAvailable: v.number(),
   },
   handler: async (ctx, args) => {
-
     const protectionId = await ctx.db.insert("deviceProtections", {
       userId: args.userId,
-      phoneNumber: args.phoneNumber,
+      planId: args.planId,
+      deviceId: args.deviceId,
       type: args.type,
-      device: args.device,
       name: args.name,
-      price: args.price
+      amountLeft: args.amountLeft,
+      claimsAvailable: args.claimsAvailable,
     });
 
     return protectionId;
@@ -29,27 +30,24 @@ export const updateDeviceProtection = mutation({
   args: {
     protectionId: v.id("deviceProtections"),
     userId: v.optional(v.id("users")),
-    phoneNumber: v.optional(v.number()),
-    device: v.optional(v.id("devices")),
+    deviceId: v.optional(v.id("devices")),
     type: v.optional(v.string()), //monthly or yearly
     name: v.optional(v.string()),
-    price: v.optional(v.number())
+    amountLeft: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-
     const protection = await ctx.db.get(args.protectionId);
 
     if (!protection) {
       throw new ConvexError("Device protection not found");
-    };
+    }
 
     const updateProtection = {
       ...(args.userId !== undefined && { userId: args.userId }),
-      ...(args.price !== undefined && { price: args.price }),
+      ...(args.amountLeft !== undefined && { amountLeft: args.amountLeft }),
       ...(args.type !== undefined && { type: args.type }),
-      ...(args.device !== undefined && { device: args.device }),
+      ...(args.deviceId !== undefined && { deviceId: args.deviceId }),
       ...(args.name !== undefined && { name: args.name }),
-      ...(args.phoneNumber !== undefined && { phoneNumber: args.phoneNumber })
     };
 
     await ctx.db.patch(args.protectionId, updateProtection);
@@ -67,7 +65,7 @@ export const deleteDeviceProtection = mutation({
 
     if (!protection) {
       throw new ConvexError("Device protection not found");
-    };
+    }
 
     return await ctx.db.delete(args.protectionId);
   },
@@ -99,7 +97,7 @@ export const getDeviceProtectionsByUserId = query({
 
     const protections = await ctx.db
       .query("deviceProtections")
-      .filter(q => q.eq(q.field("userId"), userId))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .collect();
 
     return protections;
@@ -115,9 +113,23 @@ export const getDeviceProtectionsByDeviceId = query({
 
     const protections = await ctx.db
       .query("deviceProtections")
-      .filter(q => q.eq(q.field("device"), deviceId))
+      .filter((q) => q.eq(q.field("deviceId"), deviceId))
       .collect();
 
     return protections;
+  },
+});
+
+export const getUserFreePlan = query({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const plan = await ctx.db
+      .query("deviceProtections")
+      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .unique();
+
+    return plan;
   },
 });

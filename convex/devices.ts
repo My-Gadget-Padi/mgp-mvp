@@ -9,6 +9,7 @@ export const createDevice = mutation({
     imageStorageId: v.optional(v.id("_storage")),
     name: v.string(),
     model: v.string(),
+    verified: v.boolean(),
     serialNumber: v.number(),
     protection: v.optional(v.id("deviceProtections"))
   },
@@ -22,6 +23,7 @@ export const createDevice = mutation({
       serialNumber: args.serialNumber,
       protection: args.protection,
       name: args.name,
+      verified: args.verified,
       model: args.model
     });
 
