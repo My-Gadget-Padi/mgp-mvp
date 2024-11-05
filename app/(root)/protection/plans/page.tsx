@@ -1,11 +1,11 @@
 import { Suspense } from "react"
-import { Protection } from "@/components/protection";
+import { ChoosePlan } from "@/components/protection/choose-plan";
 import PageLoader from "@/components/PageLoader"
 
-export default function ProtectionPage() {
+export default function ChoosePlanPage() {
   return (
     <Suspense fallback={<PageLoader />}>
-      <Protection />
+      <ChoosePlan />
     </Suspense>
   )
 };

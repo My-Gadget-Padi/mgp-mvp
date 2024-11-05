@@ -75,6 +75,7 @@ function MainLayout({
   const location = usePathname();
   const searchParams = useSearchParams();
   const { requestId } = useParams();
+  const { planId } = useParams();
   const { user } = useUser();
   const userId = user?.id;
   const userProfile = useQuery(api.users.getUserByClerkId, {
@@ -143,10 +144,20 @@ function MainLayout({
           <>
             <h1 className="text-xl sm:text-2xl font-semibold">Protection</h1>
             <span className="text-muted-foreground text-sm sm:text-base">
-              VView all device protections on your account
+              View all device protections on your account
             </span>
           </>
         );
+         case "/protection/plans":
+        return (
+          <>
+            <h1 className="text-xl sm:text-2xl font-semibold">Plans</h1>
+            <span className="text-muted-foreground text-sm sm:text-base">
+              Choose a protection plan
+            </span>
+          </>
+        );
+     
       case "/history":
         return (
           <>
@@ -215,6 +226,17 @@ function MainLayout({
               <h1 className="text-xl sm:text-2xl font-semibold">Gadget Repair</h1>
               <span className="text-muted-foreground text-sm sm:text-base">
                 Repair request completed successfully
+              </span>
+            </>
+          );
+        }
+
+        if (location.startsWith(`/protection/checkout/${planId}`) && planId) {
+          return (
+            <>
+              <h1 className="text-xl sm:text-2xl font-semibold">Checkout</h1>
+              <span className="text-muted-foreground text-sm sm:text-base">
+                Make payment for your plan
               </span>
             </>
           );
@@ -315,7 +337,7 @@ function MainLayout({
                       Repair
                     </Link>
                     <Link
-                      href="#" //= /protection
+                      href="/protection"
                       className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
                         location.includes("/protection")
                           ? "bg-white shadow-md text-primary font-semibold"
@@ -339,7 +361,6 @@ function MainLayout({
                         />
                       </Button>
                       Protection
-                      <Badge className="text-[10px]">Coming soon</Badge>
                     </Link>
                     <Link
                       href="/history"
@@ -534,7 +555,7 @@ function MainLayout({
                         Repair
                       </div>
                       <div
-                        onClick={() => handleNavigation('#')} //= /protection
+                        onClick={() => handleNavigation('/protection')}
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/protection")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"
@@ -558,7 +579,6 @@ function MainLayout({
                           />
                         </Button>
                         Protection
-                        <Badge className="text-[10px]">Coming soon</Badge>
                       </div>
                       <div
                         onClick={() => handleNavigation('/history')}

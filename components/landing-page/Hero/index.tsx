@@ -7,7 +7,7 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative z-10 overflow-hidden bg-white pb-40 pt-28 sm:pt-40 md:pt-40 lg:pt-48 dark:bg-gray-dark"
+      className="relative z-10 overflow-hidden bg-white pb-20 pt-28 sm:pt-40 md:pt-40 lg:pt-48 dark:bg-gray-dark"
     >
       <div className="container">
         <div className="lg:flex md:block sm:block">
