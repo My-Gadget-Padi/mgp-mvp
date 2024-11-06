@@ -29,11 +29,13 @@ export const createDeviceProtection = mutation({
 export const updateDeviceProtection = mutation({
   args: {
     protectionId: v.id("deviceProtections"),
-    userId: v.optional(v.id("users")),
     deviceId: v.optional(v.id("devices")),
-    type: v.optional(v.string()), //monthly or yearly
+    type: v.optional(v.string()),
     name: v.optional(v.string()),
     amountLeft: v.optional(v.number()),
+    claimsAvailable: v.optional(v.number()),
+    activationDate: v.optional(v.string()),
+    expiryDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const protection = await ctx.db.get(args.protectionId);
@@ -43,11 +45,13 @@ export const updateDeviceProtection = mutation({
     }
 
     const updateProtection = {
-      ...(args.userId !== undefined && { userId: args.userId }),
+      ...(args.deviceId !== undefined && { deviceId: args.deviceId }),
       ...(args.amountLeft !== undefined && { amountLeft: args.amountLeft }),
       ...(args.type !== undefined && { type: args.type }),
-      ...(args.deviceId !== undefined && { deviceId: args.deviceId }),
       ...(args.name !== undefined && { name: args.name }),
+      ...(args.activationDate !== undefined && { activationDate: args.activationDate }),
+      ...(args.expiryDate !== undefined && { expiryDate: args.activationDate }),
+      ...(args.claimsAvailable !== undefined && { claimsAvailable: args.claimsAvailable }),
     };
 
     await ctx.db.patch(args.protectionId, updateProtection);

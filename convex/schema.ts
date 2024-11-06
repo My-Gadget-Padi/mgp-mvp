@@ -64,13 +64,18 @@ export default defineSchema({
 
   devices: defineTable({
     userId: v.id("users"),
-    phoneNumber: v.number(),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
+    proofOfOwnershipUrl: v.string(),
+    proofStorageId: v.id("_storage"),
     name: v.string(),
+    type: v.string(),
     model: v.string(),
     serialNumber: v.number(),
+    condition: v.string(),
     protection: v.optional(v.id("deviceProtections")),
+    verificationVideoUrl: v.optional(v.string()),
+    verificationVideoStorageId: v.optional(v.id("_storage")),
     verified: v.boolean(),
     verifyBy: v.optional(
       v.object({
