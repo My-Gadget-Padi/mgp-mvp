@@ -6,7 +6,7 @@ const bigData: brandCard[] = [
     id: 1,
     title: "Our Vision",
     paragraph:
-      "To become the world’s leading force in shaping a sustainable and inclusive future for consumer electronics, where every individual and business is empowered by cutting-edge solutions that enhance their technology experience.",
+      "To be the leading company in the world helping people use technology in a way that's good for everyone and the planet. We want to create amazing products that make technology easy and accessible for everyone.",
     image: "/images/brands/first-icon.png", 
     imageIcon:"/images/brands/first-curve.png"
 
@@ -15,7 +15,7 @@ const bigData: brandCard[] = [
     id: 2,
     title: "Our Mission",
     paragraph:
-      "To make the consumer electronics market more accessible by providing a seamless platform for protecting, buying, repairing, and trade-in gadgets, while fostering a thriving consumer community.",
+      "To make the consumer electronics market more accessible by providing a seamless platform for repair, protection, purchase, and trade-in of gadgets, while building a thriving consumer community.",
     image: "/images/brands/second-icon.png", 
     imageIcon:"/images/brands/second-curve.png"
   },

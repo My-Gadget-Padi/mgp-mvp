@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSignUp, useSignIn, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import PageLoader from "../PageLoader";
 
 // Helper function to generate a unique 21-character password
 const generatePassword = (length = 21) => {
@@ -34,11 +35,13 @@ const CustomSignIn = () => {
   const [error, setError] = useState("");
   const [showMessage, setShowMessage] = useState(false);
 
-  useEffect(() => {
-    if (isSignedIn) {
-      router.push("/dashboard");
-    }
-  }, [isSignedIn, router]);
+  if (!isSignInLoaded) {
+    return <PageLoader />;
+  }
+
+  if (isSignedIn) {
+    router.push("/dashboard");
+  }
 
   const handleSignUpOrSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,7 +160,7 @@ const CustomSignIn = () => {
               type="button"
               className="hidden sm:block border-2 border-black rounded-lg absolute right-6 top-3 py-3 px-5"
             >
-              Signup
+              Sign up
             </button>
           </Link>
 
@@ -173,17 +176,18 @@ const CustomSignIn = () => {
                 <div className="mb-5">
                   <label
                     htmlFor="email"
-                    className="mb-3 block text-sm text-dark dark:text-white"
+                    className="mb-1 block text-sm text-dark dark:text-white"
                   >
                     Email Address
                   </label>
                   <input
                     type="email"
                     name="email"
-                    placeholder="Signin with your email address"
+                    placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    autoComplete="email"
                     className="border-stroke rounded-lg dark:shadow-two w-full border bg-[#f8f8f8] px-6 py-3 text-base outline-none transition-all duration-300 focus:border-indigo-800 dark:border-transparent dark:bg-[#2C303B] dark:focus:border-blue dark:focus:shadow-none"
                   />
                 </div>

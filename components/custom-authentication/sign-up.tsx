@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSignUp, useSignIn, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import PageLoader from "../PageLoader";
 
-// Helper function to generate a unique 21-character password
 const generatePassword = (length = 21) => {
   if (typeof window !== "undefined" && window.crypto) {
     const charset =
@@ -19,6 +19,22 @@ const generatePassword = (length = 21) => {
   } else {
     return Math.random().toString(36).slice(-length);
   }
+};
+
+const validateAlpha = (input: string) => /^[A-Za-z]*$/.test(input);
+
+const validateNumeric = (phone: string) => {
+  if (phone === "") return true;
+  if (
+    (phone.startsWith("0") && phone.length <= 11) ||
+    (phone.startsWith("9") && phone.length <= 11) ||
+    (phone.startsWith("8") && phone.length <= 11) ||
+    (phone.startsWith("7") && phone.length <= 11) ||
+    (phone.startsWith("2") && phone.length <= 13)
+  ) {
+    return /^[0-9]*$/.test(phone);
+  }
+  return false;
 };
 
 const CustomSignUp = () => {
@@ -41,11 +57,13 @@ const CustomSignUp = () => {
 
   const saveTempUser = useMutation(api.tempUsers.save);
 
-  useEffect(() => {
-    if (isSignedIn) {
-      router.push("/dashboard");
-    }
-  }, [isSignedIn, router]);
+  if (!isSignInLoaded) {
+    return <PageLoader />;
+  }
+
+  if (isSignedIn) {
+    router.push("/dashboard");
+  }
 
   const handleSignUpOrSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +155,34 @@ const CustomSignUp = () => {
     }
   };
 
+  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (validateAlpha(value)) {
+      setFirstName(value);
+    }
+  };
+
+  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (validateAlpha(value)) {
+      setLastName(value);
+    }
+  };
+
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value.replace(/[^\d]/g, "");
+
+    if (validateNumeric(numericValue)) {
+      const formattedValue = numericValue.startsWith("2")
+        ? `+${numericValue}`
+        : numericValue;
+      setPhoneNumber(formattedValue);
+    } else {
+      setPhoneNumber("");
+    }
+  };
+
   return (
     <section className="relative lg:h-screen lg:overflow-hidden md:h-auto sm:h-auto sm:overflow-none">
       <div className="lg:flex mx-auto">
@@ -174,7 +220,7 @@ const CustomSignUp = () => {
               type="button"
               className="hidden sm:block border-2 border-black rounded-lg absolute right-6 top-3 py-3 px-5"
             >
-              Signin
+              Sign in
             </button>
           </Link>
 
@@ -199,7 +245,7 @@ const CustomSignUp = () => {
                     name="firstName"
                     placeholder="Enter your first name"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={handleFirstNameChange}
                     required
                     className="border-stroke rounded-lg dark:shadow-two w-full border bg-[#f8f8f8] px-6 py-3 text-base outline-none transition-all duration-300 focus:border-indigo-800 dark:border-transparent dark:bg-[#2C303B] dark:focus:border-blue dark:focus:shadow-none"
                   />
@@ -217,7 +263,7 @@ const CustomSignUp = () => {
                     name="lastName"
                     placeholder="Enter your last name"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={handleLastNameChange}
                     required
                     className="border-stroke rounded-lg dark:shadow-two w-full border bg-[#f8f8f8] px-6 py-3 text-base outline-none transition-all duration-300 focus:border-indigo-800 dark:border-transparent dark:bg-[#2C303B] dark:focus:border-blue dark:focus:shadow-none"
                   />
@@ -235,7 +281,8 @@ const CustomSignUp = () => {
                     name="phoneNumber"
                     placeholder="Enter your phone number"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={handlePhoneNumberChange}
+                    autoComplete="tel"
                     required
                     className="border-stroke rounded-lg dark:shadow-two w-full border bg-[#f8f8f8] px-6 py-3 text-base outline-none transition-all duration-300 focus:border-indigo-800 dark:border-transparent dark:bg-[#2C303B] dark:focus:border-blue dark:focus:shadow-none"
                   />
@@ -255,6 +302,7 @@ const CustomSignUp = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    autoComplete="email"
                     className="border-stroke rounded-lg dark:shadow-two w-full border bg-[#f8f8f8] px-6 py-3 text-base outline-none transition-all duration-300 focus:border-indigo-800 dark:border-transparent dark:bg-[#2C303B] dark:focus:border-blue dark:focus:shadow-none"
                   />
                 </div>

@@ -3,18 +3,9 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  ShieldCheck,
-  Wrench,
-  MessageSquareText,
-} from "lucide-react";
+import { ShieldCheck, Wrench, MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
 import OngoingRepairCard from "./ongoing-repairs";
@@ -34,9 +25,9 @@ export function Dashboard() {
   return (
     <main className="flex flex-1 mt-6 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        <Card className="border-transparent shadow-md">
-          <CardContent className="pb-2 pt-2">
-            <Link href="/repair">
+        <Link href="/repair">
+          <Card className="border-transparent shadow-md">
+            <CardContent className="pb-2 pt-2">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm text-muted-foreground">
@@ -53,35 +44,37 @@ export function Dashboard() {
                   <Wrench className="h-6 w-6 stroke-white" />
                 </Button>
               </div>
-            </Link>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="border-transparent shadow-md">
-          <CardContent className="pb-2 pt-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-sm text-muted-foreground">
-                  Gadget protection <Badge className="text-[10px] ml-1">Coming soon</Badge>
-                </span>
-                <h2 className="text-lg mt-2 font-semibold">
-                  Protect your device
-                </h2>
+        <Link href="/protection">
+          <Card className="border-transparent shadow-md">
+            <CardContent className="pb-2 pt-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm text-muted-foreground">
+                    Gadget protection
+                  </span>
+                  <h2 className="text-lg mt-2 font-semibold">
+                    Protect your device
+                  </h2>
+                </div>
+                <Button
+                  size="icon"
+                  className="h-12 w-12 bg-[#6445E8] rounded-xl hover:bg-[#6445E8]"
+                >
+                  <ShieldCheck className="h-6 w-6 stroke-white" />
+                </Button>
               </div>
-              <Button
-                size="icon"
-                className="h-12 w-12 bg-[#6445E8] rounded-xl hover:bg-[#6445E8]"
-              >
-                <ShieldCheck className="h-6 w-6 stroke-white" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="border-transparent shadow-md">
-          <CardContent className="pb-2 pt-2">
-            {showFirstButton ? (
-              <Link href="https://wa.me/+2347076641696">
+        {showFirstButton ? (
+          <Link href="https://wa.me/+2347076641696">
+            <Card className="border-transparent shadow-md">
+              <CardContent className="pb-2 pt-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm text-muted-foreground">
@@ -98,9 +91,13 @@ export function Dashboard() {
                     <MessageSquareText className="h-6 w-6 stroke-white" />
                   </Button>
                 </div>
-              </Link>
-            ) : (
-              <Link href="https://wa.me/+2347072665255">
+              </CardContent>
+            </Card>
+          </Link>
+        ) : (
+          <Link href="https://wa.me/+2347072665255">
+            <Card className="border-transparent shadow-md">
+              <CardContent className="pb-2 pt-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm text-muted-foreground">
@@ -117,10 +114,10 @@ export function Dashboard() {
                     <MessageSquareText className="h-6 w-6 stroke-white" />
                   </Button>
                 </div>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-1 lg:grid-cols-2 md:gap-8">
@@ -131,10 +128,9 @@ export function Dashboard() {
                 mygadgetpadi
               </Badge>
               <CardTitle>
-                <h1 className="text-lg font-bold">Text</h1>
+                <h1 className="text-lg font-bold">MyPadi News</h1>
                 <p className="text-sm font-normal text-muted-foreground mt-2">
-                  From colors, cards, typography to complex elements, you will
-                  find the full documentation.
+                  Get the latest news, updates, bonuses, etc.
                 </p>
               </CardTitle>
             </CardHeader>
@@ -175,13 +171,9 @@ export function Dashboard() {
             <div className="rounded-2xl absolute inset-0 flex flex-col justify-between bg-black bg-opacity-50">
               <CardHeader>
                 <CardTitle className="text-white">
-                  <h1 className="text-lg font-semibold">
-                    Something you most likely don't know
-                  </h1>
+                  <h1 className="text-lg font-semibold">MyPadi Blog</h1>
                   <p className="text-sm font-light mt-2">
-                    Do you know that repairing your gadget with unprofessional
-                    engineers reduces the lifespan of your gadget rather than
-                    the improvement you were seeking?
+                    Get the latest news, updates, bonuses, etc.
                   </p>
                 </CardTitle>
               </CardHeader>
@@ -190,20 +182,20 @@ export function Dashboard() {
                   href="#"
                   className="mt-4 inline-flex items-center gap-2 bg-white text-black px-5 py-2 rounded-full hover:bg-gray-200"
                 >
-                  Repair with warranty →
+                  Coming soon
                 </Link>
               </CardContent>
             </div>
           </div>
         </Card>
       </div>
-      
+
       <div className="grid mt-6 grid-cols-1 md:grid-cols-2 gap-6">
         {/* Ongoing Repairs Section */}
         <div>
           <h2 className="text-xl font-bold">Ongoing repairs</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Quick overview of your activities and things you can do now
+            Here’s what you’re fixing now
           </p>
           <OngoingRepairCard />
         </div>
@@ -212,7 +204,7 @@ export function Dashboard() {
         <div>
           <h2 className="text-xl font-bold">Previous repairs</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Quick overview of your activities and things you can do now
+            Here’s what you fixed with MyPadi
           </p>
           <PreviousRepairs />
         </div>
