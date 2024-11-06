@@ -126,8 +126,13 @@ export const getUserFreePlan = query({
   },
   handler: async (ctx, args) => {
     const plan = await ctx.db
-      .query("deviceProtections")
-      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .query('deviceProtections')
+      .filter((q) =>
+        q.and(
+          q.eq(q.field('userId'), args.userId),
+          q.eq(q.field('name'), 'Free Plan'),
+        ),
+      )
       .unique();
 
     return plan;

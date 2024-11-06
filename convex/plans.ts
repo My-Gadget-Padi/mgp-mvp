@@ -26,10 +26,13 @@ export const buyPlan = action({
       });
 
       if (plan.name === "Free Plan") {
-        //@todo check if user as deviceProtect of free plan not activated
-        if (user.freePlanActivationDate) {
-          throw new ConvexError("User has already activated free plan");
-        }
+        const existingFreePlan = await ctx.runQuery(
+            api.deviceProtections.getUserFreePlan,
+            { userId: user._id },
+          )
+          if (existingFreePlan) {
+            throw new ConvexError('You have already have a free plan')
+          }
         await ctx.runMutation(api.deviceProtections.createDeviceProtection, {
           userId: user._id,
           planId,
