@@ -33,7 +33,7 @@ export default defineSchema({
     paystackId: v.optional(v.string()),
     isAdmin: v.optional(v.boolean()),
     secretCode: v.optional(v.string()),
-    freePlanActivated: v.optional(v.boolean()),
+    hasFreePlan: v.optional(v.boolean()),
     freePlanActivationDate: v.optional(v.string()),
   }),
 

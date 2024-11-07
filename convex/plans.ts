@@ -30,7 +30,7 @@ export const buyPlan = action({
           api.deviceProtections.getUserFreePlan,
           { userId: user._id },
         )
-        if (existingFreePlan) {
+        if (existingFreePlan || user.hasFreePlan) {
           throw new ConvexError('You have already have a free plan')
         }
         await ctx.runMutation(api.deviceProtections.createDeviceProtection, {
@@ -41,6 +41,8 @@ export const buyPlan = action({
           amountLeft: plan.maxRedemptionAmount,
           claimsAvailable: plan.claimLimit,
         })
+        
+        await ctx.runMutation(api.users.updateUser, {userId: user._id, hasFreePlan: true})
       } else {
         const authorizationUrl: string = await ctx.runAction(
           internal.paystack.initializePayment,

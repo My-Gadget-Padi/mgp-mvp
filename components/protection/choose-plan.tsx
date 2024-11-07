@@ -69,7 +69,7 @@ export function ChoosePlan() {
               <Link
                 href={
                   plan.name === "Free Plan" &&
-                  userProfile?.freePlanActivated === true
+                  userProfile?.hasFreePlan === true
                     ? `#`
                     : `/protection/checkout/${plan._id as Id<"plans">}`
                 }
@@ -78,7 +78,7 @@ export function ChoosePlan() {
                   variant={plan.name === "Pro Plan" ? "outline" : "secondary"}
                   disabled={
                     plan.name === "Free Plan" &&
-                    userProfile?.freePlanActivated === true
+                    userProfile?.hasFreePlan === true
                   }
                   className={`${
                     plan.name === "Pro Plan"
@@ -89,7 +89,7 @@ export function ChoosePlan() {
                   } hover:text-white rounded-md font-semibold w-full mt-2`}
                 >
                   {plan.name === "Free Plan" &&
-                  userProfile?.freePlanActivated === true
+                  userProfile?.hasFreePlan === true
                     ? "Free plan has been activated"
                     : "Choose a plan"}
                 </Button>

@@ -110,7 +110,6 @@ export const createDevice = mutation({
     name: v.string(),
     model: v.string(),
     verified: v.boolean(),
-    verified: v.boolean(),
     serialNumber: v.number(),
     protection: v.optional(v.id('deviceProtections')),
     verificationVideoUrl: v.optional(v.string()),

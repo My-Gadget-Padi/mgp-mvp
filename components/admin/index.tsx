@@ -50,8 +50,8 @@ export function Admin() {
       const formData = new FormData(e.currentTarget)
       const planId = formData.get('planId') as Id<'plans'>
       const reference = formData.get('reference') as string
-      // const response = await buyPlan({ planId });
-      const response = await verifyPayment({ reference })
+      const response = await buyPlan({ planId })
+      // const response = await verifyPayment({ reference })
       console.log(response)
     } catch (error: any) {
       console.error('Sign-in error:', error)
