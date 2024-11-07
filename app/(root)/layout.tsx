@@ -97,9 +97,7 @@ function MainLayout({
   }
 
   if (!isSignedIn) {
-    router.push(
-      `/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}`
-    );
+    router.push(`/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}`);
     return null;
   }
 
@@ -148,7 +146,7 @@ function MainLayout({
             </span>
           </>
         );
-         case "/protection/plans":
+      case "/protection/plans":
         return (
           <>
             <h1 className="text-xl sm:text-2xl font-semibold">Plans</h1>
@@ -157,7 +155,7 @@ function MainLayout({
             </span>
           </>
         );
-     
+
       case "/history":
         return (
           <>
@@ -203,7 +201,9 @@ function MainLayout({
         if (location.startsWith(`/repair/${requestId}`) && requestId) {
           return (
             <>
-              <h1 className="text-xl sm:text-2xl font-semibold">Gadget Repair</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold">
+                Gadget Repair
+              </h1>
               <span className="text-muted-foreground text-sm sm:text-base">
                 Setup a delivery option
               </span>
@@ -213,7 +213,9 @@ function MainLayout({
         if (location.startsWith(`/repair/review/${requestId}`) && requestId) {
           return (
             <>
-              <h1 className="text-xl sm:text-2xl font-semibold">Gadget Repair</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold">
+                Gadget Repair
+              </h1>
               <span className="text-muted-foreground text-sm sm:text-base">
                 Review details of your request
               </span>
@@ -223,7 +225,9 @@ function MainLayout({
         if (location.startsWith(`/repair/complete/${requestId}`) && requestId) {
           return (
             <>
-              <h1 className="text-xl sm:text-2xl font-semibold">Gadget Repair</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold">
+                Gadget Repair
+              </h1>
               <span className="text-muted-foreground text-sm sm:text-base">
                 Repair request completed successfully
               </span>
@@ -237,6 +241,22 @@ function MainLayout({
               <h1 className="text-xl sm:text-2xl font-semibold">Checkout</h1>
               <span className="text-muted-foreground text-sm sm:text-base">
                 Make payment for your plan
+              </span>
+            </>
+          );
+        }
+        if (location.startsWith(`/protection/terms/${planId}`) && planId) {
+          return <></>;
+        }
+        if (location.startsWith("/protection/payment/callback")) {
+          return <></>;
+        }
+        if (location.startsWith("/protection/success")) {
+          return (
+            <>
+              <h1 className="text-xl sm:text-2xl font-semibold">Receipt</h1>
+              <span className="text-muted-foreground text-sm sm:text-base">
+                Your payment has been confirmed
               </span>
             </>
           );
@@ -456,7 +476,10 @@ function MainLayout({
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="relative z-10">
-                      <Button onClick={handleContact} className="w-full py-6 rounded-2xl bg-white text-primary font-black hover:bg-white bg:text-primary">
+                      <Button
+                        onClick={handleContact}
+                        className="w-full py-6 rounded-2xl bg-white text-primary font-black hover:bg-white bg:text-primary"
+                      >
                         CONTACT MYPADI
                       </Button>
                     </CardContent>
@@ -486,7 +509,7 @@ function MainLayout({
                   <SheetContent side="left" className="flex flex-col">
                     <nav className="grid gap-4 text-base font-medium">
                       <div
-                        onClick={() => handleNavigation('/dashboard')}
+                        onClick={() => handleNavigation("/dashboard")}
                         className={`flex items-center gap-2 text-lg font-semibold ${
                           location.includes("/dashboard")
                             ? "text-foreground"
@@ -503,7 +526,7 @@ function MainLayout({
                         />
                       </div>
                       <div
-                        onClick={() => handleNavigation('/dashboard')}
+                        onClick={() => handleNavigation("/dashboard")}
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/dashboard")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"
@@ -529,7 +552,7 @@ function MainLayout({
                         Dashboard
                       </div>
                       <div
-                        onClick={() => handleNavigation('/repair')}
+                        onClick={() => handleNavigation("/repair")}
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/repair")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"
@@ -555,7 +578,7 @@ function MainLayout({
                         Repair
                       </div>
                       <div
-                        onClick={() => handleNavigation('/protection')}
+                        onClick={() => handleNavigation("/protection")}
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/protection")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"
@@ -581,7 +604,7 @@ function MainLayout({
                         Protection
                       </div>
                       <div
-                        onClick={() => handleNavigation('/history')}
+                        onClick={() => handleNavigation("/history")}
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/history")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"
@@ -612,7 +635,7 @@ function MainLayout({
                     </h1>
                     <nav className="grid gap-4 text-base font-medium">
                       <div
-                        onClick={() => handleNavigation('/settings')}
+                        onClick={() => handleNavigation("/settings")}
                         className={`flex items-center gap-4 rounded-xl ${
                           location.includes("/settings")
                             ? "bg-white p-2 shadow-md text-primary font-semibold"

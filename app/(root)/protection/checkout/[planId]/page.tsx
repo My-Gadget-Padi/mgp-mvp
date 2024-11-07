@@ -6,7 +6,7 @@ import { Id } from "@/convex/_generated/dataModel";
 const CheckoutPage = ({
   params: { planId },
 }: {
-  params: { planId: Id<"deviceProtections"> };
+  params: { planId: Id<"plans"> };
 }) => {
   return (
     <Checkout planId={planId} />

@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { verify } from "crypto";
 
 export default defineSchema({
   tempUsers: defineTable({
@@ -7,7 +8,8 @@ export default defineSchema({
     type: v.optional(v.string()), //customer or technician
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
-    phoneNumber: v.optional(v.string())
+    phoneNumber: v.optional(v.string()),
+    role: v.optional(v.string()),
   }),
 
   users: defineTable({
@@ -18,6 +20,7 @@ export default defineSchema({
     lastName: v.optional(v.string()),
     address: v.optional(v.string()),
     phoneNumber: v.optional(v.string()),
+    role: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
     notificationMethod: v.optional(v.string()), // email, sms, whatsapp, call
@@ -30,6 +33,8 @@ export default defineSchema({
     paystackId: v.optional(v.string()),
     isAdmin: v.optional(v.boolean()),
     secretCode: v.optional(v.string()),
+    freePlanActivated: v.optional(v.boolean()), // Added this to better control the frontend for when the plan is activated
+    freePlanActivationDate: v.optional(v.string()),
   }),
 
   //admin
@@ -55,7 +60,7 @@ export default defineSchema({
     deliveryTypeDate: v.optional(v.string()),
     deliveryTypeTime: v.optional(v.string()),
     warranty: v.optional(v.boolean()), //true or false
-    status: v.optional(v.string()) //scheduled, received, assigned, in-progress, fixed, ready for pickup/delivery, delivered, cancelled
+    status: v.optional(v.string()), //scheduled, received, assigned, in-progress, fixed, ready for pickup/delivery, delivered, cancelled
   }),
 
   devices: defineTable({
@@ -66,19 +71,42 @@ export default defineSchema({
     name: v.string(),
     model: v.string(),
     serialNumber: v.number(),
-    protection: v.optional(v.id("deviceProtections"))
+    protection: v.optional(v.id("deviceProtections")),
+    verified: v.boolean(),
+    verifyBy: v.optional(
+      v.object({
+        admin: v.id("users"),
+        mode: v.string(),
+        date: v.string(),
+      })
+    ),
   }),
 
   deviceProtections: defineTable({
     userId: v.id("users"),
-    phoneNumber: v.number(),
-    devices: v.array(v.id("devices")), //max 3 devices
+    planId: v.id("plans"),
+    deviceId: v.optional(v.id("devices")),
     type: v.string(), //monthly or yearly
     name: v.string(),
-    price: v.number()
+    amountLeft: v.number(),
+    claimsAvailable: v.number(),
+    activationDate: v.optional(v.string()),
+    expiryDate: v.optional(v.string()),
   }),
 
   //Schema for plans to be written
+  plans: defineTable({
+    name: v.string(),
+    type: v.string(), //monthly or yearly
+    durationMonths: v.number(),
+    maxRedemptionAmount: v.number(),
+    claimLimit: v.number(), // number of redeemable claims
+    price: v.number(),
+    details: v.object({
+      benefits: v.array(v.string()),
+      terms: v.string(),
+    }),
+  }),
 
   notifications: defineTable({
     userId: v.id("users"),
@@ -88,6 +116,20 @@ export default defineSchema({
     emailAddress: v.optional(v.string()),
     phoneNumber: v.optional(v.number()),
     read: v.boolean(), //true or false
-    response: v.optional(v.string())
-  })
+    response: v.optional(v.string()),
+  }),
+
+  payments: defineTable({
+    userId: v.id("users"),
+    planId: v.optional(v.id("plans")),
+    repairRequestId: v.optional(v.id("repairRequests")),
+    amount: v.number(),
+    status: v.string(),
+    paymentLink: v.optional(v.string()),
+    reference: v.string(),
+    description: v.optional(v.string()),
+    initialConfig: v.any(),
+    finalConfig: v.optional(v.any()),
+    paidAt: v.optional(v.string()),
+  }),
 });

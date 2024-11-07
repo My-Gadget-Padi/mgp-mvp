@@ -4,12 +4,12 @@ import Success from "@/components/protection/success";
 import { Id } from "@/convex/_generated/dataModel";
 
 const SuccessPage = ({
-  params: { planId },
+  params: { reference },
 }: {
-  params: { planId: Id<"deviceProtections"> };
+  params: { reference: string };
 }) => {
   return (
-    <Success planId={planId} />
+    <Success reference={reference} />
   );
 };
 
