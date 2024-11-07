@@ -98,7 +98,7 @@ export const createUser = internalMutation({
     security_updates: v.optional(v.boolean()), // true or false : default = true
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
-    freePlanActivated: v.optional(v.boolean()),
+    hasFreePlan: v.optional(v.boolean()),
     isAdmin: v.optional(v.boolean()),
     secretCode: v.optional(v.string()),
   },
@@ -128,7 +128,7 @@ export const createUser = internalMutation({
         security_updates: true,
         stripeId: args.stripeId || "",
         paystackId: args.paystackId || "",
-        freePlanActivated: false,
+        hasFreePlan: false,
         isAdmin: false,
         secretCode: "",
       });
@@ -164,6 +164,7 @@ export const updateUser = mutation({
     marketing_updates: v.optional(v.boolean()), // true or false
     social_updates: v.optional(v.boolean()), // true or false
     security_updates: v.optional(v.boolean()), // true or false : default = true
+    hasFreePlan: v.optional(v.boolean()), 
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
   },
@@ -209,6 +210,7 @@ export const updateUser = mutation({
       ...(args.stripeId !== undefined && { stripeId: args.stripeId }),
       ...(args.paystackId !== undefined && { paystackId: args.paystackId }),
       ...(args.address !== undefined && { address: args.address }),
+      ...(args.hasFreePlan !== undefined && { hasFreePlan: args.hasFreePlan }),
     };
 
     await ctx.db.patch(args.userId, updateFields);

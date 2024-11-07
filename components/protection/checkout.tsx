@@ -1,75 +1,75 @@
-import React, { useState, useEffect } from "react";
-import { Separator } from "../ui/separator";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { useQuery, useAction } from "convex/react";
-import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
-import { useUser } from "@clerk/nextjs";
-import PageLoader from "../PageLoader";
-import { Stepper } from "./stepper";
-import { Checkbox } from "../ui/checkbox";
-import { Badge } from "../ui/badge";
-import { TbCurrencyNaira } from "react-icons/tb";
+import React, { useState, useEffect } from 'react'
+import { Separator } from '../ui/separator'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { api } from '@/convex/_generated/api'
+import { Id } from '@/convex/_generated/dataModel'
+import { useQuery, useAction } from 'convex/react'
+import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/use-toast'
+import { useUser } from '@clerk/nextjs'
+import PageLoader from '../PageLoader'
+import { Stepper } from './stepper'
+import { Checkbox } from '../ui/checkbox'
+import { Badge } from '../ui/badge'
+import { TbCurrencyNaira } from 'react-icons/tb'
 
 interface PlanProps {
-  planId: Id<"plans">;
+  planId: Id<'plans'>
 }
 
 const Checkout = ({ planId }: PlanProps) => {
-  const [loading, setLoading] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
-  const router = useRouter();
-  const { toast } = useToast();
-  const { user } = useUser();
-  const userId = user?.id;
+  const [loading, setLoading] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
+  const [isChecked, setIsChecked] = useState(false)
+  const router = useRouter()
+  const { toast } = useToast()
+  const { user } = useUser()
+  const userId = user?.id
   const userProfile = useQuery(api.users.getUserByClerkId, {
-    clerkId: userId || "",
-  });
+    clerkId: userId || '',
+  })
 
   const plan = useQuery(api.plans.getPlanById, {
     planId,
-  });
+  })
 
-  const buyPlan = useAction(api.plans.buyPlan);
+  const buyPlan = useAction(api.plans.buyPlan)
 
   useEffect(() => {
-    if (plan?.name === "Free Plan" && userProfile?.freePlanActivated === true) {
-      router.push("/protection/plans");
+    if (plan?.name === 'Free Plan' && userProfile?.hasFreePlan === true) {
+      router.push('/protection/plans')
     }
-  }, [plan, userProfile?.freePlanActivated, router]);
+  }, [plan, userProfile?.hasFreePlan, router])
 
   const handleBuyPlan = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
 
       const response = await buyPlan({
-        planId: plan?._id as Id<"plans">,
-      });
+        planId: plan?._id as Id<'plans'>,
+      })
 
       if (response?.status && response.authorizationUrl) {
         toast({
-          title: "Initialized",
-          description: "You will be redirected to a payment page.",
-        });
-        router.push(response.authorizationUrl);
+          title: 'Initialized',
+          description: 'You will be redirected to a payment page.',
+        })
+        router.push(response.authorizationUrl)
       } else {
-        throw new Error("Invalid response from server");
+        throw new Error('Invalid response from server')
       }
     } catch (error) {
-      console.error("Error making claim:", error);
+      console.error('Error making claim:', error)
       toast({
-        title: "Error",
-        description: "Plan purchase could not be initialized.",
-        variant: "destructive",
-      });
+        title: 'Error',
+        description: 'Plan purchase could not be initialized.',
+        variant: 'destructive',
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <main className="flex flex-1 mt-6 sm:mt-0 flex-col gap-4 p-4 lg:gap-2 lg:p-6">
@@ -92,10 +92,10 @@ const Checkout = ({ planId }: PlanProps) => {
             </div>
             <div className="mt-4 space-y-2">
               <p className="font-semibold">
-                {userProfile?.firstName || "No name"} {userProfile?.lastName}
+                {userProfile?.firstName || 'No name'} {userProfile?.lastName}
               </p>
               <p className="text-sm">
-                {userProfile?.phoneNumber || "No phone number"}
+                {userProfile?.phoneNumber || 'No phone number'}
               </p>
               <p className="text-sm">{plan?.durationMonths} months</p>
             </div>
@@ -106,7 +106,7 @@ const Checkout = ({ planId }: PlanProps) => {
                 onClick={() => setShowDetails((prev) => !prev)}
                 className="text-sm text-white underline"
               >
-                {showDetails ? "Hide details" : "See details"}
+                {showDetails ? 'Hide details' : 'See details'}
               </button>
             </div>
             <div className="text-left">
@@ -140,7 +140,7 @@ const Checkout = ({ planId }: PlanProps) => {
               <span>Discount</span>
               <span className="inline-flex font-semibold">
                 <TbCurrencyNaira size={20} />
-                {"0"}
+                {'0'}
               </span>
             </div>
             <div className="flex justify-between font-semibold text-lg">
@@ -161,8 +161,8 @@ const Checkout = ({ planId }: PlanProps) => {
                   id="terms"
                   checked={isChecked}
                   onCheckedChange={(checked) => {
-                    if (typeof checked === "boolean") {
-                      setIsChecked(checked);
+                    if (typeof checked === 'boolean') {
+                      setIsChecked(checked)
                     }
                   }}
                 />
@@ -170,7 +170,7 @@ const Checkout = ({ planId }: PlanProps) => {
                   htmlFor="terms"
                   className="text-sm font-medium leading-none"
                 >
-                  I have read and agreed to all{" "}
+                  I have read and agreed to all{' '}
                   <Link
                     href={`/protection/terms/${plan?._id}`}
                     target="_blank"
@@ -193,7 +193,7 @@ const Checkout = ({ planId }: PlanProps) => {
         </div>
       )}
     </main>
-  );
-};
+  )
+}
 
-export default Checkout;
+export default Checkout
