@@ -1,38 +1,38 @@
-import { ConvexError, v } from "convex/values";
-import { action, mutation, query } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { ConvexError, v } from 'convex/values'
+import { action, mutation, query } from './_generated/server'
+import { api, internal } from './_generated/api'
 
 export const buyPlan = action({
   args: {
-    planId: v.id("plans"),
+    planId: v.id('plans'),
   },
   handler: async (ctx, args) => {
     try {
-      const response: any = { status: true };
-      const { planId } = args;
-      const identity = await ctx.auth.getUserIdentity();
+      const response: any = { status: true }
+      const { planId } = args
+      const identity = await ctx.auth.getUserIdentity()
 
       if (!identity) {
-        throw new ConvexError("User not authenticated");
+        throw new ConvexError('User not authenticated')
       }
 
-      const plan = await ctx.runQuery(api.plans.getPlanById, { planId: planId });
+      const plan = await ctx.runQuery(api.plans.getPlanById, { planId: planId })
       if (!plan) {
-        throw new ConvexError("Plan not found");
+        throw new ConvexError('Plan not found')
       }
 
       const user = await ctx.runQuery(api.users.getUserByEmail, {
         email: identity.email!,
-      });
+      })
 
-      if (plan.name === "Free Plan") {
+      if (plan.name === 'Free Plan') {
         const existingFreePlan = await ctx.runQuery(
-            api.deviceProtections.getUserFreePlan,
-            { userId: user._id },
-          )
-          if (existingFreePlan) {
-            throw new ConvexError('You have already have a free plan')
-          }
+          api.deviceProtections.getUserFreePlan,
+          { userId: user._id },
+        )
+        if (existingFreePlan) {
+          throw new ConvexError('You have already have a free plan')
+        }
         await ctx.runMutation(api.deviceProtections.createDeviceProtection, {
           userId: user._id,
           planId,
@@ -40,7 +40,7 @@ export const buyPlan = action({
           name: plan.name,
           amountLeft: plan.maxRedemptionAmount,
           claimsAvailable: plan.claimLimit,
-        });
+        })
       } else {
         const authorizationUrl: string = await ctx.runAction(
           internal.paystack.initializePayment,
@@ -50,21 +50,21 @@ export const buyPlan = action({
             userId: user._id,
             description: `Payment for ${plan.name} protection plan`,
             planId,
-          }
-        );
+          },
+        )
         if (!authorizationUrl) {
-          throw new ConvexError("Failed to get authorization URL!");
+          throw new ConvexError('Failed to get authorization URL!')
         }
-        response.authorizationUrl = authorizationUrl;
+        response.authorizationUrl = authorizationUrl
       }
 
-      return response;
+      return response
     } catch (error) {
-      console.error(`Failed initialize plan purchase: ${error}`);
-      throw new ConvexError(`Failed initialize plan purchase: ${error}`);
+      console.error(`Failed initialize plan purchase: ${error}`)
+      throw new ConvexError(`Failed initialize plan purchase: ${error}`)
     }
   },
-});
+})
 
 export const createPlan = mutation({
   args: {
@@ -80,7 +80,7 @@ export const createPlan = mutation({
     }),
   },
   handler: async (ctx, args) => {
-    const planId = await ctx.db.insert("plans", {
+    const planId = await ctx.db.insert('plans', {
       name: args.name,
       type: args.type,
       durationMonths: args.durationMonths,
@@ -88,15 +88,15 @@ export const createPlan = mutation({
       claimLimit: args.claimLimit,
       price: args.price,
       details: args.details,
-    });
+    })
 
-    return planId;
+    return planId
   },
-});
+})
 
 export const updatePlan = mutation({
   args: {
-    planId: v.id("plans"),
+    planId: v.id('plans'),
     name: v.string(),
     type: v.string(), //monthly or yearly
     durationMonths: v.number(),
@@ -109,10 +109,10 @@ export const updatePlan = mutation({
     }),
   },
   handler: async (ctx, args) => {
-    const plan = await ctx.db.get(args.planId);
+    const plan = await ctx.db.get(args.planId)
 
     if (!plan) {
-      throw new ConvexError("Plan not found");
+      throw new ConvexError('Plan not found')
     }
 
     const updatePlan = {
@@ -127,42 +127,42 @@ export const updatePlan = mutation({
       ...(args.claimLimit !== undefined && { claimLimit: args.durationMonths }),
       ...(args.price !== undefined && { price: args.price }),
       ...(args.details !== undefined && { details: args.details }),
-    };
+    }
 
-    await ctx.db.patch(args.planId, updatePlan);
+    await ctx.db.patch(args.planId, updatePlan)
 
-    return args.planId;
+    return args.planId
   },
-});
+})
 
 export const deletePlan = mutation({
   args: {
-    planId: v.id("plans"),
+    planId: v.id('plans'),
   },
   handler: async (ctx, args) => {
-    const plan = await ctx.db.get(args.planId);
+    const plan = await ctx.db.get(args.planId)
 
     if (!plan) {
-      throw new ConvexError("Plan not found");
+      throw new ConvexError('Plan not found')
     }
 
-    return await ctx.db.delete(args.planId);
+    return await ctx.db.delete(args.planId)
   },
-});
+})
 
 export const getAllPlans = query({
   handler: async (ctx) => {
-    return await ctx.db.query("plans").order("desc").collect();
+    return await ctx.db.query('plans').order('desc').collect()
   },
-});
+})
 
 export const getPlanById = query({
   args: {
-    planId: v.id("plans"),
+    planId: v.id('plans'),
   },
   handler: async (ctx, args) => {
-    const plan = await ctx.db.get(args.planId);
+    const plan = await ctx.db.get(args.planId)
 
-    return plan;
+    return plan
   },
-});
+})

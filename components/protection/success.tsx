@@ -5,25 +5,41 @@ import Link from "next/link";
 import { Copy, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { useQuery, useMutation } from "convex/react";
-import { useRouter } from "next/navigation";
+import { useQuery } from "convex/react";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/nextjs";
-import LoaderSpinner from "../loader/loader-spinner";
+import { TbCurrencyNaira } from "react-icons/tb";
 import { Stepper } from "./stepper";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 interface PlanProps {
-  planId: Id<"deviceProtections">;
+  reference: string;
 }
 
-const Success = ({ planId }: PlanProps) => {
-  const router = useRouter();
+const Success = ({ reference }: PlanProps) => {
   const { toast } = useToast();
   const { user } = useUser();
   const userId = user?.id;
   const userProfile = useQuery(api.users.getUserByClerkId, {
     clerkId: userId || "",
+  });
+
+  const paymentDetails = useQuery(api.payments.getPaymentByReference, {
+    reference,
+  });
+
+  const date = new Date(paymentDetails?._creationTime!);
+
+  const formattedDate = date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const formattedTime = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
   });
 
   return (
@@ -34,7 +50,6 @@ const Success = ({ planId }: PlanProps) => {
         {/* Left and Right Cut-out Circles */}
         <div className="absolute top-[174px] -left-3 w-6 h-6 bg-white rounded-full"></div>
         <div className="absolute top-[150px] -right-3 w-6 h-6 bg-white rounded-full"></div>
-        {/* Success Icon */}
         <div className="flex justify-center">
           <div className="bg-white rounded-full p-4">
             <svg
@@ -53,7 +68,6 @@ const Success = ({ planId }: PlanProps) => {
             </svg>
           </div>
         </div>
-        {/* Payment Success Message */}
         <div>
           <h2 className="text-center text-lg font-semibold">
             Payment Successful!
@@ -70,22 +84,37 @@ const Success = ({ planId }: PlanProps) => {
         <div className="text-sm space-y-2">
           <div className="flex justify-between">
             <span>Reference Number</span>
-            <span className="inline-flex">
-                000085752257
-                <Copy className="h-4 w-4 ml-1" />
-            </span>
+
+            <CopyToClipboard text={reference}>
+              <span className="inline-flex">
+                {reference.slice(0, 10)}***
+                <Copy
+                  className="h-4 w-4 ml-1"
+                  onClick={() =>
+                    toast({
+                      title: "Reference ID copied to clipboard!",
+                    })
+                  }
+                />
+              </span>
+            </CopyToClipboard>
           </div>
+
           <div className="flex justify-between">
             <span>Date</span>
-            <span>Mar 22, 2023</span>
+            <span>{formattedDate}</span>
           </div>
           <div className="flex justify-between">
             <span>Time</span>
-            <span>07:80 AM</span>
+            <span>{formattedTime}</span>
           </div>
           <div className="flex justify-between">
             <span>Payment Method</span>
-            <span>Credit Card</span>
+            <span>
+              {paymentDetails?.finalConfig.channel === "card"
+                ? "Credit Card"
+                : paymentDetails?.finalConfig.channel}
+            </span>
           </div>
         </div>
         <div className="text-sm space-y-2">
@@ -97,7 +126,12 @@ const Success = ({ planId }: PlanProps) => {
           </div>
           <div className="flex justify-between">
             <span>Amount</span>
-            <span>N5,000</span>
+            <span className="inline-flex">
+              <TbCurrencyNaira size={20} />
+              {(paymentDetails?.finalConfig.amount / 100).toLocaleString(
+                "en-US"
+              )}
+            </span>
           </div>
         </div>
         {/* Download PDF Button */}
@@ -107,11 +141,11 @@ const Success = ({ planId }: PlanProps) => {
         </Button>
       </div>
 
-      <div className="flex justify-center mt-4">
+      <Link href="/protection/onboard" className="flex justify-center mt-4">
         <Button className="bg-[#6445E8] text-white hover:bg-[#6445E8]/90 w-full sm:w-[400px]">
           Onboard a device
         </Button>
-      </div>
+      </Link>
 
       <Link
         href="/protection"

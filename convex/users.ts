@@ -98,6 +98,7 @@ export const createUser = internalMutation({
     security_updates: v.optional(v.boolean()), // true or false : default = true
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
+    freePlanActivated: v.optional(v.boolean()),
     isAdmin: v.optional(v.boolean()),
     secretCode: v.optional(v.string()),
   },
@@ -127,6 +128,7 @@ export const createUser = internalMutation({
         security_updates: true,
         stripeId: args.stripeId || "",
         paystackId: args.paystackId || "",
+        freePlanActivated: false,
         isAdmin: false,
         secretCode: "",
       });

@@ -1,6 +1,6 @@
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
-import { verify } from "crypto";
+import { defineSchema, defineTable } from 'convex/server'
+import { v } from 'convex/values'
+import { verify } from 'crypto'
 
 export default defineSchema({
   tempUsers: defineTable({
@@ -22,7 +22,7 @@ export default defineSchema({
     phoneNumber: v.optional(v.string()),
     role: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
-    imageStorageId: v.optional(v.id("_storage")),
+    imageStorageId: v.optional(v.id('_storage')),
     notificationMethod: v.optional(v.string()), // email, sms, whatsapp, call
     notificationType: v.optional(v.string()), // all, repairs only, none
     communication_updates: v.optional(v.boolean()), // true or false : default = true
@@ -33,21 +33,22 @@ export default defineSchema({
     paystackId: v.optional(v.string()),
     isAdmin: v.optional(v.boolean()),
     secretCode: v.optional(v.string()),
+    freePlanActivated: v.optional(v.boolean()),
     freePlanActivationDate: v.optional(v.string()),
   }),
 
   //admin
 
   repairRequests: defineTable({
-    userId: v.optional(v.id("users")),
+    userId: v.optional(v.id('users')),
     user_status: v.optional(v.string()), // guest or registered
     price: v.optional(v.number()),
-    assignedTechnician: v.optional(v.id("users")),
+    assignedTechnician: v.optional(v.id('users')),
     device: v.optional(v.string()),
     brandName: v.optional(v.string()),
     model: v.optional(v.string()),
     fileUrl: v.optional(v.string()),
-    fileStorageId: v.optional(v.id("_storage")),
+    fileStorageId: v.optional(v.id('_storage')),
     contentType: v.optional(v.string()),
     address: v.optional(v.string()),
     dropOffLocation: v.optional(v.string()),
@@ -63,33 +64,33 @@ export default defineSchema({
   }),
 
   devices: defineTable({
-    userId: v.id("users"),
+    userId: v.id('users'),
     imageUrl: v.optional(v.string()),
-    imageStorageId: v.optional(v.id("_storage")),
+    imageStorageId: v.optional(v.id('_storage')),
     proofOfOwnershipUrl: v.string(),
-    proofStorageId: v.id("_storage"),
+    proofStorageId: v.id('_storage'),
     name: v.string(),
     type: v.string(),
     model: v.string(),
     serialNumber: v.number(),
     condition: v.string(),
-    protection: v.optional(v.id("deviceProtections")),
+    protection: v.optional(v.id('deviceProtections')),
     verificationVideoUrl: v.optional(v.string()),
-    verificationVideoStorageId: v.optional(v.id("_storage")),
+    verificationVideoStorageId: v.optional(v.id('_storage')),
     verified: v.boolean(),
     verifyBy: v.optional(
       v.object({
-        admin: v.id("users"),
+        admin: v.id('users'),
         mode: v.string(),
         date: v.string(),
-      })
+      }),
     ),
   }),
 
   deviceProtections: defineTable({
-    userId: v.id("users"),
-    planId: v.id("plans"),
-    deviceId: v.optional(v.id("devices")),
+    userId: v.id('users'),
+    planId: v.id('plans'),
+    deviceId: v.optional(v.id('devices')),
     type: v.string(), //monthly or yearly
     name: v.string(),
     amountLeft: v.number(),
@@ -113,7 +114,7 @@ export default defineSchema({
   }),
 
   notifications: defineTable({
-    userId: v.id("users"),
+    userId: v.id('users'),
     type: v.string(), //account, repairs, protections, security, offers, warranty, payments, security
     title: v.optional(v.string()),
     description: v.optional(v.string()),
@@ -124,9 +125,9 @@ export default defineSchema({
   }),
 
   payments: defineTable({
-    userId: v.id("users"),
-    planId: v.optional(v.id("plans")),
-    repairRequestId: v.optional(v.id("repairRequests")),
+    userId: v.id('users'),
+    planId: v.optional(v.id('plans')),
+    repairRequestId: v.optional(v.id('repairRequests')),
     amount: v.number(),
     status: v.string(),
     paymentLink: v.optional(v.string()),
@@ -136,4 +137,4 @@ export default defineSchema({
     finalConfig: v.optional(v.any()),
     paidAt: v.optional(v.string()),
   }),
-});
+})
