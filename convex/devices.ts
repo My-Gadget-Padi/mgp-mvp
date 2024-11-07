@@ -76,6 +76,8 @@ export const onboardDeviceToProtection = action({
 
       device.verificationVideoStorageId = args.verificationVideoStorageId
       device.verificationVideoUrl = args.verificationVideoUrl
+    }else{
+      // create verification request
     }
 
     const deviceId = ctx.runMutation(api.devices.createDevice, device)

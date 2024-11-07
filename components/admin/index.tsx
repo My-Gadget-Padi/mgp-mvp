@@ -1,62 +1,62 @@
-"use client";
+'use client'
 
-import * as React from "react";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ShieldCheck, Wrench, MessageSquareText } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "../ui/badge";
-import Image from "next/image";
-import { useAction, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import * as React from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { ShieldCheck, Wrench, MessageSquareText } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '../ui/badge'
+import Image from 'next/image'
+import { useAction, useQuery } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import { Id } from '@/convex/_generated/dataModel'
 
 // Helper function to generate a unique 21-character password
 const generatePassword = (length = 21) => {
-  if (typeof window !== "undefined" && window.crypto) {
+  if (typeof window !== 'undefined' && window.crypto) {
     const charset =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-={}[]|:;<>,.?/";
-    const array = new Uint32Array(length);
-    window.crypto.getRandomValues(array);
-    return Array.from(array, (x) => charset[x % charset.length]).join("");
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-={}[]|:;<>,.?/'
+    const array = new Uint32Array(length)
+    window.crypto.getRandomValues(array)
+    return Array.from(array, (x) => charset[x % charset.length]).join('')
   } else {
-    return Math.random().toString(36).slice(-length);
+    return Math.random().toString(36).slice(-length)
   }
-};
+}
 
 export function Admin() {
-  const [showFirstButton, setShowFirstButton] = useState(true);
-  const [email, setEmail] = useState("");
+  const [showFirstButton, setShowFirstButton] = useState(true)
+  const [email, setEmail] = useState('')
 
-  const buyPlan = useAction(api.plans.buyPlan);
-  const verifyPayment = useAction(api.paystack.verifyPayment);
-  const plans = useQuery(api.plans.getAllPlans);
-  console.log("plans");
-  console.log(plans);
+  const buyPlan = useAction(api.plans.buyPlan)
+  const verifyPayment = useAction(api.paystack.verifyPayment)
+  const plans = useQuery(api.plans.getAllPlans)
+  console.log('plans')
+  console.log(plans)
 
   useEffect(() => {
     const toggleButtons = () => {
-      setShowFirstButton((prev) => !prev);
-    };
-    const intervalId = setInterval(toggleButtons, 3600000);
-    return () => clearInterval(intervalId);
-  }, []);
+      setShowFirstButton((prev) => !prev)
+    }
+    const intervalId = setInterval(toggleButtons, 3600000)
+    return () => clearInterval(intervalId)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const redirectUrl = `${window.location.origin}/dashboard`;
+    e.preventDefault()
+    const redirectUrl = `${window.location.origin}/dashboard`
     try {
-      const formData = new FormData(e.currentTarget);
-      const planId = formData.get("planId") as Id<"plans">;
-      const reference = formData.get("reference") as string;
-      const response = await buyPlan({ planId });
-      //   const response = await verifyPayment({ reference });
-      console.log(response);
+      const formData = new FormData(e.currentTarget)
+      const planId = formData.get('planId') as Id<'plans'>
+      const reference = formData.get('reference') as string
+      // const response = await buyPlan({ planId });
+      const response = await verifyPayment({ reference })
+      console.log(response)
     } catch (error: any) {
-      console.error("Sign-in error:", error);
+      console.error('Sign-in error:', error)
     }
-  };
+  }
 
   return (
     <main className="flex flex-1 mt-6 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
@@ -89,7 +89,7 @@ export function Admin() {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-sm text-muted-foreground">
-                  Gadget protection{" "}
+                  Gadget protection{' '}
                   <Badge className="text-[10px] ml-1">Coming soon</Badge>
                 </span>
                 <h2 className="text-lg mt-2 font-semibold">
@@ -180,9 +180,9 @@ export function Admin() {
           <div
             style={{
               backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="180" cy="200" r="30" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1" fill="none"/><circle cx="180" cy="200" r="60" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1" fill="none"/><circle cx="180" cy="200" r="90" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1" fill="none"/><circle cx="180" cy="200" r="120" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1" fill="none"/><circle cx="180" cy="200" r="150" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1" fill="none"/><circle cx="180" cy="200" r="180" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1" fill="none"/></svg>')`,
-              backgroundPosition: "right -20px top",
-              backgroundSize: "contain",
-              backgroundRepeat: "no-repeat",
+              backgroundPosition: 'right -20px top',
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
             }}
             className="max-w-3xl sm:w-52 h-52 mb-4 mr-4 ml-4 sm:mr-4 sm:mt-4 bg-[#6445E8] rounded-lg flex items-center justify-center"
           />
@@ -208,8 +208,8 @@ export function Admin() {
                   </h1>
                   <p className="text-sm font-light mt-2">
                     Do you know that repairing your gadget with unprofessional
-                    engineers reduces the lifespan of your gadget rather than the
-                    improvement you were seeking?
+                    engineers reduces the lifespan of your gadget rather than
+                    the improvement you were seeking?
                   </p>
                 </CardTitle>
               </CardHeader>
@@ -271,5 +271,5 @@ export function Admin() {
         </form>
       </div>
     </main>
-  );
+  )
 }
