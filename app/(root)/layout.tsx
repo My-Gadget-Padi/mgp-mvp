@@ -74,8 +74,7 @@ function MainLayout({
   const { signOut } = useClerk();
   const location = usePathname();
   const searchParams = useSearchParams();
-  const { requestId } = useParams();
-  const { planId } = useParams();
+  const { requestId, planId, deviceId } = useParams();
   const { user } = useUser();
   const userId = user?.id;
   const userProfile = useQuery(api.users.getUserByClerkId, {
@@ -257,6 +256,33 @@ function MainLayout({
               <h1 className="text-xl sm:text-2xl font-semibold">Receipt</h1>
               <span className="text-muted-foreground text-sm sm:text-base">
                 Your payment has been confirmed
+              </span>
+            </>
+          );
+        }
+        if (location.startsWith("/protection/onboard")) {
+          return (
+            <>
+              <h1 className="text-xl sm:text-2xl font-semibold">
+                Onboard Device
+              </h1>
+              <span className="text-muted-foreground text-sm sm:text-base">
+                Onboard your device to a protection plan
+              </span>
+            </>
+          );
+        }
+        if (
+          location.startsWith(`/protection/onboard/verification/${deviceId}`) &&
+          deviceId
+        ) {
+          return (
+            <>
+              <h1 className="text-xl sm:text-2xl font-semibold">
+                Verify Device
+              </h1>
+              <span className="text-muted-foreground text-sm sm:text-base">
+                Verify your device to complete device onboarding
               </span>
             </>
           );
