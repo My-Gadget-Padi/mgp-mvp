@@ -4,17 +4,18 @@ import { api } from './_generated/api'
 
 export const onboardDeviceToProtection = action({
   args: {
+    protection: v.id('deviceProtections'),
+    type: v.string(),
+    brand: v.string(),
+    model: v.string(),
+    condition: v.string(),
+    serialNumber: v.string(),
+
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id('_storage')),
-    proofOfOwnershipUrl: v.string(),
-    proofStorageId: v.id('_storage'),
-    name: v.string(),
-    type: v.string(),
-    model: v.string(),
-    serialNumber: v.number(),
-    condition: v.string(),
-    protection: v.id('deviceProtections'),
-    verificationMode: v.string(), // video, call or physical
+    proofOfOwnershipUrl: v.optional(v.string()),
+    proofStorageId: v.optional(v.id('_storage')),
+    verificationMode: v.optional(v.string()), // video, call or physical
     verificationVideoUrl: v.optional(v.string()),
     verificationVideoStorageId: v.optional(v.id('_storage')),
   },
@@ -60,7 +61,7 @@ export const onboardDeviceToProtection = action({
       userId: user._id,
       proofOfOwnershipUrl: args.proofOfOwnershipUrl,
       proofStorageId: args.proofStorageId,
-      name: args.name,
+      brand: args.brand,
       type: args.type,
       model: args.model,
       serialNumber: args.serialNumber,
@@ -98,53 +99,79 @@ export const onboardDeviceToProtection = action({
   },
 })
 
-export const createDevice = mutation({
+export const onboardDevice = mutation({
   args: {
-    userId: v.id('users'),
-    condition: v.string(),
+    protection: v.id('deviceProtections'),
+    planName: v.string(),
     type: v.string(),
-    proofStorageId: v.id('_storage'),
-    proofOfOwnershipUrl: v.string(),
-    imageUrl: v.optional(v.string()),
-    imageStorageId: v.optional(v.id('_storage')),
-    name: v.string(),
+    brand: v.string(),
     model: v.string(),
-    verified: v.boolean(),
-    serialNumber: v.number(),
-    protection: v.optional(v.id('deviceProtections')),
-    verificationVideoUrl: v.optional(v.string()),
-    verificationVideoStorageId: v.optional(v.id('_storage')),
+    condition: v.string(),
+    serialNumber: v.string()
   },
   handler: async (ctx, args) => {
-    const deviceId = await ctx.db.insert('devices', {
-      userId: args.userId,
-      proofOfOwnershipUrl: args.proofOfOwnershipUrl,
-      proofStorageId: args.proofStorageId,
-      type: args.type,
-      condition: args.condition,
-      imageUrl: args.imageUrl,
-      imageStorageId: args.imageStorageId,
-      serialNumber: args.serialNumber,
-      protection: args.protection,
-      name: args.name,
-      verified: args.verified,
-      model: args.model,
-      verificationVideoUrl: args.verificationVideoUrl,
-      verificationVideoStorageId: args.verificationVideoStorageId,
-    })
+    const identity = await ctx.auth.getUserIdentity();
 
-    return deviceId
+    if (!identity) {
+      throw new ConvexError("User not authenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), identity.email))
+      .collect();
+    
+    if (user.length === 0) {
+      throw new ConvexError("User not found");
+    }
+
+    const deviceId = await ctx.db.insert('devices', {
+      userId: user[0]?._id,
+      protection: args.protection,
+      planName: args.planName,
+      type: args.type,
+      brand: args.brand,
+      model: args.model,
+      condition: args.condition,
+      serialNumber: args.serialNumber,
+      verified: false
+    });
+
+    const deviceProtection = await ctx.db
+    .query("deviceProtections")
+    .filter((q) => q.eq(q.field("_id"), args.protection))
+    .unique();
+
+    if (!deviceProtection) {
+      throw new ConvexError("Device protection not found");
+    }
+
+    const planId = deviceProtection.planId
+
+    const plan = await ctx.db
+    .query("plans")
+    .filter((q) => q.eq(q.field("_id"), planId))
+    .unique();
+
+    if (!plan) {
+      throw new ConvexError("Plan not found");
+    }
+
+    return {
+      deviceId,
+      plan
+    };
   },
 })
 
-export const updateDevice = mutation({
+export const deviceVerification = mutation({
   args: {
     deviceId: v.id('devices'),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id('_storage')),
     protection: v.optional(v.id('deviceProtections')),
-    serialNumber: v.optional(v.number()),
-    name: v.optional(v.string()),
+    serialNumber: v.optional(v.string()),
+    brand: v.optional(v.string()),
     type: v.optional(v.string()),
     model: v.optional(v.string()),
     condition: v.optional(v.string()),
@@ -167,7 +194,88 @@ export const updateDevice = mutation({
       ...(args.serialNumber !== undefined && {
         serialNumber: args.serialNumber,
       }),
-      ...(args.name !== undefined && { name: args.name }),
+      ...(args.brand !== undefined && { brand: args.brand }),
+      ...(args.model !== undefined && { model: args.model }),
+    }
+
+    await ctx.db.patch(args.deviceId, updateDeviceInfo)
+
+    return args.deviceId
+  },
+})
+
+export const createDevice = mutation({
+  args: {
+    userId: v.id('users'),
+    condition: v.string(),
+    type: v.string(),
+    planName: v.string(),
+    proofStorageId: v.id('_storage'),
+    proofOfOwnershipUrl: v.string(),
+    imageUrl: v.optional(v.string()),
+    imageStorageId: v.optional(v.id('_storage')),
+    brand: v.string(),
+    model: v.string(),
+    verified: v.boolean(),
+    serialNumber: v.string(),
+    protection: v.id('deviceProtections'),
+    verificationVideoUrl: v.optional(v.string()),
+    verificationVideoStorageId: v.optional(v.id('_storage')),
+  },
+  handler: async (ctx, args) => {
+    const deviceId = await ctx.db.insert('devices', {
+      userId: args.userId,
+      proofOfOwnershipUrl: args.proofOfOwnershipUrl,
+      proofStorageId: args.proofStorageId,
+      type: args.type,
+      planName: args.planName,
+      condition: args.condition,
+      imageUrl: args.imageUrl,
+      imageStorageId: args.imageStorageId,
+      serialNumber: args.serialNumber,
+      protection: args.protection,
+      brand: args.brand,
+      verified: args.verified,
+      model: args.model,
+      verificationVideoUrl: args.verificationVideoUrl,
+      verificationVideoStorageId: args.verificationVideoStorageId,
+    })
+
+    return deviceId
+  },
+})
+
+export const updateDevice = mutation({
+  args: {
+    deviceId: v.id('devices'),
+    imageUrl: v.optional(v.string()),
+    imageStorageId: v.optional(v.id('_storage')),
+    protection: v.optional(v.id('deviceProtections')),
+    serialNumber: v.optional(v.string()),
+    brand: v.optional(v.string()),
+    type: v.optional(v.string()),
+    model: v.optional(v.string()),
+    condition: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const device = await ctx.db.get(args.deviceId)
+
+    if (!device) {
+      throw new ConvexError('Device not found')
+    }
+
+    const updateDeviceInfo = {
+      ...(args.type !== undefined && { type: args.type }),
+      ...(args.condition !== undefined && { condition: args.condition }),
+      ...(args.imageUrl !== undefined && { imageUrl: args.imageUrl }),
+      ...(args.imageStorageId !== undefined && {
+        imageStorageId: args.imageStorageId,
+      }),
+      ...(args.protection !== undefined && { protection: args.protection }),
+      ...(args.serialNumber !== undefined && {
+        serialNumber: args.serialNumber,
+      }),
+      ...(args.brand !== undefined && { brand: args.brand }),
       ...(args.model !== undefined && { model: args.model }),
     }
 

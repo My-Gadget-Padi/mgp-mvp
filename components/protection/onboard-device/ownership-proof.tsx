@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -29,27 +29,87 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { useUploadFiles } from "@xixixao/uploadstuff/react";
+import LoaderSpinner from "@/components/loader/loader-spinner";
+import { Progress } from "@/components/ui/progress";
 
 type ProofType = "upload-video" | "video-call" | "on-site";
 
 type LocationType = "lagos" | "portharcourt" | "ibadan" | "akure";
+
+type FileExtension =
+  | "mp4"
+  | "webm"
+  | "avi"
+  | "mov"
+  | "mkv"
+  | "flv"
+  | "m4v"
+  | "ogv"
+  | "jpg"
+  | "jpeg"
+  | "png"
+  | "gif"
+  | "bmp"
+  | "tiff"
+  | "webp"
+  | "svg"
+  | "heif";
 
 interface DeviceProps {
   deviceId: Id<"devices">;
 }
 
 const OwnershipProof = ({ deviceId }: DeviceProps) => {
+  const [proofType, setProofType] = useState<ProofType | "">("");
+  const [location, setLocation] = useState<LocationType | "">("");
+  const [selectedProofFile, setSelectedProofFile] = useState<File | null>(
+    null
+  );
+
+   const [fileStorageId, setFileStorageId] = useState<Id<"_storage"> | null>(
+    null
+  );
+  const [deviceUrl, setFileUrl] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [uploadingDeviceFile, setUploadingFile] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedDeviceFile, setSelectedDeviceFile] = useState<File | null>(
+    null
+  );
+  const [contentType, setContentType] = useState<string>("");
+
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl);
+  const { startUpload } = useUploadFiles(generateUploadUrl, {
+    onUploadProgress: (progress: any) => setUploadProgress(progress),
+  });
+
+  const getFileUrl = useMutation(api.repairRequests.getUrl);
+
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useUser();
   const userId = user?.id;
+
   const userProfile = useQuery(api.users.getUserByClerkId, {
     clerkId: userId || "",
   });
 
-  const [proofType, setProofType] = useState<ProofType | "">("");
+  const device = useQuery(api.devices.getDeviceById, {
+    deviceId
+  });
 
-  const [location, setLocation] = useState<LocationType | "">("");
+  const verifyDevice = useMutation(api.devices.deviceVerification);
+
+  useEffect(() => {
+    if (!device) return;
+
+    const { planName, _id } = device;
+    
+    if (planName === "Free Plan" && _id) {
+      router.push("/protection/plans");
+    }
+  }, [device, router]);
 
   const handleVerificationType = (value: ProofType) => {
     setProofType(value);
@@ -57,6 +117,79 @@ const OwnershipProof = ({ deviceId }: DeviceProps) => {
 
   const handleChooseLocation = (value: LocationType) => {
     setLocation(value);
+  };
+
+  const getMimeType = (fileName: string) => {
+    const extension = fileName.split(".").pop()?.toLowerCase() as
+      | FileExtension
+      | undefined;
+
+    const mimeTypes: Record<FileExtension, string> = {
+      // Video file extensions
+      mp4: "video/mp4",
+      webm: "video/webm",
+      avi: "video/x-msvideo",
+      mov: "video/quicktime",
+      mkv: "video/x-matroska",
+      flv: "video/x-flv",
+      m4v: "video/x-m4v",
+      ogv: "video/ogg",
+
+      // Image file extensions
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      bmp: "image/bmp",
+      tiff: "image/tiff",
+      webp: "image/webp",
+      svg: "image/svg+xml",
+      heif: "image/heif",
+    };
+
+    return mimeTypes[extension as FileExtension] || "application/octet-stream";
+  };
+
+  const uploadFile = async (blob: Blob, fileName: string) => {
+    setUploadingFile(true);
+    setUploadProgress(0);
+    try {
+      const mimeType = getMimeType(fileName);
+      const file = new File([blob], fileName, { type: mimeType });
+
+      const uploaded = await startUpload([file]);
+      const storageId = (uploaded[0].response as any).storageId;
+
+      setFileStorageId(storageId);
+      setContentType(mimeType);
+
+      const fileUrl = await getFileUrl({ storageId });
+      setFileUrl(fileUrl as string);
+      toast({
+        title: "Success",
+        description: "File uploaded successfully!",
+      });
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Error",
+        description: "Error uploading file",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleProofFile = async (file: File) => {
+    try {
+      setSelectedProofFile(file);
+      const arrayBuffer = await file.arrayBuffer();
+      const blob = new Blob([arrayBuffer]);
+      await uploadFile(blob, file.name);
+    } catch (error) {
+      console.error("Error uploading the file:", error);
+    }
   };
 
   const address = "14 niger Street, portharcourt, rivers state";
@@ -70,7 +203,7 @@ const OwnershipProof = ({ deviceId }: DeviceProps) => {
       <div className="grid gap-3 mt-4">
         <div className="flex flex-col items-start space-y-1">
           <Label className="text-sm font-medium text-gray-900">
-            Proof of purchase/ownership
+            Proof of purchase/ownership (receipt)
           </Label>
           <div className="relative border rounded-lg p-3 w-full flex items-start justify-start cursor-pointer hover:bg-[#6445E8]/5">
             <Upload className="h-5 w-5 text-muted-foreground" />
@@ -78,8 +211,28 @@ const OwnershipProof = ({ deviceId }: DeviceProps) => {
               Upload here
             </span>
             <Input
+              id="proof-upload"
               type="file"
+              accept="image/*, pdf/*"
               className="absolute inset-0 opacity-0 cursor-pointer"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) handleProofFile(file);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const file = e.dataTransfer.files?.[0];
+                if (file) handleProofFile(file);
+              }}
             />
           </div>
         </div>
