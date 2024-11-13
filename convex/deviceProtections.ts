@@ -1,5 +1,6 @@
 import { ConvexError, v } from 'convex/values'
-import { mutation, query } from './_generated/server'
+import { action, mutation, query } from './_generated/server'
+import { api } from './_generated/api'
 
 export const createDeviceProtection = mutation({
   args: {
@@ -60,6 +61,67 @@ export const updateDeviceProtection = mutation({
     }
 
     await ctx.db.patch(args.protectionId, updateProtection)
+
+    return args.protectionId
+  },
+})
+
+export const makeAClaim = action({
+  args: {
+    protectionId: v.id('deviceProtections'),
+    deviceId: v.id('devices'),
+    // userId: v.optional(v.id("users")), userId should not be updated
+    type: v.optional(v.string()),
+    name: v.optional(v.string()),
+    claimsAvailable: v.optional(v.number()),
+    activationDate: v.optional(v.string()),
+    expiryDate: v.optional(v.string()),
+    amountLeft: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const response: any = { status: true }
+    const identity = await ctx.auth.getUserIdentity()
+
+    if (!identity) {
+      throw new ConvexError('User not authenticated')
+    }
+    const user = await ctx.runQuery(api.users.getUserByEmail, {
+      email: identity.email!,
+    })
+    if (!user) {
+      throw new ConvexError('User not found')
+    }
+    const protection = await ctx.runQuery(
+      api.deviceProtections.getDeviceProtectionsById,
+      { protectionId: args.protectionId },
+    )
+
+    if (!protection) {
+      throw new ConvexError('Device protection not found')
+    }
+    if (protection.userId !== user._id) {
+      throw new ConvexError('You ')
+    }
+
+    if (!protection.claimsAvailable) {
+      throw new ConvexError('You do not have any claims left')
+    }
+
+    const updateProtection = {
+      ...(args.deviceId !== undefined && { deviceId: args.deviceId }),
+      ...(args.amountLeft !== undefined && { amountLeft: args.amountLeft }),
+      ...(args.type !== undefined && { type: args.type }),
+      ...(args.name !== undefined && { name: args.name }),
+      ...(args.activationDate !== undefined && {
+        activationDate: args.activationDate,
+      }),
+      ...(args.expiryDate !== undefined && { expiryDate: args.activationDate }),
+      ...(args.claimsAvailable !== undefined && {
+        claimsAvailable: args.claimsAvailable,
+      }),
+    }
+
+    // reduce3 the claims available
 
     return args.protectionId
   },
