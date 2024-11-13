@@ -35,12 +35,14 @@ export default defineSchema({
     secretCode: v.optional(v.string()),
     hasFreePlan: v.optional(v.boolean()),
     freePlanActivationDate: v.optional(v.string()),
+    paidPlanActivationDate: v.optional(v.string()),
   }),
 
   //admin
 
   repairRequests: defineTable({
     userId: v.optional(v.id('users')),
+    protectionId: v.optional(v.id('deviceProtections')),
     user_status: v.optional(v.string()), // guest or registered
     price: v.optional(v.number()),
     assignedTechnician: v.optional(v.id('users')),
@@ -74,18 +76,22 @@ export default defineSchema({
     serialNumber: v.string(),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id('_storage')),
-    proofOfOwnershipUrl: v.optional(v.string()),
-    proofStorageId: v.optional(v.id('_storage')),
+    isVerified: v.boolean(),
+  }),
+
+  verificationRequests: defineTable({
+    userId: v.id('users'),
+    deviceId: v.id('devices'),
+    verificationMode: v.string(),
+    status: v.string(), //pending, verified, rejected
+    adminComments: v.optional(v.string()),
+    proofOfOwnershipUrl: v.string(),
+    proofStorageId: v.id('_storage'),
     verificationVideoUrl: v.optional(v.string()),
     verificationVideoStorageId: v.optional(v.id('_storage')),
-    verified: v.boolean(),
-    verifyBy: v.optional(
-      v.object({
-        admin: v.id('users'),
-        mode: v.string(),
-        date: v.string(),
-      }),
-    ),
+    location: v.optional(v.string()),
+    verifyByAdminId: v.optional(v.id('users')),
+    dateVerified: v.optional(v.string()),
   }),
 
   deviceProtections: defineTable({

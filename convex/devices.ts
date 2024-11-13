@@ -10,6 +10,7 @@ export const onboardDeviceToProtection = action({
     model: v.string(),
     condition: v.string(),
     serialNumber: v.string(),
+    planName: v.string(),
 
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id('_storage')),
@@ -29,7 +30,7 @@ export const onboardDeviceToProtection = action({
     const user = await ctx.runQuery(api.users.getUserByEmail, {
       email: identity.email!,
     })
-    if (!identity) {
+    if (!user) {
       throw new ConvexError('User not found')
     }
 
@@ -59,34 +60,47 @@ export const onboardDeviceToProtection = action({
 
     const device: any = {
       userId: user._id,
-      proofOfOwnershipUrl: args.proofOfOwnershipUrl,
-      proofStorageId: args.proofStorageId,
       brand: args.brand,
       type: args.type,
       model: args.model,
+      planName: args.planName,
       serialNumber: args.serialNumber,
       condition: args.condition,
       protection: args.protection,
-      verified: false,
+      isVerified: false,
     }
 
-    if (args.verificationMode === 'video') {
-      if (!args.verificationVideoStorageId || !args.verificationVideoUrl) {
-        throw new ConvexError('Video upload required to verify')
-      }
-
-      device.verificationVideoStorageId = args.verificationVideoStorageId
-      device.verificationVideoUrl = args.verificationVideoUrl
-    } else {
-      // create verification request
-    }
-
-    const deviceId = ctx.runMutation(api.devices.createDevice, device)
+    const deviceId = await ctx.runMutation(api.devices.createDevice, device)
     if (!deviceId) {
       throw new ConvexError('Failed to create device')
     }
     response.deviceId = deviceId
 
+    if (args.verificationMode) {
+      // create verification request
+      if (!args.proofOfOwnershipUrl || !args.proofStorageId) {
+        throw new ConvexError('Proof of ownership required to verify!')
+      }
+      if (args.verificationMode === 'video') {
+        if (!args.verificationVideoStorageId || !args.verificationVideoUrl) {
+          throw new ConvexError('Video upload required to verify!')
+        }
+      }
+
+      ctx.runMutation(api.verificationRequests.createVerificationRequest, {
+        deviceId,
+        userId: user._id,
+        proofOfOwnershipUrl: args.proofOfOwnershipUrl,
+        proofStorageId: args.proofStorageId,
+        verificationMode: args.verificationMode,
+        verificationVideoUrl: args.verificationVideoUrl,
+        verificationVideoStorageId: args.verificationVideoStorageId,
+      })
+
+      //@TODO send email to admin
+    }
+
+    // Activate Plan
     await ctx.runMutation(api.deviceProtections.updateDeviceProtection, {
       protectionId: protection._id,
       amountLeft: plan.maxRedemptionAmount,
@@ -94,6 +108,18 @@ export const onboardDeviceToProtection = action({
       activationDate: currentDate.toDateString(),
       expiryDate: expiryDate.toDateString(),
     })
+
+    if (protection.name === 'Free Plan') {
+      await ctx.runMutation(api.users.updateUser, {
+        userId: user._id,
+        freePlanActivationDate: currentDate.toDateString(),
+      })
+    } else if (!user.paidPlanActivationDate) {
+      await ctx.runMutation(api.users.updateUser, {
+        userId: user._id,
+        paidPlanActivationDate: currentDate.toDateString(),
+      })
+    }
 
     return response
   },
@@ -107,22 +133,22 @@ export const onboardDevice = mutation({
     brand: v.string(),
     model: v.string(),
     condition: v.string(),
-    serialNumber: v.string()
+    serialNumber: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
+    const identity = await ctx.auth.getUserIdentity()
 
     if (!identity) {
-      throw new ConvexError("User not authenticated");
+      throw new ConvexError('User not authenticated')
     }
 
     const user = await ctx.db
-      .query("users")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .collect();
-    
+      .query('users')
+      .filter((q) => q.eq(q.field('email'), identity.email))
+      .collect()
+
     if (user.length === 0) {
-      throw new ConvexError("User not found");
+      throw new ConvexError('User not found')
     }
 
     const deviceId = await ctx.db.insert('devices', {
@@ -134,33 +160,33 @@ export const onboardDevice = mutation({
       model: args.model,
       condition: args.condition,
       serialNumber: args.serialNumber,
-      verified: false
-    });
+      isVerified: false,
+    })
 
     const deviceProtection = await ctx.db
-    .query("deviceProtections")
-    .filter((q) => q.eq(q.field("_id"), args.protection))
-    .unique();
+      .query('deviceProtections')
+      .filter((q) => q.eq(q.field('_id'), args.protection))
+      .unique()
 
     if (!deviceProtection) {
-      throw new ConvexError("Device protection not found");
+      throw new ConvexError('Device protection not found')
     }
 
     const planId = deviceProtection.planId
 
     const plan = await ctx.db
-    .query("plans")
-    .filter((q) => q.eq(q.field("_id"), planId))
-    .unique();
+      .query('plans')
+      .filter((q) => q.eq(q.field('_id'), planId))
+      .unique()
 
     if (!plan) {
-      throw new ConvexError("Plan not found");
+      throw new ConvexError('Plan not found')
     }
 
     return {
       deviceId,
-      plan
-    };
+      plan,
+    }
   },
 })
 
@@ -204,19 +230,81 @@ export const deviceVerification = mutation({
   },
 })
 
+export const verifyDevice = action({
+  args: {
+    deviceId: v.id('devices'),
+    proofOfOwnershipUrl: v.optional(v.string()),
+    proofStorageId: v.optional(v.id('_storage')),
+    verificationMode: v.string(), // video, call or physical
+    verificationVideoUrl: v.optional(v.string()),
+    verificationVideoStorageId: v.optional(v.id('_storage')),
+  },
+  handler: async (ctx, args) => {
+    const response: any = { status: true }
+
+    const identity = await ctx.auth.getUserIdentity()
+    const device = await ctx.runQuery(api.devices.getDeviceById, {
+      deviceId: args.deviceId,
+    })
+
+    if (!device) {
+      throw new ConvexError('Device not found')
+    }
+
+    if (!identity) {
+      throw new ConvexError('User not authenticated')
+    }
+    const user = await ctx.runQuery(api.users.getUserByEmail, {
+      email: identity.email!,
+    })
+    if (!user) {
+      throw new ConvexError('User not found')
+    }
+
+    if (device.userId !== user._id) {
+      throw new ConvexError('User not authorized to use this protection')
+    }
+
+    // create verification request
+    if (!args.proofOfOwnershipUrl || !args.proofStorageId) {
+      throw new ConvexError('Proof of ownership required to verify!')
+    }
+    if (args.verificationMode === 'video') {
+      if (!args.verificationVideoStorageId || !args.verificationVideoUrl) {
+        throw new ConvexError('Video upload required to verify!')
+      }
+    }
+
+    const verificationRequestId = await ctx.runMutation(
+      api.verificationRequests.createVerificationRequest,
+      {
+        deviceId: args.deviceId,
+        userId: user._id,
+        proofOfOwnershipUrl: args.proofOfOwnershipUrl,
+        proofStorageId: args.proofStorageId,
+        verificationMode: args.verificationMode,
+        verificationVideoUrl: args.verificationVideoUrl,
+        verificationVideoStorageId: args.verificationVideoStorageId,
+      },
+    )
+
+    //@TODO send email to admin
+
+    response.verificationRequestId = verificationRequestId
+    return response
+  },
+})
+
 export const createDevice = mutation({
   args: {
     userId: v.id('users'),
     condition: v.string(),
     type: v.string(),
     planName: v.string(),
-    proofStorageId: v.id('_storage'),
-    proofOfOwnershipUrl: v.string(),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id('_storage')),
     brand: v.string(),
     model: v.string(),
-    verified: v.boolean(),
     serialNumber: v.string(),
     protection: v.id('deviceProtections'),
     verificationVideoUrl: v.optional(v.string()),
@@ -225,8 +313,6 @@ export const createDevice = mutation({
   handler: async (ctx, args) => {
     const deviceId = await ctx.db.insert('devices', {
       userId: args.userId,
-      proofOfOwnershipUrl: args.proofOfOwnershipUrl,
-      proofStorageId: args.proofStorageId,
       type: args.type,
       planName: args.planName,
       condition: args.condition,
@@ -235,10 +321,8 @@ export const createDevice = mutation({
       serialNumber: args.serialNumber,
       protection: args.protection,
       brand: args.brand,
-      verified: args.verified,
+      isVerified: false,
       model: args.model,
-      verificationVideoUrl: args.verificationVideoUrl,
-      verificationVideoStorageId: args.verificationVideoStorageId,
     })
 
     return deviceId
