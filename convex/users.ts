@@ -165,6 +165,7 @@ export const updateUser = mutation({
     social_updates: v.optional(v.boolean()), // true or false
     security_updates: v.optional(v.boolean()), // true or false : default = true
     hasFreePlan: v.optional(v.boolean()), 
+    freePlanActivationDate: v.optional(v.string()),
     stripeId: v.optional(v.string()),
     paystackId: v.optional(v.string()),
   },
@@ -211,6 +212,7 @@ export const updateUser = mutation({
       ...(args.paystackId !== undefined && { paystackId: args.paystackId }),
       ...(args.address !== undefined && { address: args.address }),
       ...(args.hasFreePlan !== undefined && { hasFreePlan: args.hasFreePlan }),
+      ...(args.freePlanActivationDate !== undefined && { freePlanActivationDate: args.freePlanActivationDate })
     };
 
     await ctx.db.patch(args.userId, updateFields);

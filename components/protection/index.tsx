@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Id } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { Loader } from "lucide-react";
 
 export function Protection() {
@@ -82,8 +82,8 @@ export function Protection() {
           </Card>
         </Link>
 
-        <Link href="/protection/onboard">
-          <Card className="border-transparent shadow-md">
+        {protections?.length === 0 ? (
+          <Card className="border-transparent shadow-md opacity-50 cursor-not-allowed">
             <CardContent className="pb-2 pt-2">
               <div className="flex items-center justify-between">
                 <div>
@@ -96,14 +96,37 @@ export function Protection() {
                 </div>
                 <Button
                   size="sm"
-                  className="h-12 w-12 px-12 bg-[#6445E8] rounded-xl hover:bg-[#6445E8]"
+                  className="h-12 w-12 px-12 bg-[#6445E8] rounded-xl hover:bg-[#6445E8] cursor-not-allowed"
                 >
                   Onboard
                 </Button>
               </div>
             </CardContent>
           </Card>
-        </Link>
+        ) : (
+          <Link href="/protection/onboard">
+            <Card className="border-transparent shadow-md">
+              <CardContent className="pb-2 pt-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm text-muted-foreground">
+                      Onboarded devices
+                    </span>
+                    <h2 className="text-lg mt-2 font-semibold">
+                      {devices?.length}
+                    </h2>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="h-12 w-12 px-12 bg-[#6445E8] rounded-xl hover:bg-[#6445E8]"
+                  >
+                    Onboard
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
       </div>
 
       {devices?.length !== 0 ? (
@@ -122,12 +145,12 @@ export function Protection() {
                           "relative w-full",
                           "shadow-[0px_1px_1px_0px_rgba(0,0,0,0.05),0px_1px_1px_0px_rgba(255,252,240,0.5)_inset,0px_0px_0px_1px_hsla(0,0%,100%,0.1)_inset,0px_0px_1px_0px_rgba(28,27,26,0.5)]",
                           "dark:shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_0_rgba(0,0,0,0.1),0_4px_4px_0_rgba(0,0,0,0.1),0_8px_8px_0_rgba(0,0,0,0.1)]",
-                          "text-neutral-900 w-[220px]"
+                          "text-neutral-900 w-[210px]"
                         )}
                       >
                         <img
                           src={device.imageUrl || "/sample/laptop.webp"}
-                          alt={device.name || "Onboarded device"}
+                          alt={device.model || "Onboarded device"}
                           width={200}
                           height={200}
                           className="object-cover absolute h-full w-full inset-0"
@@ -150,9 +173,9 @@ export function Protection() {
                       </div>
                       <div className="flex flex-col flex-1">
                         <div className="w-full p-3">
-                          <p className="text-sm">{device.name}</p>
+                          <p className="text-sm">{device.model}</p>
                           <p className="mt-2 text-sm text-[#6445E8]">
-                            Basic Plan {device.protection}
+                            {device.planName}
                           </p>
                           <div className="mt-16">
                             <Button

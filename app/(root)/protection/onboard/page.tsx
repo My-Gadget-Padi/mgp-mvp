@@ -1,9 +1,11 @@
-import React from 'react'
+import { Suspense } from "react"
+import { OnboardDevice } from "@/components/protection/onboard-device";
+import PageLoader from "@/components/PageLoader"
 
-const page = () => {
+export default function OnboardPage() {
   return (
-    <div>page</div>
+    <Suspense fallback={<PageLoader />}>
+      <OnboardDevice />
+    </Suspense>
   )
-}
-
-export default page
+};

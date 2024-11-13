@@ -37,8 +37,10 @@ const Checkout = ({ planId }: PlanProps) => {
   const buyPlan = useAction(api.plans.buyPlan)
 
   useEffect(() => {
-    if (plan?.name === 'Free Plan' && userProfile?.hasFreePlan === true) {
+    if (plan?.name === 'Free Plan' && userProfile?.hasFreePlan === true && userProfile?.freePlanActivationDate) {
       router.push('/protection/plans')
+    } else if (plan?.name === 'Free Plan' && userProfile?.hasFreePlan === true && !userProfile?.freePlanActivationDate) {
+      router.push("/protection/onboard")
     }
   }, [plan, userProfile?.hasFreePlan, router])
 
@@ -57,7 +59,10 @@ const Checkout = ({ planId }: PlanProps) => {
         })
         router.push(response.authorizationUrl)
       } else {
-        throw new Error('Invalid response from server')
+        toast({
+          title: 'Success',
+          description: 'Free plan has been activated, you will be redirected to an onboarding screen.',
+        })
       }
     } catch (error) {
       console.error('Error making claim:', error)
@@ -187,7 +192,9 @@ const Checkout = ({ planId }: PlanProps) => {
               disabled={!isChecked}
               className="w-full bg-[#6445E8] text-white py-6 rounded-lg font-semibold hover:bg-[#6445E8]/90"
             >
-              Proceed to payment
+              {plan?.name === "Free Plan"
+                ? "Continue with activation"
+                : " Proceed to payment"}
             </Button>
           </div>
         </div>

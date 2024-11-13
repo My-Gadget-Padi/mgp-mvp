@@ -74,8 +74,7 @@ function MainLayout({
   const { signOut } = useClerk();
   const location = usePathname();
   const searchParams = useSearchParams();
-  const { requestId } = useParams();
-  const { planId } = useParams();
+  const { requestId, planId, deviceId } = useParams();
   const { user } = useUser();
   const userId = user?.id;
   const userProfile = useQuery(api.users.getUserByClerkId, {
@@ -197,6 +196,28 @@ function MainLayout({
             </span>
           </>
         );
+      case "/protection/success":
+        return (
+          <>
+            <h1 className="text-xl sm:text-2xl font-semibold">Receipt</h1>
+            <span className="text-muted-foreground text-sm sm:text-base">
+              Your payment has been confirmed
+            </span>
+          </>
+        );
+      case "/protection/onboard":
+        return (
+          <>
+            <h1 className="text-xl sm:text-2xl font-semibold">
+              Onboard Device
+            </h1>
+            <span className="text-muted-foreground text-sm sm:text-base">
+              Onboard your device to a protection plan
+            </span>
+          </>
+        );
+      case "/protection/payment/callback":
+        return <></>;
       default:
         if (location.startsWith(`/repair/${requestId}`) && requestId) {
           return (
@@ -234,7 +255,6 @@ function MainLayout({
             </>
           );
         }
-
         if (location.startsWith(`/protection/checkout/${planId}`) && planId) {
           return (
             <>
@@ -248,15 +268,30 @@ function MainLayout({
         if (location.startsWith(`/protection/terms/${planId}`) && planId) {
           return <></>;
         }
-        if (location.startsWith("/protection/payment/callback")) {
-          return <></>;
-        }
-        if (location.startsWith("/protection/success")) {
+        if (
+          location.startsWith(`/protection/onboard/verification/${deviceId}`) &&
+          deviceId
+        ) {
           return (
             <>
-              <h1 className="text-xl sm:text-2xl font-semibold">Receipt</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold">
+                Verify Device
+              </h1>
               <span className="text-muted-foreground text-sm sm:text-base">
-                Your payment has been confirmed
+                Verify your device to complete device onboarding
+              </span>
+            </>
+          );
+        }
+        if (
+          location.startsWith(`/protection/onboard/success/${deviceId}`) &&
+          deviceId
+        ) {
+          return (
+            <>
+              <h1 className="text-xl sm:text-2xl font-semibold">Success</h1>
+              <span className="text-muted-foreground text-sm sm:text-base">
+                Device onboarded successfully
               </span>
             </>
           );

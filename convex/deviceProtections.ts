@@ -21,6 +21,7 @@ export const createDeviceProtection = mutation({
       name: args.name,
       amountLeft: args.amountLeft,
       claimsAvailable: args.claimsAvailable,
+      activationDate: "",
     })
 
     return protectionId

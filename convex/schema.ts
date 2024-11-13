@@ -66,14 +66,15 @@ export default defineSchema({
 
   devices: defineTable({
     userId: v.id('users'),
+    protection: v.id('deviceProtections'),
+    planName: v.string(),
+    type: v.string(),
+    brand: v.string(),
+    model: v.string(),
+    condition: v.string(),
+    serialNumber: v.string(),
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id('_storage')),
-    name: v.string(),
-    type: v.string(),
-    model: v.string(),
-    serialNumber: v.number(),
-    condition: v.string(),
-    protection: v.optional(v.id('deviceProtections')),
     isVerified: v.boolean(),
   }),
 

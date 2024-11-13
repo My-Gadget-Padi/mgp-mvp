@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import PageLoader from "@/components/PageLoader";
@@ -9,6 +9,8 @@ import { useAction } from "convex/react";
 
 export default function VerifyPayment() {
   const [loading, setLoading] = useState(false);
+
+  const hasRun = useRef(false); 
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -17,6 +19,8 @@ export default function VerifyPayment() {
   const confirmPayment = useAction(api.paystack.verifyPayment);
 
   useEffect(() => {
+    if (hasRun.current) return; 
+
     if (!reference) {
       toast({
         title: "Error",
@@ -53,7 +57,10 @@ export default function VerifyPayment() {
     };
 
     handlePaymentConfirmation();
-  }, [reference]);
+
+    hasRun.current = true;
+  }, [reference, router]);
+
 
   return (
     <div>
