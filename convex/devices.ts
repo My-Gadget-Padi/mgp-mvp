@@ -10,6 +10,7 @@ export const onboardDeviceToProtection = action({
     model: v.string(),
     condition: v.string(),
     serialNumber: v.string(),
+    planName: v.string(),
 
     imageUrl: v.optional(v.string()),
     imageStorageId: v.optional(v.id('_storage')),
@@ -59,36 +60,47 @@ export const onboardDeviceToProtection = action({
 
     const device: any = {
       userId: user._id,
-      proofOfOwnershipUrl: args.proofOfOwnershipUrl,
-      proofStorageId: args.proofStorageId,
       brand: args.brand,
       type: args.type,
       model: args.model,
+      planName: args.planName,
       serialNumber: args.serialNumber,
       condition: args.condition,
       protection: args.protection,
-      verified: false,
+      isVerified: false,
     }
 
-    if (args.verificationMode) {
-      // create verification request
-      if (args.verificationMode === 'video') {
-        if (!args.verificationVideoStorageId || !args.verificationVideoUrl) {
-          throw new ConvexError('Video upload required to verify')
-        }
-      }
-
-      //send email to admin
-      device.verificationVideoStorageId = args.verificationVideoStorageId
-      device.verificationVideoUrl = args.verificationVideoUrl
-    }
-
-    const deviceId = ctx.runMutation(api.devices.createDevice, device)
+    const deviceId = await ctx.runMutation(api.devices.createDevice, device)
     if (!deviceId) {
       throw new ConvexError('Failed to create device')
     }
     response.deviceId = deviceId
 
+    if (args.verificationMode) {
+      // create verification request
+      if (!args.proofOfOwnershipUrl || !args.proofStorageId) {
+        throw new ConvexError('Proof of ownership required to verify!')
+      }
+      if (args.verificationMode === 'video') {
+        if (!args.verificationVideoStorageId || !args.verificationVideoUrl) {
+          throw new ConvexError('Video upload required to verify!')
+        }
+      }
+
+      ctx.runMutation(api.verificationRequests.createVerificationRequest, {
+        deviceId,
+        userId: user._id,
+        proofOfOwnershipUrl: args.proofOfOwnershipUrl,
+        proofStorageId: args.proofStorageId,
+        verificationMode: args.verificationMode,
+        verificationVideoUrl: args.verificationVideoUrl,
+        verificationVideoStorageId: args.verificationVideoStorageId,
+      })
+
+      //@TODO send email to admin
+    }
+
+    // Activate Plan
     await ctx.runMutation(api.deviceProtections.updateDeviceProtection, {
       protectionId: protection._id,
       amountLeft: plan.maxRedemptionAmount,
@@ -96,6 +108,18 @@ export const onboardDeviceToProtection = action({
       activationDate: currentDate.toDateString(),
       expiryDate: expiryDate.toDateString(),
     })
+
+    if (protection.name === 'Free Plan') {
+      await ctx.runMutation(api.users.updateUser, {
+        userId: user._id,
+        freePlanActivationDate: currentDate.toDateString(),
+      })
+    } else if (!user.paidPlanActivationDate) {
+      await ctx.runMutation(api.users.updateUser, {
+        userId: user._id,
+        paidPlanActivationDate: currentDate.toDateString(),
+      })
+    }
 
     return response
   },
@@ -203,6 +227,71 @@ export const deviceVerification = mutation({
     await ctx.db.patch(args.deviceId, updateDeviceInfo)
 
     return args.deviceId
+  },
+})
+
+export const verifyDevice = action({
+  args: {
+    deviceId: v.id('devices'),
+    proofOfOwnershipUrl: v.optional(v.string()),
+    proofStorageId: v.optional(v.id('_storage')),
+    verificationMode: v.string(), // video, call or physical
+    verificationVideoUrl: v.optional(v.string()),
+    verificationVideoStorageId: v.optional(v.id('_storage')),
+  },
+  handler: async (ctx, args) => {
+    const response: any = { status: true }
+
+    const identity = await ctx.auth.getUserIdentity()
+    const device = await ctx.runQuery(api.devices.getDeviceById, {
+      deviceId: args.deviceId,
+    })
+
+    if (!device) {
+      throw new ConvexError('Device not found')
+    }
+
+    if (!identity) {
+      throw new ConvexError('User not authenticated')
+    }
+    const user = await ctx.runQuery(api.users.getUserByEmail, {
+      email: identity.email!,
+    })
+    if (!user) {
+      throw new ConvexError('User not found')
+    }
+
+    if (device.userId !== user._id) {
+      throw new ConvexError('User not authorized to use this protection')
+    }
+
+    // create verification request
+    if (!args.proofOfOwnershipUrl || !args.proofStorageId) {
+      throw new ConvexError('Proof of ownership required to verify!')
+    }
+    if (args.verificationMode === 'video') {
+      if (!args.verificationVideoStorageId || !args.verificationVideoUrl) {
+        throw new ConvexError('Video upload required to verify!')
+      }
+    }
+
+    const verificationRequestId = await ctx.runMutation(
+      api.verificationRequests.createVerificationRequest,
+      {
+        deviceId: args.deviceId,
+        userId: user._id,
+        proofOfOwnershipUrl: args.proofOfOwnershipUrl,
+        proofStorageId: args.proofStorageId,
+        verificationMode: args.verificationMode,
+        verificationVideoUrl: args.verificationVideoUrl,
+        verificationVideoStorageId: args.verificationVideoStorageId,
+      },
+    )
+
+    //@TODO send email to admin
+
+    response.verificationRequestId = verificationRequestId
+    return response
   },
 })
 

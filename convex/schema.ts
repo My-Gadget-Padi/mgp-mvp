@@ -35,6 +35,7 @@ export default defineSchema({
     secretCode: v.optional(v.string()),
     hasFreePlan: v.optional(v.boolean()),
     freePlanActivationDate: v.optional(v.string()),
+    paidPlanActivationDate: v.optional(v.string()),
   }),
 
   //admin

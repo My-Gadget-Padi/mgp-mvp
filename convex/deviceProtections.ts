@@ -21,7 +21,7 @@ export const createDeviceProtection = mutation({
       name: args.name,
       amountLeft: args.amountLeft,
       claimsAvailable: args.claimsAvailable,
-      activationDate: "",
+      activationDate: '',
     })
 
     return protectionId
@@ -70,8 +70,7 @@ export const updateDeviceProtection = mutation({
 export const makeAClaim = action({
   args: {
     protectionId: v.id('deviceProtections'),
-    deviceId: v.id('devices'),
-    // userId: v.optional(v.id("users")), userId should not be updated
+
     type: v.optional(v.string()),
     name: v.optional(v.string()),
     claimsAvailable: v.optional(v.number()),
@@ -101,28 +100,33 @@ export const makeAClaim = action({
       throw new ConvexError('Device protection not found')
     }
     if (protection.userId !== user._id) {
-      throw new ConvexError('You ')
+      throw new ConvexError('User not authorized to use this protection')
+    }
+
+    if (!user.paidPlanActivationDate) {
+      throw new ConvexError('You are not eligible to make a claim')
     }
 
     if (!protection.claimsAvailable) {
       throw new ConvexError('You do not have any claims left')
     }
 
-    const updateProtection = {
-      ...(args.deviceId !== undefined && { deviceId: args.deviceId }),
-      ...(args.amountLeft !== undefined && { amountLeft: args.amountLeft }),
-      ...(args.type !== undefined && { type: args.type }),
-      ...(args.name !== undefined && { name: args.name }),
-      ...(args.activationDate !== undefined && {
-        activationDate: args.activationDate,
-      }),
-      ...(args.expiryDate !== undefined && { expiryDate: args.activationDate }),
-      ...(args.claimsAvailable !== undefined && {
-        claimsAvailable: args.claimsAvailable,
-      }),
+    // Check if user has activated a plan for more than 30 days
+    const currentDate = new Date()
+    const paidPlanActivationDate = new Date(user.paidPlanActivationDate)
+
+    const timeDifference =
+      currentDate.getTime() - paidPlanActivationDate.getTime()
+
+    const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+
+    if (daysDifference < 30) {
+      throw new ConvexError(
+        'You can only make a claim 30 days after activating your first protection plan',
+      )
     }
 
-    // reduce3 the claims available
+    // @TODO reduce the claims available and amount  after redeeming claim
 
     return args.protectionId
   },
