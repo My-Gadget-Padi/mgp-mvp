@@ -36,6 +36,9 @@ export default defineSchema({
     hasFreePlan: v.optional(v.boolean()),
     freePlanActivationDate: v.optional(v.string()),
     paidPlanActivationDate: v.optional(v.string()),
+    identityVerificationUrl: v.optional(v.string()),
+    identityVerificationStorageId: v.optional(v.id('_storage')),
+    verificationStatus: v.optional(v.string()) // pending, verified, failed
   }),
 
   //admin
@@ -85,13 +88,24 @@ export default defineSchema({
     verificationMode: v.string(),
     status: v.string(), //pending, verified, rejected
     adminComments: v.optional(v.string()),
+
     proofOfOwnershipUrl: v.string(),
     proofStorageId: v.id('_storage'),
-    verificationVideoUrl: v.optional(v.string()),
-    verificationVideoStorageId: v.optional(v.id('_storage')),
-    location: v.optional(v.string()),
+
+    //image/video
+    verificationUrl: v.optional(v.string()),
+    verificationStorageId: v.optional(v.id('_storage')),
+    contentType: v.optional(v.string()),
+
+    //call
+    callDate: v.optional(v.string()),
+    callTime: v.optional(v.string()),
+
+    //hub
+    addressSelected: v.optional(v.string()),
+
     verifyByAdminId: v.optional(v.id('users')),
-    dateVerified: v.optional(v.string()),
+    dateVerified: v.optional(v.string())
   }),
 
   deviceProtections: defineTable({

@@ -7,6 +7,7 @@ import { httpRouter } from "convex/server";
 import { Webhook as ClerkWebhook } from "svix";
 import { internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
+import { api } from "./_generated/api";
 
 const http = httpRouter();
 
@@ -69,5 +70,51 @@ const validateClerkRequest = async (
   const event = wh.verify(payloadString, svixHeaders);
   return event as unknown as WebhookEvent;
 };
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": process.env.CLIENT_ORIGIN!,
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+// Handle preflight OPTIONS request
+http.route({
+  path: "/getPlanByName",
+  method: "OPTIONS",
+  handler: httpAction(async (request) => {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders,
+    });
+  }),
+});
+
+// Handle GET request
+http.route({
+  path: "/getPlanByName",
+  method: "GET",
+  handler: httpAction(async ({ runQuery }, request) => {
+    const url = new URL(request.url);
+    const name = url.searchParams.get("name");
+
+    if (!name) {
+      return new Response("Missing name", { status: 400, headers: corsHeaders });
+    }
+
+    const plan = await runQuery(api.plans.getPlanByName, { name });
+
+    if (!plan) {
+      return new Response("Plan not found", { status: 404, headers: corsHeaders });
+    }
+
+    return new Response(JSON.stringify(plan), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
+    });
+  }),
+});
 
 export default http;

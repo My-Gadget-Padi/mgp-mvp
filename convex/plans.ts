@@ -167,4 +167,20 @@ export const getPlanById = query({
 
     return plan
   },
-})
+});
+
+export const getPlanByName = query({
+  args: {
+    name: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { name } = args;
+
+    const plan = await ctx.db
+      .query("plans")
+      .filter((q) => q.eq(q.field("name"), name))
+      .unique();
+
+    return plan;
+  },
+});
