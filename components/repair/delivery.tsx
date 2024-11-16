@@ -15,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Bike, Package } from "lucide-react";
+import { Bike, Package, Copy } from "lucide-react";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
@@ -29,6 +30,15 @@ import { useUser } from "@clerk/nextjs";
 import LoaderSpinner from "../loader/loader-spinner";
 import { Stepper } from "./stepper";
 import { Checkbox } from "../ui/checkbox";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+
+type LocationType = "lagos" | "portharcourt" | "ibadan" | "akure";
 
 interface SelectDeviceProps {
   requestId: Id<"repairRequests">;
@@ -50,6 +60,53 @@ interface State {
   towns: Town[];
 }
 
+interface Address {
+  title: string;
+  address: string;
+  mapUrl: string;
+  googleMapsLink: string;
+}
+
+const locations: Record<LocationType, Address[]> = {
+  akure: [
+    {
+      title: "LAH Lounge",
+      address:
+        "LAH Lounge Opposite Foursquare Gospel Church, FUTA Southgate Road, Igbatoro Rd, Akure, Ondo State, Nigeria, 340110",
+      mapUrl:
+        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3939.4966806145616!2d5.14970091461521!3d7.310467994713997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103c70a82c9e9c1f%3A0x75c08f09c78f340a!2sLAH%20Lounge%2C%20FUTA%20Southgate%20Rd%2C%20Akure!5e0!3m2!1sen!2sng!4v1616598408972!5m2!1sen!2sng",
+      googleMapsLink:
+        "https://maps.google.com?q=Opposite+Foursquare+Gospel+Church,+FUTA+Southgate+Road,+Igbatoro+Rd,+Akure,+Ondo+State",
+    },
+  ],
+
+  ibadan: [
+    {
+      title: "Olukayode Complex",
+      address:
+        "NO 78, Iwo Road, Opposite Ibadan North East Local Government, Ibadan North East, Ibadan, Oyo State, Nigeria, 234801",
+      mapUrl:
+        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3939.3279170675594!2d3.8959997146130915!3d7.3775359946524735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1039f3310da51de7%3A0x32b63d7387d1e5e2!2sIwo%20Rd%2C%20Ibadan!5e0!3m2!1sen!2sng!4v1616598408972!5m2!1sen!2sng",
+      googleMapsLink:
+        "https://maps.google.com?q=NO+78,+Iwo+Road,+Opposite+Ibadan+North+East+Local+Government,+Ibadan,+Oyo+State,+Nigeria,+234801",
+    },
+  ],
+
+  lagos: [
+    {
+      title: "IT IS WELL PLAZA",
+      address:
+        "Suite 24/25, It Is Well Plaza, No. 17 Ola Ayeni Street, Computer Village, Ikeja, Lagos, Nigeria, 100271",
+      mapUrl:
+        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3155.432897182763!2d3.34973031567134!3d6.596648527193451!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b93f1db2a249d%3A0x3b82ef63b5655e6e!2sIt%20Is%20Well%20Plaza!5e0!3m2!1sen!2sng!4v1697913252134",
+      googleMapsLink:
+        "https://maps.google.com?q=Suite+24/25,+It+Is+Well+Plaza,+No+17+Ola+Ayeni+Street,+Computer+Village,+Ikeja,+Lagos,+Nigeria,+100271",
+    },
+  ],
+
+  portharcourt: [],
+};
+
 const Delivery = ({ requestId }: SelectDeviceProps) => {
   const router = useRouter();
   const { toast } = useToast();
@@ -64,7 +121,9 @@ const Delivery = ({ requestId }: SelectDeviceProps) => {
   const [zipCode, setZipCode] = useState("");
   const [country] = useState("Nigeria");
   const [address, setAddress] = useState<string>("");
-  const [dropOffLocation, setDropOffLocation] = useState("");
+
+  const [location, setLocation] = useState<LocationType | null>(null);
+  const [dropOffLocation, setDropOffLocation] = useState<Address | null>(null);
   const [deliveryMethod, setDeliveryMethod] = useState("pick-up");
 
   const [states, setStates] = useState<State[]>([]);
@@ -130,8 +189,13 @@ const Delivery = ({ requestId }: SelectDeviceProps) => {
     fetchDetails();
   }, [selectedState, states]);
 
-  const handleDropOffChange = (value: string) => {
-    setDropOffLocation(value);
+  const handleDropOffChange = (value: LocationType) => {
+    setLocation(value);
+    setDropOffLocation(null);
+  };
+
+  const handleSelectDropOff = (address: Address) => {
+    setDropOffLocation(address);
   };
 
   const capitalizeFirstLetter = (str: string) => {
@@ -154,7 +218,7 @@ const Delivery = ({ requestId }: SelectDeviceProps) => {
       return;
     }
 
-    if (deliveryMethod === "drop-off" && !dropOffLocation.trim()) {
+    if (deliveryMethod === "drop-off" && !dropOffLocation?.address) {
       toast({
         title: "Please select a drop off location closest to you",
       });
@@ -170,14 +234,14 @@ const Delivery = ({ requestId }: SelectDeviceProps) => {
       country?.trim() || null,
       zipCode?.trim() || null,
     ]
-      .filter(part => part !== null)
+      .filter((part) => part !== null)
       .join(", ")
       .replace(/(,\s?)+$/g, "");
 
     const finalAddress =
-        formattedAddress === country?.trim()
-          ? userProfile?.address
-          : formattedAddress;
+      formattedAddress === country?.trim()
+        ? userProfile?.address
+        : formattedAddress;
 
     if (saveAddress === true) {
       await saveUserAddress({
@@ -193,11 +257,11 @@ const Delivery = ({ requestId }: SelectDeviceProps) => {
         requestId,
         deliveryType: deliveryMethod,
         address: finalAddress || "",
-        dropOffLocation: dropOffLocation || "",
+        dropOffLocation: dropOffLocation?.address || "",
         status: "scheduled",
       });
 
-      setDropOffLocation("");
+      setDropOffLocation(null);
 
       setIsLoading(false);
 
@@ -245,7 +309,7 @@ const Delivery = ({ requestId }: SelectDeviceProps) => {
         status: "scheduled",
       });
 
-      setDropOffLocation("");
+      setDropOffLocation(null);
 
       setIsLoading(false);
 
@@ -592,31 +656,111 @@ const Delivery = ({ requestId }: SelectDeviceProps) => {
                       MyGadgetPadi Drop-off Points
                     </Label>
                     <Select
-                      onValueChange={handleDropOffChange}
-                      value={dropOffLocation}
+                      value={location || ""}
+                      onValueChange={(value) =>
+                        handleDropOffChange(value as LocationType)
+                      }
                     >
                       <SelectTrigger id="dropOffLocation">
-                        <SelectValue placeholder="Select location" />
+                        <SelectValue placeholder="Select a location" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ikeja, lagos">
-                          Ikeja, Lagos
+                        <SelectItem value="lagos">
+                          Ikeja, Lagos State
                         </SelectItem>
-                        <SelectItem value="mokola, ibadan">
-                          Mokola, Ibadan
+                        <SelectItem value="ibadan">
+                          Ibadan, Oyo State
                         </SelectItem>
-                        <SelectItem value="futa, akure">FUTA, Akure</SelectItem>
-                        <SelectItem value="alagbaka, akure">
-                          Alagbaka, Akure
-                        </SelectItem>
+                        <SelectItem value="akure">Akure, Ondo State</SelectItem>
                       </SelectContent>
+                      <span className="text-muted-foreground text-xs">
+                        Choose a drop-off point closest to you.
+                      </span>
                     </Select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {location &&
+                        locations[location].map((address, index) => (
+                          <div
+                            key={index}
+                            className={`rounded-lg shadow-md overflow-hidden cursor-pointer ${
+                              dropOffLocation === address
+                                ? "border-2 border-[#6445E8]"
+                                : ""
+                            }`}
+                            onClick={() => handleSelectDropOff(address)}
+                          >
+                            <div className="h-40">
+                              <iframe
+                                className="w-full h-full"
+                                src={address.mapUrl}
+                                loading="lazy"
+                                allowFullScreen
+                              ></iframe>
+                            </div>
+                            <div className="p-4">
+                              <div className="flex flex-1">
+                                <h2 className="text-lg font-semibold">
+                                  {address.title}
+                                </h2>
+                                <Badge className="px-4 ml-auto bg-[#6445E8]/10 text-primary">
+                                  {location.charAt(0).toUpperCase() +
+                                    location.slice(1)}
+                                </Badge>
+                              </div>
+                              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                                {address.address}
+                              </p>
+                              <div className="flex mt-4">
+                                <Link
+                                  href={address.googleMapsLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <Button
+                                    variant="outline"
+                                    className="border border-[#6445E8] text-[#6445E8] hover:bg-[#6445E8] hover:text-white"
+                                  >
+                                    Open on map
+                                  </Button>
+                                </Link>
+
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <p className="ml-auto">
+                                        <CopyToClipboard
+                                          text={address.googleMapsLink}
+                                        >
+                                          <Copy
+                                            className="h-10 w-6 stroke-[#6445E8]"
+                                            onClick={() =>
+                                              toast({
+                                                title:
+                                                  "Address copied to clipboard!",
+                                              })
+                                            }
+                                          />
+                                        </CopyToClipboard>
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="text-[#6445E8]">
+                                        Copy address to clipboard
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
                   </div>
                   <div className="ml-auto">
                     <Button
                       className="w-full bg-[#6445E8] hover:bg-[#3A11E6] py-6 px-10 rounded-lg"
                       onClick={handleUpdate}
-                      disabled={isLoading}
+                      disabled={isLoading || !dropOffLocation}
                     >
                       Continue
                     </Button>

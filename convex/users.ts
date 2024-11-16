@@ -222,6 +222,36 @@ export const updateUser = mutation({
   },
 });
 
+export const verifyUserIdentity = mutation({
+  args: {
+    userId: v.id("users"),
+    identityVerificationUrl: v.optional(v.string()),
+    identityVerificationStorageId: v.optional(v.id('_storage')),
+    verificationStatus: v.optional(v.string()) // pending, verified, failed
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("_id"), args.userId))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    const updateFields = {
+      ...(args.identityVerificationUrl !== undefined && { identityVerificationUrl: args.identityVerificationUrl }),
+      ...(args.identityVerificationStorageId !== undefined && {
+        identityVerificationStorageId: args.identityVerificationStorageId,
+      }),
+      ...(args.verificationStatus !== undefined && { verificationStatus: args.verificationStatus })
+    };
+
+    await ctx.db.patch(args.userId, updateFields);
+    return args.userId;
+  },
+});
+
 export const deleteAndUpdateImage = mutation({
   args: {
     userId: v.id("users"),

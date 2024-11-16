@@ -42,7 +42,7 @@ const OnboardSuccess = ({ deviceId }: DeviceProps) => {
           </div>
 
           <p className="text-primary text-base sm:text-lg mb-6">
-            Tada you’ve made a claim.
+            Your device has been onboarded successfully.
           </p>
 
           <Link href="/protection">

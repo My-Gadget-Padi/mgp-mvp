@@ -17,8 +17,8 @@ export const onboardDeviceToProtection = action({
     proofOfOwnershipUrl: v.optional(v.string()),
     proofStorageId: v.optional(v.id('_storage')),
     verificationMode: v.optional(v.string()), // video, call or physical
-    verificationVideoUrl: v.optional(v.string()),
-    verificationVideoStorageId: v.optional(v.id('_storage')),
+    verificationUrl: v.optional(v.string()),
+    verificationStorageId: v.optional(v.id('_storage')),
   },
   handler: async (ctx, args) => {
     const response: any = { status: true }
@@ -82,7 +82,7 @@ export const onboardDeviceToProtection = action({
         throw new ConvexError('Proof of ownership required to verify!')
       }
       if (args.verificationMode === 'video') {
-        if (!args.verificationVideoStorageId || !args.verificationVideoUrl) {
+        if (!args.verificationStorageId || !args.verificationUrl) {
           throw new ConvexError('Video upload required to verify!')
         }
       }
@@ -93,8 +93,8 @@ export const onboardDeviceToProtection = action({
         proofOfOwnershipUrl: args.proofOfOwnershipUrl,
         proofStorageId: args.proofStorageId,
         verificationMode: args.verificationMode,
-        verificationVideoUrl: args.verificationVideoUrl,
-        verificationVideoStorageId: args.verificationVideoStorageId,
+        verificationUrl: args.verificationUrl,
+        verificationStorageId: args.verificationStorageId,
       })
 
       //@TODO send email to admin
@@ -134,6 +134,8 @@ export const onboardDevice = mutation({
     model: v.string(),
     condition: v.string(),
     serialNumber: v.string(),
+    imageUrl: v.optional(v.string()),
+    imageStorageId: v.optional(v.id('_storage')),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -160,7 +162,9 @@ export const onboardDevice = mutation({
       model: args.model,
       condition: args.condition,
       serialNumber: args.serialNumber,
-      isVerified: false,
+      imageUrl: args.imageUrl,
+      imageStorageId: args.imageStorageId,
+      isVerified: args.planName === "Free Plan" ? true : false,
     })
 
     const deviceProtection = await ctx.db
@@ -236,8 +240,13 @@ export const verifyDevice = action({
     proofOfOwnershipUrl: v.optional(v.string()),
     proofStorageId: v.optional(v.id('_storage')),
     verificationMode: v.string(), // video, call or physical
-    verificationVideoUrl: v.optional(v.string()),
-    verificationVideoStorageId: v.optional(v.id('_storage')),
+    verificationUrl: v.optional(v.string()),
+    verificationStorageId: v.optional(v.id('_storage')),
+    identityVerificationUrl: v.optional(v.string()),
+    identityVerificationStorageId: v.optional(v.id('_storage')),
+    callDate: v.optional(v.string()),
+    callTime: v.optional(v.string()),
+    addressSelected: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const response: any = { status: true }
@@ -270,7 +279,7 @@ export const verifyDevice = action({
       throw new ConvexError('Proof of ownership required to verify!')
     }
     if (args.verificationMode === 'video') {
-      if (!args.verificationVideoStorageId || !args.verificationVideoUrl) {
+      if (!args.verificationStorageId || !args.verificationUrl) {
         throw new ConvexError('Video upload required to verify!')
       }
     }
@@ -283,8 +292,13 @@ export const verifyDevice = action({
         proofOfOwnershipUrl: args.proofOfOwnershipUrl,
         proofStorageId: args.proofStorageId,
         verificationMode: args.verificationMode,
-        verificationVideoUrl: args.verificationVideoUrl,
-        verificationVideoStorageId: args.verificationVideoStorageId,
+        verificationUrl: args.verificationUrl,
+        verificationStorageId: args.verificationStorageId,
+        identityVerificationUrl: args.identityVerificationUrl,
+        identityVerificationStorageId: args.identityVerificationStorageId,
+        callDate: args.callDate,
+        callTime: args.callTime,
+        addressSelected: args.addressSelected
       },
     )
 
@@ -307,8 +321,8 @@ export const createDevice = mutation({
     model: v.string(),
     serialNumber: v.string(),
     protection: v.id('deviceProtections'),
-    verificationVideoUrl: v.optional(v.string()),
-    verificationVideoStorageId: v.optional(v.id('_storage')),
+    verificationUrl: v.optional(v.string()),
+    verificationStorageId: v.optional(v.id('_storage')),
   },
   handler: async (ctx, args) => {
     const deviceId = await ctx.db.insert('devices', {

@@ -6,24 +6,32 @@ export const createVerificationRequest = mutation({
     userId: v.id('users'),
     deviceId: v.id('devices'),
     verificationMode: v.string(),
-    verificationVideoUrl: v.optional(v.string()),
-    verificationVideoStorageId: v.optional(v.id('_storage')),
+    verificationUrl: v.optional(v.string()),
+    verificationStorageId: v.optional(v.id('_storage')),
+    contentType: v.optional(v.string()),
     proofStorageId: v.id('_storage'),
     proofOfOwnershipUrl: v.string(),
+    callDate: v.optional(v.string()),
+    callTime: v.optional(v.string()),
+    addressSelected: v.optional(v.string())
   },
   handler: async (ctx, args) => {
-    const deviceId = await ctx.db.insert('verificationRequests', {
+    await ctx.db.insert('verificationRequests', {
       userId: args.userId,
       deviceId: args.deviceId,
       verificationMode: args.verificationMode,
       status: 'pending',
-      verificationVideoUrl: args.verificationVideoUrl,
-      verificationVideoStorageId: args.verificationVideoStorageId,
+      verificationUrl: args.verificationUrl,
+      verificationStorageId: args.verificationStorageId,
+      contentType: args.contentType,
       proofOfOwnershipUrl: args.proofOfOwnershipUrl,
       proofStorageId: args.proofStorageId,
-    })
+      callDate: args.callDate,
+      callTime: args.callTime,
+      addressSelected: args.addressSelected
+    });
 
-    return deviceId
+    return args.deviceId;
   },
 })
 
