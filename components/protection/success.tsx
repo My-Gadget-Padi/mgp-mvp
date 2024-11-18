@@ -22,7 +22,7 @@ const Success = ({ reference }: PlanProps) => {
   const { toast } = useToast();
   const { user } = useUser();
   const userId = user?.id;
-  
+
   const userProfile = useQuery(api.users.getUserByClerkId, {
     clerkId: userId || "",
   });
@@ -36,30 +36,39 @@ const Success = ({ reference }: PlanProps) => {
     .replace("Payment for ", "")
     .replace(" protection plan", "");
 
-  const date = new Date(paymentDetails?._creationTime!);
+  const creationTime = paymentDetails?._creationTime;
+  const date = creationTime ? new Date(creationTime) : null;
 
-  const formattedDate = date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  const isValidDate = date instanceof Date && !isNaN(date.getTime());
 
-  const formattedTime = date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
+  const formattedDate = isValidDate
+    ? date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "N/A";
 
-  const formattedDateTime = new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  }).format(date);
+  const formattedTime = isValidDate
+    ? date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "N/A";
+
+  const formattedDateTime = isValidDate
+    ? new Intl.DateTimeFormat("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      }).format(date)
+    : "N/A";
 
   const receiptRef = useRef<HTMLDivElement>(null);
 
@@ -77,88 +86,6 @@ const Success = ({ reference }: PlanProps) => {
   return (
     <main className=" flex flex-1 mt-6 sm:mt-0 flex-col gap-4 p-4 lg:gap-2 lg:p-6">
       <Stepper currentStep={3} />
-
-      <div className="hidden">
-        <div
-          ref={receiptRef}
-          className="font-mono max-w-sm mt-10 mx-auto border shadow-md rounded-lg bg-white p-4 text-sm"
-        >
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <img
-                src="/logo/with-icon.svg"
-                alt="mygadgetpadi logo"
-                className="w-[200px]"
-              />
-            </div>
-
-            <p className="text-black">{formattedDateTime}</p>
-          </div>
-
-          <div className="flex flex-col items-center justify-center mt-3">
-            <div className="mt-4 border-2 border-dashed border-black px-12 rounded-lg">
-              <div className="flex text-center justify-center items-center mx-auto bg-white w-[144px] relative -top-4 text-sm text-black font-medium">
-                Reference Number
-              </div>
-              <div className="font-mono text-center text-[17px] font-bold text-black tracking-wide mb-6">
-                {reference}
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 flex justify-between pt-2">
-            <span className="text-gray-500">Payment Method</span>
-            <span className="font-medium text-right">
-              {paymentDetails?.finalConfig.channel === "card"
-                ? "Credit Card"
-                : paymentDetails?.finalConfig.channel}
-            </span>
-          </div>
-          <div className="mt-4 border-t border-dashed border-gray-500 pt-2 space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-500">Customer Name</span>
-              <span className="font-medium text-right">
-                {userProfile?.firstName} {userProfile?.lastName}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Plan Purchased</span>
-              <span className="font-medium text-right">{planName}</span>
-            </div>
-          </div>
-
-          <div className="mt-4 border-t border-dashed border-gray-500 pt-4 space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-500">Amount</span>
-              <span className="font-medium">
-                {(paymentDetails?.finalConfig.amount / 100).toLocaleString(
-                  "en-US"
-                )}{" "}
-                NGN
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Tax</span>
-              <span className="font-medium">0 NGN</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Total</span>
-              <span className="font-medium">
-                {(paymentDetails?.finalConfig.amount / 100).toLocaleString(
-                  "en-US"
-                )}{" "}
-                NGN
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-4 border-t border-dashed border-gray-500 pt-2 text-center text-gray-500 text-xs">
-            <p>
-              Thank you for purchase, our passion. Drop by again, if your device
-              isn’t still working. You’re always welcome here!
-            </p>
-          </div>
-        </div>
-      </div>
 
       <div className="relative max-w-md sm:w-[400px] mx-auto p-6 bg-[#6445E8] text-white rounded-2xl shadow-md space-y-6">
         {/* Left and Right Cut-out Circles */}
@@ -194,7 +121,6 @@ const Success = ({ reference }: PlanProps) => {
             - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
           </div>
         </div>
-        {/* Details */}
         <div className="text-sm space-y-2">
           <div className="flex justify-between">
             <span>Reference Number</span>
@@ -248,7 +174,6 @@ const Success = ({ reference }: PlanProps) => {
             </span>
           </div>
         </div>
-        {/* Download PDF Button */}
         <Button
           onClick={handleDownloadPDF}
           className="bg-white text-[#6445E8] hover:text-white w-full"
@@ -270,6 +195,90 @@ const Success = ({ reference }: PlanProps) => {
       >
         I'll do it later
       </Link>
+
+      {userProfile?._id ? (
+        <div className="hidden">
+          <div
+            ref={receiptRef}
+            className="font-mono max-w-sm mt-10 mx-auto border shadow-md rounded-lg bg-white p-4 text-sm"
+          >
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <img
+                  src="/logo/with-icon.svg"
+                  alt="mygadgetpadi logo"
+                  className="w-[200px]"
+                />
+              </div>
+
+              <p className="text-black">{formattedDateTime}</p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center mt-3">
+              <div className="mt-4 border-2 border-dashed border-black px-12 rounded-lg">
+                <div className="flex text-center justify-center items-center mx-auto bg-white w-[144px] relative -top-4 text-sm text-black font-medium">
+                  Reference Number
+                </div>
+                <div className="font-mono text-center text-[17px] font-bold text-black tracking-wide mb-6">
+                  {reference}
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-between pt-2">
+              <span className="text-gray-500">Payment Method</span>
+              <span className="font-medium text-right">
+                {paymentDetails?.finalConfig.channel === "card"
+                  ? "Credit Card"
+                  : paymentDetails?.finalConfig.channel}
+              </span>
+            </div>
+            <div className="mt-4 border-t border-dashed border-gray-500 pt-2 space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Customer Name</span>
+                <span className="font-medium text-right">
+                  {userProfile?.firstName} {userProfile?.lastName}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Plan Purchased</span>
+                <span className="font-medium text-right">{planName}</span>
+              </div>
+            </div>
+
+            <div className="mt-4 border-t border-dashed border-gray-500 pt-4 space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Amount</span>
+                <span className="font-medium">
+                  {(paymentDetails?.finalConfig.amount / 100).toLocaleString(
+                    "en-US"
+                  )}{" "}
+                  NGN
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Tax</span>
+                <span className="font-medium">0 NGN</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Total</span>
+                <span className="font-medium">
+                  {(paymentDetails?.finalConfig.amount / 100).toLocaleString(
+                    "en-US"
+                  )}{" "}
+                  NGN
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4 border-t border-dashed border-gray-500 pt-2 text-center text-gray-500 text-xs">
+              <p>
+                Thank you for purchase, our passion. Drop by again, if your device
+                isn’t still working. You’re always welcome here!
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 };

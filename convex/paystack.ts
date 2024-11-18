@@ -96,7 +96,8 @@ export const verifyPayment = action({
         claimsAvailable: plan.claimLimit,
       })
 
-      const currentDate = new Date()
+      const currentDate = new Date();
+      
       await ctx.runMutation(internal.payments.updatePayment, {
         paymentId: payment._id,
         status: 'completed',
