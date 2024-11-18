@@ -36,13 +36,14 @@ const Checkout = ({ planId }: PlanProps) => {
 
   const buyPlan = useAction(api.plans.buyPlan)
 
-  useEffect(() => {
+  /**useEffect(() => {
     if (plan?.name === 'Free Plan' && userProfile?.hasFreePlan === true && userProfile?.freePlanActivationDate) {
       router.push('/protection/plans')
     } else if (plan?.name === 'Free Plan' && userProfile?.hasFreePlan === true && !userProfile?.freePlanActivationDate) {
       router.push("/protection/onboard")
     }
   }, [plan, userProfile?.hasFreePlan, router])
+  */
 
   const handleBuyPlan = async () => {
     try {
@@ -63,6 +64,7 @@ const Checkout = ({ planId }: PlanProps) => {
           title: 'Success',
           description: 'Free plan has been activated, you will be redirected to an onboarding screen.',
         })
+        router.push("/protection/success")
       }
     } catch (error) {
       console.error('Error making claim:', error)
