@@ -87,7 +87,7 @@ const Success = ({ reference }: PlanProps) => {
     <main className=" flex flex-1 mt-6 sm:mt-0 flex-col gap-4 p-4 lg:gap-2 lg:p-6">
       <Stepper currentStep={3} />
 
-      <div className="relative max-w-md sm:w-[400px] mx-auto p-6 bg-[#6445E8] text-white rounded-2xl shadow-md space-y-6">
+      <div className="relative w-full sm:w-[400px] mx-auto p-6 bg-[#6445E8] text-white rounded-2xl shadow-md space-y-6">
         {/* Left and Right Cut-out Circles */}
         <div className="absolute top-[174px] -left-3 w-6 h-6 bg-white rounded-full"></div>
         <div className="absolute top-[150px] -right-3 w-6 h-6 bg-white rounded-full"></div>
