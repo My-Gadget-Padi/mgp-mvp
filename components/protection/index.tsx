@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Link from "next/link";
@@ -34,6 +34,7 @@ export function Protection() {
   const [showDialog, setShowDialog] = useState(false);
   const [device, setDevice] = useState<any | null>(null);
   const [plan, setPlan] = useState<any | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const { toast } = useToast();
   const { user } = useUser();
@@ -55,6 +56,17 @@ export function Protection() {
       userId: profileId,
     }
   );
+
+  const emails = process.env.NEXT_PUBLIC_EMAILS?.split(",").map((email) => `mailto:${email}`) || [];
+
+  useEffect(() => {
+    const toggleEmails = () => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % emails.length);
+    };
+
+    const intervalId = setInterval(toggleEmails, 3600000);
+    return () => clearInterval(intervalId);
+  }, [emails.length]);
 
   const filteredDevices = devices?.filter((device) => {
     if (device.planName === "Free Plan") {
@@ -138,7 +150,7 @@ export function Protection() {
             <p className="mt-4 text-xs text-gray-500 italic">
               {plan?.details.terms}
             </p>
-            <Link href="mailto:help@mygadgetpadi.com">
+            <Link href={emails[currentIndex]}>
               <Button className="mt-6 w-full py-6 bg-[#F6FFE6] text-gray-700 font-semibold rounded-lg hover:bg-[#F6FFE6]">
                 Contact support
               </Button>

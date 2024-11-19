@@ -150,6 +150,10 @@ export function OnboardDevice() {
 
   const sendEmail = useAction(api.sendEmail.freePlanActivatedEmail);
 
+  const sendSupportKYCEmail = useAction(api.sendEmail.userRequestKYCEmail);
+
+  const sendUserKYCEmail = useAction(api.sendEmail.kycInitiatedEmail);
+
   const freeProtections = protections?.filter(
     (protection) =>
       protection.name === "Free Plan" &&
@@ -445,19 +449,34 @@ export function OnboardDevice() {
 
   const handleVerifyUser = async () => {
     try {
-      await verifyUser({
+      const response = await verifyUser({
         userId: userProfile?._id as Id<"users">,
         identityVerificationUrl: imageFileUrl,
         identityVerificationStorageId:
           imageFileStorageId !== null ? imageFileStorageId : undefined,
         verificationStatus: "pending",
       });
-      setShowDialog(false);
-      toast({
-        title: "Success",
-        description:
-          "Identity verification has begun, you will be notified via email once your profile has been verified successfully.",
-      });
+
+      if (response) {
+        await sendSupportKYCEmail({
+          emailAddress: userProfile?.email as string,
+          firstName: userProfile?.firstName as string,
+          lastName: userProfile?.lastName as string,
+          imageFileUrl: imageFileUrl as string
+        });
+
+        await sendUserKYCEmail({
+          emailAddress: userProfile?.email as string,
+          firstName: userProfile?.firstName as string,
+        });
+
+        setShowDialog(false);
+        toast({
+          title: "Success",
+          description:
+            "Identity verification has begun, you will be notified via email once your profile has been verified successfully.",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -667,7 +686,7 @@ export function OnboardDevice() {
                   } ${isDisabled ? "cursor-not-allowed" : ""}`}
                   onClick={
                     isDisabled
-                      ? undefined
+                      ? () => setShowDialog(true)
                       : () => handleCardClick(basicProtections, "Basic Plan")
                   }
                 >
@@ -716,7 +735,7 @@ export function OnboardDevice() {
                   } ${isDisabled ? "cursor-not-allowed" : ""}`}
                   onClick={
                     isDisabled
-                      ? undefined
+                      ? () => setShowDialog(true)
                       : () => handleCardClick(proProtections, "Pro Plan")
                   }
                 >

@@ -287,3 +287,109 @@ export const proPlanActivatedEmail = action({
     }
   },
 });
+
+export const userRequestKYCEmail = action({
+  args: {
+    emailAddress: v.string(),
+    firstName: v.string(),
+    lastName: v.string(),
+    imageFileUrl: v.string()
+  },
+  handler: async (ctx, args) => {
+    try {
+      const { 
+        emailAddress, 
+        firstName,
+        lastName, 
+        imageFileUrl
+      } = args;
+
+      const subject = 'Urgent: KYC Document Submitted - Review Now!';
+      const letter = `<!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Urgent: KYC Document Submitted - Review Now!</title>
+              </head>
+              <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                <p>Dear Support Team,</p>
+                <p>A new user: ${firstName} ${lastName}, has just uploaded their KYC document for verification. This process is required before they can onboard a device to either the Basic or Pro Plan. </p>
+                <p><strong>KYC Details:</strong></p>
+                <ul>
+                  <li><strong>Account User:</strong> ${firstName} ${lastName}</li>
+                  <li><strong>KYC Document:</strong> ${imageFileUrl}</li>
+                </ul>
+                <p><strong>Next Steps for You</strong></p>
+                <p>If the KYC document meets all requirements, kindly send a whatsapp message to Shola or Folakuku to activate the user's account.</p>
+                <ul>
+                  <li><strong>Folakuku:</strong> <a href="https://wa.me/2348097164378">https://wa.me/2348097164378</a></li>
+                  <li><strong>Shola:</strong> <a href="https://wa.me/2348088980832">https://wa.me/2348088980832</a></li>
+                </ul>
+                <p>We’re dedicated to providing top-notch protection and support. Please don’t hesitate to reach out if you have any questions or need assistance.</p>
+                <p>Thank you for being the best customer support team at MyGadgetPadi.</p>
+                <p>Best regards,<br>
+                The MyGadgetPadi Software Engineering Team<br>
+                </p>
+              </body>
+              </html>
+              `;
+
+      await ctx.runAction(api.sendEmail.sendEmail, {
+        emailAddress,
+        subject,
+        letter,
+      });
+      return;
+    } catch (error) {
+      console.error(`Failed to send email: ${error}`);
+      throw new Error(`Failed to send email: ${error}`);
+    }
+  },
+});
+
+export const kycInitiatedEmail = action({
+  args: {
+    emailAddress: v.string(),
+    firstName: v.string()
+  },
+  handler: async (ctx, args) => {
+    try {
+      const { 
+        emailAddress, 
+        firstName
+      } = args;
+
+      const subject = 'Your KYC Document is Being Reviewed';
+      const letter = `<!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Your KYC Document is Being Reviewed</title>
+              </head>
+              <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                <p>Dear ${firstName},</p>
+                <p>Thank you for submitting your KYC document for verification. We wanted to let you know that your uploaded ID card is currently undergoing our verification process.</p>
+                <p><strong>What to Expect Next</strong></p>
+                <p>You document will be reviewed within 24 - 48 hours. Once verified, you will receive a follow-up email with the next steps for onboarding your device.</p>
+                <p>If you have any questions during this time, please do not hesitate to reach out to our support team.</p>
+                <p>Thank you for choosing MyGadgetPadi!</p>
+                <p>Best regards,<br>
+                The MyGadgetPadi Customer Support Team<br>
+                <a href="tel:+2347076641696">+2347076641696</a></p>
+              </body>
+              </html>
+              `;
+      await ctx.runAction(api.sendEmail.sendEmail, {
+        emailAddress,
+        subject,
+        letter,
+      });
+      return;
+    } catch (error) {
+      console.error(`Failed to send email: ${error}`);
+      throw new Error(`Failed to send email: ${error}`);
+    }
+  },
+});
