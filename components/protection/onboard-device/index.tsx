@@ -623,7 +623,7 @@ export function OnboardDevice() {
           </Dialog>
 
           <main className="flex flex-1 mt-6 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-            {(basicCount || proCount) && renderVerificationMessage()}
+            {Boolean(basicCount || proCount) && renderVerificationMessage()}
             <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:gap-8">
               {freeCount !== 0 ? (
                 <Card
