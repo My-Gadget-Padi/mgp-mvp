@@ -13,7 +13,7 @@ export const createVerificationRequest = mutation({
     proofOfOwnershipUrl: v.string(),
     callDate: v.optional(v.string()),
     callTime: v.optional(v.string()),
-    addressSelected: v.optional(v.string())
+    addressSelected: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await ctx.db.insert('verificationRequests', {
@@ -28,10 +28,10 @@ export const createVerificationRequest = mutation({
       proofStorageId: args.proofStorageId,
       callDate: args.callDate,
       callTime: args.callTime,
-      addressSelected: args.addressSelected
-    });
+      addressSelected: args.addressSelected,
+    })
 
-    return args.deviceId;
+    return args.deviceId
   },
 })
 
@@ -44,6 +44,21 @@ export const updateVerificationRequest = mutation({
     dateVerified: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Check if user is admin an can set role
+    const identity = await ctx.auth.getUserIdentity()
+
+    if (identity) {
+      const user = await ctx.db
+        .query('users')
+        .filter((q) => q.eq(q.field('email'), identity.email))
+        .unique()
+      if (!user) {
+        throw new ConvexError('Login Required!')
+      }
+      if (user.role === 'super' || user.role === 'admin') {
+        throw new ConvexError('Unauthorized!')
+      }
+    }
     const verificationRequest = await ctx.db.get(args.verificationRequestId)
 
     if (!verificationRequest) {
