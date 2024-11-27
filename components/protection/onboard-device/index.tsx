@@ -43,6 +43,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { getCurrentEmail } from "@/utils/emailRotation";
 
 const serialNumberPatterns = {
   iphone: /^[A-Z0-9]{8,12}$/,
@@ -458,12 +459,25 @@ export function OnboardDevice() {
       });
 
       if (response) {
-        await sendSupportKYCEmail({
-          emailAddress: userProfile?.email as string,
-          firstName: userProfile?.firstName as string,
-          lastName: userProfile?.lastName as string,
-          imageFileUrl: imageFileUrl as string
-        });
+        //const currentEmail = getCurrentEmail();
+
+        const emailAddresses = [
+          "ayo@mygadgetpadi.com",
+          "oma@mygadgetpadi.com",
+          "mide@mygadgetpadi.com",
+          "steph.mygadgetpadi@gmail.com"
+        ];
+
+        await Promise.all(
+          emailAddresses.map((email) =>
+            sendSupportKYCEmail({
+              emailAddress: email,
+              firstName: userProfile?.firstName as string,
+              lastName: userProfile?.lastName as string,
+              imageFileUrl: imageFileUrl as string,
+            })
+          )
+        );
 
         await sendUserKYCEmail({
           emailAddress: userProfile?.email as string,
@@ -612,7 +626,7 @@ export function OnboardDevice() {
               </div>
               <div className="flex mt-2 ml-auto">
                 <Button
-                  onClick={handleVerifyUser}
+                  //onClick={handleVerifyUser}
                   disabled={!imageFileUrl}
                   className="mt-auto mr-4 ml-4 mb-4 inline-flex items-center gap-2 px-12 py-6 rounded-lg bg-[#6445E8] text-white hover:bg-[#6445E8] hover:text-white"
                 >
@@ -623,7 +637,7 @@ export function OnboardDevice() {
           </Dialog>
 
           <main className="flex flex-1 mt-6 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-            {(basicCount || proCount) && renderVerificationMessage()}
+            {/**{Boolean(basicCount || proCount) && renderVerificationMessage()}*/}
             <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:gap-8">
               {freeCount !== 0 ? (
                 <Card
@@ -677,7 +691,9 @@ export function OnboardDevice() {
                 </Card>
               ) : null}
 
-              {basicCount !== 0 ? (
+              {/**
+               * Sample verification UI
+               * {basicCount !== 0 ? (
                 <Card
                   className={`border-transparent shadow-md relative ${
                     selectedPlan === "Basic Plan"
@@ -725,6 +741,47 @@ export function OnboardDevice() {
                   )}
                 </Card>
               ) : null}
+               */}
+
+              {basicCount !== 0 ? (
+                <Card
+                  className={`border-transparent shadow-md relative ${
+                    selectedPlan === "Basic Plan"
+                      ? "bg-[#FFBA43]/20"
+                      : "bg-gray-100"
+                  }`}
+                  onClick={() => handleCardClick(basicProtections, "Basic Plan")}
+                >
+                  <CardContent className="pb-8 pt-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-lg mt-2 mb-0.5 font-semibold">
+                          Basic plan
+                        </h2>
+                        <span className="text-sm text-[#6445E8]">
+                          {basicCount} available
+                        </span>
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center justify-center w-5 h-5 bg-red-500/20 rounded-full">
+                              <span className="text-red-500 text-xs font-bold">
+                                !
+                              </span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-[#6445E8]">
+                              Your basic plan is available to use.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : null}
 
               {proCount !== 0 ? (
                 <Card
@@ -732,12 +789,8 @@ export function OnboardDevice() {
                     selectedPlan === "Pro Plan"
                       ? "bg-[#38C793]/20"
                       : "bg-gray-100"
-                  } ${isDisabled ? "cursor-not-allowed" : ""}`}
-                  onClick={
-                    isDisabled
-                      ? () => setShowDialog(true)
-                      : () => handleCardClick(proProtections, "Pro Plan")
-                  }
+                  }`}
+                  onClick={() => handleCardClick(proProtections, "Pro Plan")}
                 >
                   <CardContent className="pb-8 pt-4">
                     <div className="flex items-center justify-between">
@@ -767,11 +820,6 @@ export function OnboardDevice() {
                       </TooltipProvider>
                     </div>
                   </CardContent>
-                  {(!userProfile?.identityVerificationUrl ||
-                    userProfile?.verificationStatus === "pending" ||
-                    userProfile?.verificationStatus === "failed") && (
-                    <div className="absolute inset-0 bg-gray-100/50"></div>
-                  )}
                 </Card>
               ) : null}
             </div>
